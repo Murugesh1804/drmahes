@@ -20,20 +20,31 @@ const STATUS_LABELS = {
   cancelled:   'Cancelled',
 }
 
+const DEFAULT_STATS = {
+  totalPatients: 0,
+  todayTotal: 0,
+  todayWaiting: 0,
+  todayInProgress: 0,
+  todayDone: 0,
+  todayRevenue: 0,
+  pendingBalance: 0
+}
+
 export default function Dashboard() {
   const { fmt, notify } = useApp()
   const navigate = useNavigate()
-  const [stats, setStats] = useState(null)
+  const [stats, setStats] = useState(DEFAULT_STATS)
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
 
   async function load() {
     try {
       const [s, a] = await Promise.all([getDashboardStats(), getTodayAppointments()])
-      setStats(s)
+      setStats(s || DEFAULT_STATS)
       setAppointments((a || []).slice(0, 8))
     } catch (e) {
       console.error(e)
+      setStats(DEFAULT_STATS)
       setAppointments([])
     } finally {
       setLoading(false)
