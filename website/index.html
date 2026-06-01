@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dr. Mahe's Dentistry — Modern Minimal Premium Dental Care, Porur, Chennai</title>
+  <meta name="description"
+    content="Experience high-quality, advanced dental care at Dr. Mahe's Dentistry in Porur, Chennai. Relaxed environment, personalized treatments, and transparent planning for all age groups.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ─── DESIGN SYSTEM VARIABLES ─── */
+    :root {
+      /* Light Theme Colors */
+      --primary: #111111;
+      --primary-rgb: 17, 17, 17;
+      --primary-light: #222222;
+      --secondary: #666666;
+      --accent: #C4B097;
+      --accent-hover: #A89680;
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F7F5F0;
+      --bg-card: #FFFFFF;
+      --text-primary: #111111;
+      --text-secondary: #555555;
+      --border: rgba(17, 17, 17, 0.08);
+      --border-accent: rgba(196, 176, 151, 0.3);
+      --white: #FFFFFF;
+      --dark: #000000;
+      --success: #3e8e41;
+
+      /* Shadows */
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.02);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.03);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.05);
+
+      /* Fonts */
+      --font-heading: 'Poppins', sans-serif;
+      --font-body: 'Open Sans', sans-serif;
+      --header-height: 80px;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Theme Colors */
+      --primary: #F5F5F5;
+      --primary-rgb: 245, 245, 245;
+      --primary-light: #EEEEEE;
+      --secondary: #AAAAAA;
+      --accent: #C4B097;
+      --accent-hover: #D4C3AC;
+      --bg-primary: #0F0F0F;
+      --bg-secondary: #171717;
+      --bg-card: #1C1C1C;
+      --text-primary: #EEEEEE;
+      --text-secondary: #AAAAAA;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(196, 176, 151, 0.4);
+      --white: #FFFFFF;
+      --dark: #FFFFFF;
+      --success: #4caf50;
+
+      /* Shadows */
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    /* ─── BASE RESET ─── */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-heading);
+      color: var(--text-primary);
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* ─── CONTAINER ─── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .section-padding {
+      padding: 100px 0;
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 28px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--bg-primary);
+      border: 1px solid var(--primary);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: var(--primary);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ─── HEADER & NAVIGATION ─── */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--header-height);
+      background-color: rgba(var(--primary-rgb), 0.02);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      border-bottom: 1px solid var(--border);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .header.scrolled {
+      background-color: var(--bg-primary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-img {
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-text span {
+      color: var(--accent);
+      font-weight: 400;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .nav-link {
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-link:hover {
+      color: var(--accent);
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .theme-toggle-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--accent);
+    }
+
+    /* ─── HERO SECTION ─── */
+    .hero {
+      padding-top: calc(var(--header-height) + 60px);
+      padding-bottom: 80px;
+      background-color: var(--bg-secondary);
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .hero-badge::before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 1px;
+      background-color: var(--accent);
+    }
+
+    .hero-title {
+      font-size: 3.5rem;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      margin-bottom: 36px;
+      max-width: 560px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      border-top: 1px solid var(--border);
+      padding-top: 36px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: var(--font-heading);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-number span {
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+    }
+
+    .hero-visual {
+      position: relative;
+    }
+
+    .hero-img-mask {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 4/5;
+      background-color: #e5e5e5;
+    }
+
+    .hero-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .hero-img-mask:hover .hero-img {
+      transform: scale(1.05);
+    }
+
+    .hero-badge-card {
+      position: absolute;
+      bottom: -30px;
+      left: -40px;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 24px;
+      border-radius: 8px;
+      max-width: 280px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero-badge-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-badge-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ─── INFINITE MARQUEE ─── */
+    .marquee {
+      background-color: var(--primary);
+      color: var(--bg-primary);
+      padding: 24px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .marquee-content {
+      display: inline-block;
+      animation: marquee 30s linear infinite;
+    }
+
+    .marquee-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 40px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding-right: 40px;
+    }
+
+    .marquee-text span {
+      color: var(--accent);
+    }
+
+    @keyframes marquee {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
+    }
+
+    /* ─── SECTION HEADER ─── */
+    .section-header {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+    }
+
+    .section-badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-desc {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    /* ─── BEFORE/AFTER INTERACTIVE SLIDER ─── */
+    .slider-section {
+      background-color: var(--bg-secondary);
+    }
+
+    .slider-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .slider-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      user-select: none;
+    }
+
+    .slider-image-box {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .slider-image-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background-color: #FFFFFF;
+    }
+
+    .slider-before {
+      z-index: 2;
+      width: 50%; /* Initial split */
+      overflow: hidden;
+      border-right: 1px solid var(--accent);
+    }
+
+    .slider-before svg {
+      width: 800px; /* Lock aspect matching parent */
+      max-width: none;
+    }
+
+    .slider-after {
+      z-index: 1;
+    }
+
+    .slider-after svg {
+      width: 800px;
+      max-width: none;
+    }
+
+    .slider-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      background-color: var(--accent);
+      z-index: 10;
+      cursor: ew-resize;
+      transform: translateX(-50%);
+    }
+
+    .slider-handle-button {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      font-size: 0.8rem;
+    }
+
+    .slider-label {
+      position: absolute;
+      bottom: 20px;
+      background: rgba(var(--primary-rgb), 0.85);
+      color: var(--bg-primary);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 4px;
+      z-index: 3;
+      backdrop-filter: blur(4px);
+    }
+
+    .label-before {
+      right: 20px;
+    }
+
+    .label-after {
+      left: 20px;
+    }
+
+    /* ─── TREATMENTS SECTION ─── */
+    .treatments-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.3s;
+      background-color: var(--bg-card);
+    }
+
+    .tab-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .tab-btn.active {
+      background-color: var(--primary);
+      color: var(--bg-primary);
+      border-color: var(--primary);
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .service-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .service-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .service-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .service-card:hover::after {
+      transform: scaleX(1);
+    }
+
+    .service-card-num {
+      position: absolute;
+      top: 1.5rem;
+      right: 2rem;
+      font-family: var(--font-heading);
+      font-size: 3rem;
+      font-weight: 300;
+      color: var(--bg-secondary);
+      line-height: 1;
+      user-select: none;
+    }
+
+    .service-card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 24px;
+      background-color: var(--bg-secondary);
+      width: 50px;
+      height: 50px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .service-card:hover .service-card-icon {
+      background-color: var(--accent);
+      color: var(--primary);
+    }
+
+    .service-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+    }
+
+    .service-card p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      flex-grow: 1;
+    }
+
+    .service-card-price {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      margin-top: auto;
+    }
+
+    .price-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .price-val {
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+
+    .service-card-btn {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .service-card-btn:hover {
+      color: var(--accent);
+    }
+
+    /* ─── BOOKING SECTION ─── */
+    .booking-section {
+      background-color: var(--bg-secondary);
+    }
+
+    .booking-layout {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 60px;
+      background-color: var(--bg-card);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .booking-info {
+      padding: 60px;
+      background-color: var(--primary);
+      color: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .booking-info-title {
+      font-size: 2rem;
+      color: var(--white);
+      margin-bottom: 20px;
+    }
+
+    .booking-info-desc {
+      font-size: 0.9rem;
+      color: var(--secondary);
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    .booking-contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .contact-item {
+      display: flex;
+      gap: 16px;
+    }
+
+    .contact-item-icon {
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    .contact-item-text h4 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--secondary);
+      margin-bottom: 4px;
+    }
+
+    .contact-item-text p {
+      font-size: 0.9rem;
+      color: var(--white);
+    }
+
+    .booking-wizard-panel {
+      padding: 60px;
+      position: relative;
+    }
+
+    /* Wizard Indicator */
+    .wizard-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .wizard-indicator::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: var(--border);
+      z-index: 1;
+    }
+
+    .indicator-step {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--bg-card);
+      border: 2px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    .indicator-step.active {
+      border-color: var(--accent);
+      background-color: var(--accent);
+      color: var(--primary);
+    }
+
+    .indicator-step.completed {
+      border-color: var(--primary);
+      background-color: var(--primary);
+      color: var(--bg-primary);
+    }
+
+    /* Wizard Steps Panels */
+    .step-panel {
+      display: none;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .step-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+      font-size: 1.4rem;
+      margin-bottom: 24px;
+    }
+
+    .selection-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .selection-card {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--bg-card);
+    }
+
+    .selection-card:hover {
+      border-color: var(--accent);
+    }
+
+    .selection-card.active {
+      border-color: var(--accent);
+      background-color: var(--bg-secondary);
+    }
+
+    .selection-card-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .selection-card-price {
+      font-size: 0.82rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .wizard-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 40px;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+
+    /* Doctor Select Card */
+    .doctor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .doctor-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background-color: var(--bg-card);
+    }
+
+    .doctor-card:hover {
+      border-color: var(--accent);
+    }
+
+    .doctor-card.active {
+      border-color: var(--accent);
+      background-color: var(--bg-secondary);
+    }
+
+    .doctor-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background-color: var(--bg-secondary);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 16px;
+      border: 1px solid var(--border);
+    }
+
+    .doctor-card.active .doctor-avatar {
+      background-color: var(--accent);
+      color: var(--primary);
+      border-color: var(--accent);
+    }
+
+    .doctor-name {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .doctor-spec {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    /* Date and Time Selector */
+    .datetime-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .date-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .date-input-wrap label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .date-picker {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background-color: var(--bg-card);
+      outline: none;
+      width: 100%;
+    }
+
+    .date-picker:focus {
+      border-color: var(--accent);
+    }
+
+    .time-slot-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .time-slot-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .time-slot-btn {
+      padding: 10px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      text-align: center;
+      transition: all 0.3s;
+      background-color: var(--bg-card);
+    }
+
+    .time-slot-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .time-slot-btn.active {
+      background-color: var(--primary);
+      color: var(--bg-primary);
+      border-color: var(--primary);
+    }
+
+    /* Form Fields */
+    .form-group-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-input {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background-color: var(--bg-card);
+      outline: none;
+      width: 100%;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    /* Success Panel */
+    .booking-success-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 0;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .success-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background-color: var(--success);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(62,142,65,0.2);
+    }
+
+    .success-summary {
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 20px;
+      width: 100%;
+      margin: 24px 0 32px;
+      text-align: left;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .success-summary-item {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 8px;
+    }
+
+    .success-summary-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .success-summary-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .success-summary-value {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ─── FAQs ACCORDION ─── */
+    .faqs {
+      background-color: var(--bg-primary);
+    }
+
+    .faqs-layout {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .faq-item {
+      border: 1px solid var(--border);
+      background-color: var(--bg-card);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+
+    .faq-item:hover {
+      border-color: var(--accent);
+    }
+
+    .faq-question-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px;
+      background: none;
+      border: none;
+      text-align: left;
+      font-weight: 600;
+      font-size: 1.05rem;
+      cursor: pointer;
+    }
+
+    .faq-icon {
+      font-size: 1.25rem;
+      color: var(--accent);
+      transition: transform 0.3s ease;
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+      padding: 0 24px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    .faq-item.active .faq-answer {
+      max-height: 500px;
+      padding-bottom: 24px;
+      transition: max-height 0.3s cubic-bezier(1, 0, 1, 0);
+    }
+
+    .faq-item.active .faq-icon {
+      transform: rotate(45deg);
+    }
+
+    /* ─── FOOTER ─── */
+    .footer {
+      background-color: var(--primary);
+      color: var(--bg-primary);
+      padding: 80px 0 40px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr 1fr;
+      gap: 60px;
+      margin-bottom: 60px;
+    }
+
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .footer-desc {
+      font-size: 0.85rem;
+      color: var(--secondary);
+      line-height: 1.7;
+    }
+
+    .footer-links-col h4 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-link {
+      font-size: 0.85rem;
+      color: var(--secondary);
+    }
+
+    .footer-link:hover {
+      color: var(--accent);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 30px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--secondary);
+    }
+
+    /* ─── RESPONSIVE DESIGN ─── */
+    @media (max-width: 1024px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 48px;
+        text-align: center;
+      }
+
+      .hero-badge {
+        justify-content: center;
+      }
+
+      .hero-badge::before {
+        display: none;
+      }
+
+      .hero-desc {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
+
+      .hero-stats {
+        justify-content: center;
+      }
+
+      .hero-badge-card {
+        left: 20px;
+        bottom: 20px;
+      }
+
+      .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .booking-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .booking-info {
+        padding: 48px;
+      }
+
+      .booking-wizard-panel {
+        padding: 48px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none; /* Mobile menu can be added later or kept minimal */
+      }
+
+      .hero-title {
+        font-size: 2.5rem;
+      }
+
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .time-slot-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ─── HEADER & NAVIGATION ─── -->
+  <header class="header" id="header">
+    <div class="container nav-container">
+      <a href="#" class="logo">
+        <img src="assets/nav_logo.png" alt="Dr. Mahe's Dentistry" class="logo-img">
+        <div class="logo-text">Dr. Mahe's <span>Dentistry</span></div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#about" class="nav-link">About</a>
+        <a href="#treatments" class="nav-link">Treatments</a>
+        <a href="#slider" class="nav-link">Results</a>
+        <a href="#faqs" class="nav-link">FAQs</a>
+        <a href="#booking" class="btn btn-secondary nav-link" style="padding: 8px 18px; margin-left: 10px;">Book Now</a>
+      </nav>
+
+      <div class="nav-controls">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Dark/Light Mode">◑</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── HERO SECTION ─── -->
+  <section class="hero" id="about">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge">Welcome to Dr. Mahe's Dentistry</div>
+        <h1 class="hero-title">Expert Dental Care with a <span>Gentle Touch</span></h1>
+        <p class="hero-desc">
+          At Dr. Mahe's Dentistry, we believe every smile deserves expert care, comfort, and confidence. Our clinic is
+          designed to provide modern dental treatments in a calm, hygienic, and patient-friendly environment in Porur,
+          Chennai.
+        </p>
+        <div class="hero-actions">
+          <a href="#booking" class="btn btn-primary">Book Consultation</a>
+          <a href="#treatments" class="btn btn-secondary">Our Services</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">12<span>+</span></span>
+            <span class="stat-label">Years of Smile Care</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">99<span>%</span></span>
+            <span class="stat-label">Patient Satisfaction</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">100<span>%</span></span>
+            <span class="stat-label">Hygienic Sterilized</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-img-mask">
+          <img src="assets/reception_area.png" alt="Dr. Mahe's Dentistry modern reception area waiting room" class="hero-img">
+        </div>
+        <div class="hero-badge-card">
+          <div class="hero-badge-title">✔ Patient Comfort First</div>
+          <div class="hero-badge-desc">Modern equipment setups, customized dental diagnostics, and transparent billing.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── INFINITE MARQUEE ─── -->
+  <div class="marquee">
+    <div class="marquee-content">
+      <div class="marquee-text">
+        <span>✔</span> Advanced Sterilization <span>✔</span> Painless Root Canals <span>✔</span> Aesthetic Veneers <span>✔</span> Premium Implants <span>✔</span> 3D Digital Scans <span>✔</span> Comfortable Orthodontics <span>✔</span> Smile Makeovers 
+      </div>
+      <div class="marquee-text">
+        <span>✔</span> Advanced Sterilization <span>✔</span> Painless Root Canals <span>✔</span> Aesthetic Veneers <span>✔</span> Premium Implants <span>✔</span> 3D Digital Scans <span>✔</span> Comfortable Orthodontics <span>✔</span> Smile Makeovers 
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── BEFORE/AFTER INTERACTIVE SLIDER ─── -->
+  <section class="slider-section section-padding" id="slider">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Before & After Results</span>
+        <h2 class="section-title">Visualizing Transformed Smiles</h2>
+        <p class="section-desc">Drag the interactive slider handle to compare the orthodontic correction and teeth-whitening makeover results.</p>
+      </div>
+
+      <div class="slider-wrapper">
+        <div class="slider-container" id="beforeAfterSlider">
+          
+          <!-- After (Background image) -->
+          <div class="slider-image-box slider-after">
+            <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="afterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#FCFBFA" />
+                  <stop offset="100%" stop-color="#F2EFE9" />
+                </linearGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#afterGrad)" />
+              <g transform="translate(100, 100)">
+                <!-- Teeth Arch Model (Sparkling White, Perfectly Aligned) -->
+                <!-- Backing Gums -->
+                <path d="M 50 150 Q 300 0 550 150 Q 550 110 300 50 Q 50 110 50 150 Z" fill="#FFA5A5" opacity="0.8" />
+                <!-- Center Teeth Whitened -->
+                <rect x="275" y="80" width="50" height="85" rx="10" fill="#FFFFFF" stroke="#EAEAEA" stroke-width="2" />
+                <rect x="220" y="85" width="50" height="75" rx="8" fill="#FFFFFF" stroke="#EAEAEA" stroke-width="2" />
+                <rect x="330" y="85" width="50" height="75" rx="8" fill="#FFFFFF" stroke="#EAEAEA" stroke-width="2" />
+                <rect x="170" y="90" width="45" height="70" rx="6" fill="#FFFFFF" stroke="#EAEAEA" stroke-width="2" />
+                <rect x="385" y="90" width="45" height="70" rx="6" fill="#FFFFFF" stroke="#EAEAEA" stroke-width="2" />
+                <rect x="125" y="95" width="40" height="60" rx="5" fill="#FFFFFF" stroke="#EAEAEA" stroke-width="2" />
+                <rect x="435" y="95" width="40" height="60" rx="5" fill="#FFFFFF" stroke="#EAEAEA" stroke-width="2" />
+                <!-- Sparkling Highlights -->
+                <path d="M 295 100 L 305 100 M 300 95 L 300 105" stroke="#C4B097" stroke-width="2" stroke-linecap="round" />
+                <path d="M 235 110 L 241 110 M 238 107 L 238 113" stroke="#C4B097" stroke-width="1.5" stroke-linecap="round" />
+              </g>
+              <!-- Center Text Indicator -->
+              <text x="300" y="50" font-family="'Poppins', sans-serif" font-weight="600" font-size="12" fill="#666666" letter-spacing="1">ORAL RECONSTRUCTION & WHITENING</text>
+            </svg>
+          </div>
+
+          <!-- Before (Foreground sliding image) -->
+          <div class="slider-image-box slider-before" id="beforeImageBox">
+            <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="beforeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#F3ECE0" />
+                  <stop offset="100%" stop-color="#E2D8C9" />
+                </linearGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#beforeGrad)" />
+              <g transform="translate(100, 100)">
+                <!-- Teeth Arch Model (Slightly Crooked, Stained/Yellowish) -->
+                <!-- Backing Gums -->
+                <path d="M 50 150 Q 300 0 550 150 Q 550 110 300 50 Q 50 110 50 150 Z" fill="#FFA5A5" opacity="0.6" />
+                <!-- Crooked Teeth slightly yellowed -->
+                <!-- Incisor 1 (Rotated) -->
+                <rect x="273" y="85" width="48" height="85" rx="8" fill="#F4E8C1" stroke="#D3C397" stroke-width="2" transform="rotate(-5, 297, 127)" />
+                <!-- Incisor 2 -->
+                <rect x="220" y="90" width="50" height="75" rx="8" fill="#F4E8C1" stroke="#D3C397" stroke-width="2" />
+                <!-- Incisor 3 (Overlapped) -->
+                <rect x="325" y="82" width="50" height="75" rx="8" fill="#F4E8C1" stroke="#D3C397" stroke-width="2" transform="rotate(3, 350, 120)" />
+                <!-- Lateral Teeth -->
+                <rect x="172" y="90" width="45" height="70" rx="6" fill="#EDE1B9" stroke="#D3C397" stroke-width="2" />
+                <rect x="382" y="92" width="45" height="70" rx="6" fill="#EDE1B9" stroke="#D3C397" stroke-width="2" />
+                <!-- Premolars -->
+                <rect x="127" y="94" width="40" height="60" rx="5" fill="#E8DBB0" stroke="#D3C397" stroke-width="2" />
+                <rect x="433" y="96" width="40" height="60" rx="5" fill="#E8DBB0" stroke="#D3C397" stroke-width="2" />
+              </g>
+              <text x="300" y="50" font-family="'Poppins', sans-serif" font-weight="600" font-size="12" fill="#888888" letter-spacing="1">ORAL RECONSTRUCTION & WHITENING</text>
+            </svg>
+          </div>
+
+          <!-- Handle -->
+          <div class="slider-handle" id="sliderHandle">
+            <div class="slider-handle-button">◀▶</div>
+          </div>
+
+          <!-- Labels -->
+          <span class="slider-label label-before">Before Treatment</span>
+          <span class="slider-label label-after">After Treatment</span>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TREATMENTS CATALOG ─── -->
+  <section class="section-padding" id="treatments">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Treatment & Services</span>
+        <h2 class="section-title">Predefined Treatment Charges</h2>
+        <p class="section-desc">Explore our complete catalog of dental treatments. Transparent planning is at the core of our philosophy. All charges are pre-disclosed with zero hidden costs.</p>
+      </div>
+
+      <!-- Tab Categories -->
+      <div class="treatments-tabs">
+        <button class="tab-btn active" onclick="filterServices('all')">All Services</button>
+        <button class="tab-btn" onclick="filterServices('diagnostics')">Diagnostics & Preventive</button>
+        <button class="tab-btn" onclick="filterServices('restorative')">Restorative & RCT</button>
+        <button class="tab-btn" onclick="filterServices('surgery')">Oral Surgery</button>
+        <button class="tab-btn" onclick="filterServices('cosmetic')">Cosmetic & Crowns</button>
+        <button class="tab-btn" onclick="filterServices('ortho')">Orthodontics</button>
+      </div>
+
+      <!-- Services Grid -->
+      <div class="services-grid" id="servicesGrid">
+        <!-- Javascript dynamically renders this based on the array database of 33 items -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── BOOKING SECTION WITH WIZARD ─── -->
+  <section class="booking-section section-padding" id="booking">
+    <div class="container">
+      <div class="booking-layout">
+        
+        <!-- Info Column -->
+        <div class="booking-info">
+          <div>
+            <h3 class="booking-info-title">Schedule a Consultation</h3>
+            <p class="booking-info-desc">
+              Request an appointment with our specialists. Pick your treatment and select a convenient slot. Our reception team will reach out shortly after submission.
+            </p>
+          </div>
+          
+          <div class="booking-contact-list">
+            <div class="contact-item">
+              <span class="contact-item-icon">☏</span>
+              <div class="contact-item-text">
+                <h4>Call or WhatsApp</h4>
+                <p>+91 94440 12345</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <span class="contact-item-icon">📍</span>
+              <div class="contact-item-text">
+                <h4>Location</h4>
+                <p>Porur High Road, Porur, Chennai - 600116</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <span class="contact-item-icon">✉</span>
+              <div class="contact-item-text">
+                <h4>Email</h4>
+                <p>contact@drmahesdentistry.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wizard Column -->
+        <div class="booking-wizard-panel">
+          
+          <!-- Progress Indicator -->
+          <div class="wizard-indicator">
+            <div class="indicator-step active" id="indicator1">1</div>
+            <div class="indicator-step" id="indicator2">2</div>
+            <div class="indicator-step" id="indicator3">3</div>
+            <div class="indicator-step" id="indicator4">4</div>
+          </div>
+
+          <!-- STEP 1: Select Service -->
+          <div class="step-panel active" id="stepPanel1">
+            <h3 class="step-title">Select Treatment Service</h3>
+            <div class="selection-grid" id="bookingServiceGrid">
+              <!-- Rendered via JS -->
+            </div>
+            <div class="wizard-footer">
+              <div></div>
+              <button class="btn btn-primary" id="btnNext1" onclick="nextStep(1)">Next Step</button>
+            </div>
+          </div>
+
+          <!-- STEP 2: Select Specialist -->
+          <div class="step-panel" id="stepPanel2">
+            <h3 class="step-title">Choose Dentist Specialist</h3>
+            <div class="doctor-grid">
+              <div class="doctor-card active" onclick="selectDoctor('Dr. Mahe')">
+                <div class="doctor-avatar">👨‍⚕️</div>
+                <div class="doctor-name">Dr. Mahe</div>
+                <div class="doctor-spec">Endodontist &amp; Implantologist</div>
+              </div>
+              <div class="doctor-card" onclick="selectDoctor('Dr. Mahe Specialist Team')">
+                <div class="doctor-avatar">👩‍⚕️</div>
+                <div class="doctor-name">Specialist Team</div>
+                <div class="doctor-spec">Orthodontist &amp; Pedodontist</div>
+              </div>
+            </div>
+            <div class="wizard-footer">
+              <button class="btn btn-secondary" onclick="prevStep(2)">Back</button>
+              <button class="btn btn-primary" onclick="nextStep(2)">Next Step</button>
+            </div>
+          </div>
+
+          <!-- STEP 3: Select Date & Time -->
+          <div class="step-panel" id="stepPanel3">
+            <h3 class="step-title">Select Date &amp; Time</h3>
+            <div class="datetime-container">
+              <div class="date-input-wrap">
+                <label for="apptDate">Select Date</label>
+                <input type="date" class="date-picker" id="apptDate" onchange="handleDateSelect()">
+              </div>
+              <div>
+                <div class="time-slot-label">Available Slots</div>
+                <div class="time-slot-grid" id="timeSlotGrid">
+                  <button class="time-slot-btn" onclick="selectTimeSlot('09:30 AM', this)">09:30 AM</button>
+                  <button class="time-slot-btn" onclick="selectTimeSlot('10:30 AM', this)">10:30 AM</button>
+                  <button class="time-slot-btn" onclick="selectTimeSlot('11:30 AM', this)">11:30 AM</button>
+                  <button class="time-slot-btn" onclick="selectTimeSlot('04:30 PM', this)">04:30 PM</button>
+                  <button class="time-slot-btn" onclick="selectTimeSlot('05:30 PM', this)">05:30 PM</button>
+                  <button class="time-slot-btn" onclick="selectTimeSlot('06:30 PM', this)">06:30 PM</button>
+                  <button class="time-slot-btn" onclick="selectTimeSlot('07:30 PM', this)">07:30 PM</button>
+                </div>
+              </div>
+            </div>
+            <div class="wizard-footer">
+              <button class="btn btn-secondary" onclick="prevStep(3)">Back</button>
+              <button class="btn btn-primary" onclick="nextStep(3)">Next Step</button>
+            </div>
+          </div>
+
+          <!-- STEP 4: Personal Details -->
+          <div class="step-panel" id="stepPanel4">
+            <h3 class="step-title">Enter Contact Details</h3>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="form-group">
+                <label for="patientName">Full Name *</label>
+                <input type="text" class="form-input" id="patientName" placeholder="Your Full Name" required>
+              </div>
+              <div class="form-group-grid">
+                <div class="form-group">
+                  <label for="patientPhone">Phone Number *</label>
+                  <input type="tel" class="form-input" id="patientPhone" placeholder="Mobile Number" required>
+                </div>
+                <div class="form-group">
+                  <label for="patientEmail">Email Address</label>
+                  <input type="email" class="form-input" id="patientEmail" placeholder="name@domain.com">
+                </div>
+              </div>
+            </div>
+            <div class="wizard-footer">
+              <button class="btn btn-secondary" onclick="prevStep(4)">Back</button>
+              <button class="btn btn-primary" onclick="submitBooking()">Book Consultation</button>
+            </div>
+          </div>
+
+          <!-- Success Panel -->
+          <div class="booking-success-panel" id="bookingSuccessPanel">
+            <div class="success-icon-wrap">✓</div>
+            <h3 style="font-size: 1.8rem; margin-bottom: 8px; color: var(--text-primary);">Consultation Requested!</h3>
+            <p style="font-size: 0.88rem; max-width: 420px; color: var(--text-secondary);">Your appointment request has been registered in our clinic dashboard. Our Clinic Coordinator will contact you shortly to confirm your booking.</p>
+
+            <div class="success-summary">
+              <div class="success-summary-item">
+                <span class="success-summary-label">Treatment</span>
+                <span class="success-summary-value" id="summaryService">Cosmetic Dentistry</span>
+              </div>
+              <div class="success-summary-item">
+                <span class="success-summary-label">Doctor</span>
+                <span class="success-summary-value" id="summaryDoctor">Dr. Mahe</span>
+              </div>
+              <div class="success-summary-item">
+                <span class="success-summary-label">Date &amp; Time</span>
+                <span class="success-summary-value" id="summaryDateTime">Monday, May 31 @ 10:30 AM</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="resetWizard()">Request Another Slot</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FAQs ACCORDION ─── -->
+  <section class="section-padding faqs" id="faqs">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">FAQ Helpdesk</span>
+        <h2 class="section-title">Common Dental Questions</h2>
+        <p class="section-desc">Find quick answers to common questions about appointments, sterilization procedures, and clinic services.</p>
+      </div>
+
+      <div class="faqs-layout">
+        <div class="faq-item">
+          <button class="faq-question-btn" onclick="toggleFaq(this)">
+            <span>How do I prepare for a scaling or root canal appointment?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Ensure you have a light meal before scaling or general treatments, unless local/general anesthesia is planned. Bring details of any ongoing medications or systemic health history (like diabetes or hypertension) so our team can plan treatments safely.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question-btn" onclick="toggleFaq(this)">
+            <span>How does the online appointment booking work?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>When you select a treatment and submit details on our booking wizard, the request is immediately logged inside our local reception desk dashboard. We will review the doctor availability and contact you via phone or WhatsApp to lock in the exact appointment time.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question-btn" onclick="toggleFaq(this)">
+            <span>What sterilization protocols are followed?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>At Dr. Mahe's Dentistry, client safety is non-negotiable. We follow strict international Class-B autoclave guidelines. All instruments are vacuum-packed, sterilized, and opened fresh in front of the patient. Disposable barriers are changed after every single treatment.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question-btn" onclick="toggleFaq(this)">
+            <span>What payment options are available?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>We accept all major payments including Cash, Debit/Credit Cards, and UPI (GPay, PhonePe, Paytm). Detailed digital receipts are generated instantly and printed for your insurance record.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <img src="assets/nav_logo.png" alt="Dr. Mahe's Dentistry" class="logo-img" style="filter: brightness(0.9) grayscale(0.2);">
+          <div class="logo-text" style="color: var(--white);">Dr. Mahe's <span style="color: var(--accent);">Dentistry</span></div>
+        </div>
+        <p class="footer-desc">
+          State-of-the-art dental care focused on precision, premium comforts, and complete transparency. Providing modern endodontics, implants, and orthodontic services in Chennai.
+        </p>
+      </div>
+
+      <div class="footer-links-col">
+        <h4>Navigation Links</h4>
+        <ul class="footer-links">
+          <li><a href="#about" class="footer-link">About Clinic</a></li>
+          <li><a href="#treatments" class="footer-link">Predefined Pricing</a></li>
+          <li><a href="#slider" class="footer-link">Before/After Makeovers</a></li>
+          <li><a href="#booking" class="footer-link">Book Appointment</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links-col">
+        <h4>Clinic Hours</h4>
+        <ul class="footer-links">
+          <li class="footer-link">Monday - Saturday: 09:30 AM - 08:30 PM</li>
+          <li class="footer-link">Sunday: Closed (By Emergency Appointment Only)</li>
+          <li class="footer-link" style="margin-top: 12px; color: var(--accent);">Emergency Helpline: +91 94440 12345</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Dr. Mahe's Dentistry. All rights reserved.</p>
+      <p>Modern Minimalist Dental Care Hub, Chennai</p>
+    </div>
+  </footer>
+
+  <!-- ─── JAVASCRIPT LOGIC ─── -->
+  <script>
+    // ─── TREATMENTS DATA CATALOG ───
+    const treatmentsData = [
+      // Diagnostics & Preventive
+      { id: "tx_consult", category: "diagnostics", name: "Consultation", price: 100, desc: "Primary dental examination and treatment planning." },
+      { id: "tx_rvg", category: "diagnostics", name: "RVG (Digital X-Ray)", price: 200, desc: "High-precision digital intraoral radiograph." },
+      { id: "tx_scaling_mild", category: "diagnostics", name: "Scaling Mild", price: 800, desc: "Ultrasonic cleaning for basic calculus and plaque removal." },
+      { id: "tx_scaling_mod", category: "diagnostics", name: "Scaling Moderate", price: 1000, desc: "Thorough plaque removal for moderate staining." },
+      { id: "tx_scaling_deep", category: "diagnostics", name: "Deep Scaling & Stains", price: 1500, desc: "Intense scaling for deep deposits and tobacco/tea stains." },
+      
+      // Restorative
+      { id: "tx_fill_c1", category: "restorative", name: "Filling Class 1", price: 850, desc: "Direct composite/glass ionomer restoration for minor cavities." },
+      { id: "tx_fill_deep", category: "restorative", name: "Deep Filling (Dycal)", price: 1150, desc: "Pulp protective base filling with calcium hydroxide lining." },
+      { id: "tx_fill_ant", category: "restorative", name: "Anterior Filling", price: 1200, desc: "Highly aesthetic shade-matched frontal tooth filling." },
+      { id: "tx_rct", category: "restorative", name: "Root Canal Treatment", price: 3000, desc: "Biocompatible root canal cleaning, therapy, and obturation." },
+      { id: "tx_post_core", category: "restorative", name: "Post and Core", price: 1000, desc: "Fiber post reinforcement for broken teeth reconstruction." },
+      { id: "tx_cementation", category: "restorative", name: "Crown Cementation", price: 500, desc: "Re-fixing detached crowns or bridges with luting cement." },
+
+      // Surgery
+      { id: "tx_ext_g3", category: "surgery", name: "Extraction Grade 3", price: 500, desc: "Removal of mobile/loose teeth under local anesthesia." },
+      { id: "tx_ext_ortho", category: "surgery", name: "Extraction Orthodontic", price: 750, desc: "Removal of premolars or healthy teeth for braces correction space." },
+      { id: "tx_wisdom_up", category: "surgery", name: "Upper Wisdom Extraction", price: 1800, desc: "Routine extraction of upper third molar." },
+      { id: "tx_wisdom_lo_erupt", category: "surgery", name: "Lower Wisdom Erupted", price: 2000, desc: "Extraction of fully erupted lower third molar." },
+      { id: "tx_wisdom_lo_spec", category: "surgery", name: "Lower Wisdom Specialist", price: 4000, desc: "Surgical removal of complex or impacted lower third molar." },
+      { id: "tx_impaction_up", category: "surgery", name: "Upper Impaction Removal", price: 3000, desc: "Surgical removal of impacted upper tooth structures." },
+      { id: "tx_frenectomy", category: "surgery", name: "Frenectomy", price: 5000, desc: "Surgical release of tongue tie or lip frenum attachments." },
+      { id: "tx_mucocele", category: "surgery", name: "Mucocele Excision", price: 5000, desc: "Minor surgical excision of salivary gland mucous cyst." },
+
+      // Cosmetic & Implants
+      { id: "tx_crown_mls", category: "cosmetic", name: "Crown MLS (Metal Ceramic)", price: 3500, desc: "High-strength metal-ceramic hybrid crown." },
+      { id: "tx_crown_zircon", category: "cosmetic", name: "Crown Zirconia", price: 7000, desc: "Premium metal-free CAD-CAM dental crown with warranty." },
+      { id: "tx_crown_metal", category: "cosmetic", name: "Metal Crown", price: 2000, desc: "Classical polished cast alloy crown." },
+      { id: "tx_emax", category: "cosmetic", name: "Emax Press Crown/Inlay", price: 10000, desc: "Ultra-aesthetic lithium disilicate restorative crown." },
+      { id: "tx_veneers", category: "cosmetic", name: "Porcelain Veneer", price: 10000, desc: "Custom-made aesthetic porcelain shell for cosmetic smile styling." },
+      { id: "tx_implant", category: "cosmetic", name: "Dental Implant Surgical", price: 20000, desc: "Premium biocompatible titanium implant fixture placement." },
+      { id: "tx_implant_mls", category: "cosmetic", name: "Implant MLS Crown", price: 5000, desc: "Restorative metal-ceramic crown over implant fixture." },
+      { id: "tx_implant_zircon", category: "cosmetic", name: "Implant Zirconia Crown", price: 9000, desc: "Premium custom zirconia prosthetic crown for implant fixtures." },
+
+      // Orthodontics
+      { id: "tx_braces_basic", category: "ortho", name: "Basic Braces Treatment", price: 25000, desc: "Traditional steel orthodontic braces alignment." },
+      { id: "tx_braces_metal_sl", category: "ortho", name: "Metal Self-Ligating", price: 50000, desc: "High efficiency self-ligating metal braces." },
+      { id: "tx_braces_ceramic_basic", category: "ortho", name: "Ceramic Basic Braces", price: 40000, desc: "Semi-invisible aesthetic tooth-colored braces." },
+      { id: "tx_braces_ceramic_sl", category: "ortho", name: "Ceramic Self-Ligating", price: 80000, desc: "Ultra-premium aesthetic self-locking brackets alignment." },
+      { id: "tx_retainer", category: "ortho", name: "Retainer (Per Arch)", price: 1500, desc: "Removable dental retainer to prevent tooth relapse post-treatment." },
+      { id: "tx_perio_laser", category: "diagnostics", name: "Perio Laser Treatment", price: 5000, desc: "Laser-assisted periodontal therapy (per quadrant)." }
+    ];
+
+    // ─── THEME TOGGLE ───
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const htmlElement = document.documentElement;
+
+    // Load saved theme or default to light
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    htmlElement.setAttribute('data-theme', currentTheme);
+    themeToggleBtn.textContent = currentTheme === 'dark' ? '☀' : '◑';
+
+    themeToggleBtn.addEventListener('click', () => {
+      let theme = htmlElement.getAttribute('data-theme');
+      let newTheme = 'light';
+      if (theme === 'light') {
+        newTheme = 'dark';
+        themeToggleBtn.textContent = '☀';
+      } else {
+        themeToggleBtn.textContent = '◑';
+      }
+      htmlElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
+
+    // Header scroll background change
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // ─── RENDER TREATMENTS CATALOG ───
+    function renderServicesGrid(filter = 'all') {
+      const grid = document.getElementById('servicesGrid');
+      grid.innerHTML = '';
+      
+      const filtered = filter === 'all' 
+        ? treatmentsData 
+        : treatmentsData.filter(t => t.category === filter);
+
+      filtered.forEach((tx, idx) => {
+        const card = document.createElement('div');
+        card.className = 'service-card';
+        card.innerHTML = `
+          <div class="service-card-num">${String(idx + 1).padStart(2, '0')}</div>
+          <div class="service-card-icon">${getCategoryEmoji(tx.category)}</div>
+          <h3>${tx.name}</h3>
+          <p>${tx.desc}</p>
+          <div class="service-card-price">
+            <span class="price-label">Fee Standard</span>
+            <span class="price-val">₹${tx.price.toLocaleString('en-IN')}</span>
+          </div>
+          <a href="#booking" onclick="selectServiceFromCatalog('${tx.name}')" class="service-card-btn">Book Treatment ➔</a>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function getCategoryEmoji(cat) {
+      switch (cat) {
+        case 'diagnostics': return '🔍';
+        case 'restorative': return '🦷';
+        case 'surgery': return '💉';
+        case 'cosmetic': return '✨';
+        case 'ortho': return '⛓';
+        default: return '🦷';
+      }
+    }
+
+    function filterServices(cat) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick').includes(`'${cat}'`)) {
+          btn.classList.add('active');
+        }
+      });
+      renderServicesGrid(cat);
+    }
+
+    // Call on load
+    renderServicesGrid('all');
+
+    // ─── BEFORE/AFTER INTERACTIVE SLIDER ───
+    const slider = document.getElementById('beforeAfterSlider');
+    const beforeImage = document.getElementById('beforeImageBox');
+    const handle = document.getElementById('sliderHandle');
+    let isDragging = false;
+
+    function moveSlider(xPos) {
+      const rect = slider.getBoundingClientRect();
+      let offsetX = xPos - rect.left;
+      
+      if (offsetX < 0) offsetX = 0;
+      if (offsetX > rect.width) offsetX = rect.width;
+      
+      const percentage = (offsetX / rect.width) * 100;
+      beforeImage.style.width = `${percentage}%`;
+      handle.style.left = `${percentage}%`;
+    }
+
+    // Mouse events
+    handle.addEventListener('mousedown', () => { isDragging = true; });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      moveSlider(e.clientX);
+    });
+
+    // Touch events
+    handle.addEventListener('touchstart', () => { isDragging = true; });
+    window.addEventListener('touchend', () => { isDragging = false; });
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      moveSlider(e.touches[0].clientX);
+    });
+
+    // Support clicking on the container to move
+    slider.addEventListener('click', (e) => {
+      if (e.target !== handle && !handle.contains(e.target)) {
+        moveSlider(e.clientX);
+      }
+    });
+
+    // ─── BOOKING WIZARD CONTROL ───
+    let bookingState = {
+      service: '',
+      doctor: 'Dr. Mahe', // default
+      date: '',
+      timeSlot: '',
+      patientName: '',
+      patientPhone: '',
+      patientEmail: ''
+    };
+
+    // Render step 1 options
+    const bookingServiceGrid = document.getElementById('bookingServiceGrid');
+    treatmentsData.forEach(tx => {
+      const card = document.createElement('div');
+      card.className = 'selection-card';
+      card.setAttribute('data-service', tx.name);
+      card.innerHTML = `
+        <span class="selection-card-name">${tx.name}</span>
+        <span class="selection-card-price">₹${tx.price}</span>
+      `;
+      card.addEventListener('click', () => {
+        document.querySelectorAll('#bookingServiceGrid .selection-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        bookingState.service = tx.name;
+      });
+      bookingServiceGrid.appendChild(card);
+    });
+
+    // Trigger select from catalog click
+    function selectServiceFromCatalog(name) {
+      bookingState.service = name;
+      document.querySelectorAll('#bookingServiceGrid .selection-card').forEach(card => {
+        if (card.getAttribute('data-service') === name) {
+          card.classList.add('active');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          card.classList.remove('active');
+        }
+      });
+    }
+
+    function selectDoctor(docName) {
+      bookingState.doctor = docName;
+      document.querySelectorAll('.doctor-card').forEach(card => {
+        if (card.innerHTML.includes(docName)) {
+          card.classList.add('active');
+        } else {
+          card.classList.remove('active');
+        }
+      });
+    }
+
+    function selectTimeSlot(slot, btnElement) {
+      bookingState.timeSlot = slot;
+      document.querySelectorAll('.time-slot-btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+    }
+
+    function handleDateSelect() {
+      const dateVal = document.getElementById('apptDate').value;
+      bookingState.date = dateVal;
+    }
+
+    function updateWizardProgress(step) {
+      for (let i = 1; i <= 4; i++) {
+        const ind = document.getElementById(`indicator${i}`);
+        if (i < step) {
+          ind.className = 'indicator-step completed';
+        } else if (i === step) {
+          ind.className = 'indicator-step active';
+        } else {
+          ind.className = 'indicator-step';
+        }
+      }
+    }
+
+    function nextStep(current) {
+      if (current === 1) {
+        if (!bookingState.service) {
+          alert('Please select a treatment service to proceed.');
+          return;
+        }
+        document.getElementById('stepPanel1').classList.remove('active');
+        document.getElementById('stepPanel2').classList.add('active');
+        updateWizardProgress(2);
+      } else if (current === 2) {
+        document.getElementById('stepPanel2').classList.remove('active');
+        document.getElementById('stepPanel3').classList.add('active');
+        // Set minimum date picker to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('apptDate').setAttribute('min', today);
+        updateWizardProgress(3);
+      } else if (current === 3) {
+        if (!bookingState.date) {
+          alert('Please pick a convenient date.');
+          return;
+        }
+        if (!bookingState.timeSlot) {
+          alert('Please select an available time slot.');
+          return;
+        }
+        document.getElementById('stepPanel3').classList.remove('active');
+        document.getElementById('stepPanel4').classList.add('active');
+        updateWizardProgress(4);
+      }
+    }
+
+    function prevStep(current) {
+      document.getElementById(`stepPanel${current}`).classList.remove('active');
+      document.getElementById(`stepPanel${current - 1}`).classList.add('active');
+      updateWizardProgress(current - 1);
+    }
+
+    function submitBooking() {
+      const name = document.getElementById('patientName').value.trim();
+      const phone = document.getElementById('patientPhone').value.trim();
+      const email = document.getElementById('patientEmail').value.trim();
+
+      if (!name || !phone) {
+        alert('Please enter your Name and Phone Number.');
+        return;
+      }
+
+      bookingState.patientName = name;
+      bookingState.patientPhone = phone;
+      bookingState.patientEmail = email;
+
+      const submitBtn = document.querySelector('#stepPanel4 .btn-primary');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Processing...';
+      submitBtn.disabled = true;
+
+      // Handle server request
+      const apiOrigin = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+        ? 'http://localhost:5000'
+        : window.location.origin;
+
+      fetch(`${apiOrigin}/api/appointments/website-book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingState)
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Booking response error');
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('stepPanel4').classList.remove('active');
+        
+        // Populate summary
+        document.getElementById('summaryService').textContent = bookingState.service;
+        document.getElementById('summaryDoctor').textContent = bookingState.doctor;
+        
+        // Format date string nicely
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateObj = new Date(bookingState.date);
+        const formattedDate = dateObj.toLocaleDateString('en-US', dateOptions);
+        document.getElementById('summaryDateTime').textContent = `${formattedDate} @ ${bookingState.timeSlot}`;
+        
+        document.getElementById('bookingSuccessPanel').style.display = 'flex';
+
+        // Mark all steps as complete
+        document.querySelectorAll('.indicator-step').forEach(indicator => {
+          indicator.className = 'indicator-step completed';
+        });
+      })
+      .catch(err => {
+        console.error("Booking error:", err);
+        alert('We were unable to log your booking online. Please contact our reception desk directly at +91 94440 12345 or verify details.');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    }
+
+    function resetWizard() {
+      // Clear local state
+      bookingState.service = '';
+      bookingState.doctor = 'Dr. Mahe';
+      bookingState.date = '';
+      bookingState.timeSlot = '';
+      bookingState.patientName = '';
+      bookingState.patientPhone = '';
+      bookingState.patientEmail = '';
+
+      // Clear visual inputs
+      document.querySelectorAll('#bookingServiceGrid .selection-card').forEach(card => card.classList.remove('active'));
+      document.querySelectorAll('.time-slot-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('apptDate').value = '';
+      document.getElementById('patientName').value = '';
+      document.getElementById('patientPhone').value = '';
+      document.getElementById('patientEmail').value = '';
+
+      // Reset displays
+      document.getElementById('bookingSuccessPanel').style.display = 'none';
+      document.getElementById('stepPanel1').classList.add('active');
+
+      // Enable final submit button
+      const submitBtn = document.querySelector('#stepPanel4 .btn-primary');
+      submitBtn.textContent = 'Book Consultation';
+      submitBtn.disabled = false;
+
+      updateWizardProgress(1);
+    }
+
+    // ─── FAQs ACCORDION TOGGLE ───
+    function toggleFaq(btn) {
+      const item = btn.parentElement;
+      const isActive = item.classList.contains('active');
+      
+      // Close all other items
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+      
+      if (!isActive) {
+        item.classList.add('active');
+      }
+    }
+  </script>
+</body>
+
+</html>
