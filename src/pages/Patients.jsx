@@ -26,7 +26,7 @@ export default function Patients() {
     const data = q.trim().length >= 1
       ? await searchPatients(q)
       : await getAllPatients()
-    setPatients(data)
+    setPatients(data || [])
   }, [])
 
   useEffect(() => { load() }, [load])

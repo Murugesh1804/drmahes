@@ -88,7 +88,7 @@ export default function Billing() {
 
   const load = useCallback(async () => {
     const data = await getAllBills()
-    setBills(data)
+    setBills(data || [])
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -98,7 +98,7 @@ export default function Billing() {
     if (!showCreate) return
     const t = setTimeout(async () => {
       const data = patSearch.trim() ? await searchPatients(patSearch) : await getAllPatients()
-      setPatients(data.slice(0, 20))
+      setPatients((data || []).slice(0, 20))
     }, 250)
     return () => clearTimeout(t)
   }, [patSearch, showCreate])
@@ -110,8 +110,8 @@ export default function Billing() {
       getPatientAppointments(selPatient.id),
       getTreatmentsByPatient(selPatient.id),
     ]).then(([appts, txs]) => {
-      setPatAppts(appts.slice(0, 10))
-      setPatTreatments(txs)
+      setPatAppts((appts || []).slice(0, 10))
+      setPatTreatments(txs || [])
     })
   }, [selPatient])
 

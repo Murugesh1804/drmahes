@@ -40,18 +40,29 @@ export default function Treatments() {
   const [saving, setSaving] = useState(false)
 
   const loadAppointments = useCallback(async () => {
-    const data = await getAppointmentsByDate(date)
-    setAppointments(data.filter(a => a.status !== 'cancelled'))
-    if (data.length > 0 && !selectedAppt) {
-      const first = data[0]
-      setSelectedAppt(first)
+    try {
+      const data = await getAppointmentsByDate(date)
+      const list = data || []
+      setAppointments(list.filter(a => a.status !== 'cancelled'))
+      if (list.length > 0 && !selectedAppt) {
+        const first = list[0]
+        setSelectedAppt(first)
+      }
+    } catch (e) {
+      console.error(e)
+      setAppointments([])
     }
-  }, [date])
+  }, [date, selectedAppt])
 
   const loadTreatments = useCallback(async () => {
     if (!selectedAppt) { setTreatments([]); return }
-    const data = await getTreatmentsByAppointment(selectedAppt.id)
-    setTreatments(data)
+    try {
+      const data = await getTreatmentsByAppointment(selectedAppt.id)
+      setTreatments(data || [])
+    } catch (e) {
+      console.error(e)
+      setTreatments([])
+    }
   }, [selectedAppt])
 
   useEffect(() => { loadAppointments() }, [loadAppointments])

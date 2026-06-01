@@ -28,10 +28,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   async function load() {
-    const [s, a] = await Promise.all([getDashboardStats(), getTodayAppointments()])
-    setStats(s)
-    setAppointments(a.slice(0, 8))
-    setLoading(false)
+    try {
+      const [s, a] = await Promise.all([getDashboardStats(), getTodayAppointments()])
+      setStats(s)
+      setAppointments((a || []).slice(0, 8))
+    } catch (e) {
+      console.error(e)
+      setAppointments([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { load() }, [])

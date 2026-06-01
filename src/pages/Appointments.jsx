@@ -43,7 +43,7 @@ export default function Appointments() {
 
   const load = useCallback(async () => {
     const data = await getAppointmentsByDate(date)
-    setAppointments(data)
+    setAppointments(data || [])
   }, [date])
 
   useEffect(() => { load() }, [load])
@@ -55,7 +55,7 @@ export default function Appointments() {
       const data = patientSearch.trim()
         ? await searchPatients(patientSearch)
         : await getAllPatients()
-      setPatients(data.slice(0, 20))
+      setPatients((data || []).slice(0, 20))
     }, 250)
     return () => clearTimeout(t)
   }, [patientSearch, showAdd])

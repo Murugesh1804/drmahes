@@ -19,9 +19,15 @@ export default function Queue() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const data = await getTodayQueue()
-    setQueue(data)
-    setLoading(false)
+    try {
+      const data = await getTodayQueue()
+      setQueue(data || [])
+    } catch (e) {
+      console.error(e)
+      setQueue([])
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => { load() }, [load])

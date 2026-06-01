@@ -47,21 +47,30 @@ export default function PatientDetail() {
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
-    const [p, appts, txs, blls] = await Promise.all([
-      getPatientById(id),
-      getPatientAppointments(id),
-      getTreatmentsByPatient(id),
-      getBillsByPatient(id),
-    ])
-    setPatient(p)
-    setForm({
-      name: p.name, phone: p.phone || '', age: p.age || '',
-      gender: p.gender || 'Male', address: p.address || '',
-      complaint: p.complaint || '', notes: p.notes || '',
-    })
-    setAppointments(appts)
-    setTreatments(txs)
-    setBills(blls)
+    try {
+      const [p, appts, txs, blls] = await Promise.all([
+        getPatientById(id),
+        getPatientAppointments(id),
+        getTreatmentsByPatient(id),
+        getBillsByPatient(id),
+      ])
+      if (p) {
+        setPatient(p)
+        setForm({
+          name: p.name, phone: p.phone || '', age: p.age || '',
+          gender: p.gender || 'Male', address: p.address || '',
+          complaint: p.complaint || '', notes: p.notes || '',
+        })
+      }
+      setAppointments(appts || [])
+      setTreatments(txs || [])
+      setBills(blls || [])
+    } catch (e) {
+      console.error(e)
+      setAppointments([])
+      setTreatments([])
+      setBills([])
+    }
   }, [id])
 
   useEffect(() => { load() }, [load])
