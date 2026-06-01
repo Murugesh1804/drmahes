@@ -250,7 +250,7 @@ export default function Billing() {
   }
 
   const filtered = bills.filter(b =>
-    !search || b.patient_name.toLowerCase().includes(search.toLowerCase())
+    b && (!search || (b.patient_name || '').toLowerCase().includes(search.toLowerCase()))
   )
 
   return (
@@ -307,7 +307,7 @@ export default function Billing() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(b => (
+              {filtered.filter(Boolean).map(b => (
                 <tr key={b.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="text-slate-400 text-xs font-mono pl-6 truncate max-w-[80px]">
                     ...{b.id.slice(-6)}
@@ -725,10 +725,10 @@ function generateReceiptHTML(bill, treatments = [], settings) {
 </head>
 <body>
   <div class="header">
-    <div class="clinic">${settings.clinic_name || "Dr. Mahe's Dentistry"}</div>
-    <div class="doctor">${settings.doctor_name || "Dr. Mahe"}</div>
-    ${settings.clinic_phone ? `<div style="font-size: 11px; color: #64748b; margin-top: 2px;">Phone: ${settings.clinic_phone}</div>` : ''}
-    ${settings.clinic_address ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 2px; max-width: 320px; margin-left: auto; margin-right: auto;">${settings.clinic_address}</div>` : ''}
+    <div class="clinic">${settings?.clinic_name || "Dr. Mahe's Dentistry"}</div>
+    <div class="doctor">${settings?.doctor_name || "Dr. Mahe"}</div>
+    ${settings?.clinic_phone ? `<div style="font-size: 11px; color: #64748b; margin-top: 2px;">Phone: ${settings.clinic_phone}</div>` : ''}
+    ${settings?.clinic_address ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 2px; max-width: 320px; margin-left: auto; margin-right: auto;">${settings.clinic_address}</div>` : ''}
   </div>
 
   <div class="meta-box">
@@ -746,9 +746,9 @@ function generateReceiptHTML(bill, treatments = [], settings) {
   </table>
 
   <div class="total-box">
-    <div class="row grand-total"><span>Total Charge</span><span>${settings.currency || '₹'}${bill.total_amount}</span></div>
-    <div class="row"><span>Amount Paid</span><span class="paid">${settings.currency || '₹'}${bill.paid_amount}</span></div>
-    <div class="row" style="border-top: 1px solid #f1f5f9; padding-top: 8px;"><span>Balance Due</span><span class="balance">${settings.currency || '₹'}${bill.balance}</span></div>
+    <div class="row grand-total"><span>Total Charge</span><span>${settings?.currency || '₹'}${bill.total_amount}</span></div>
+    <div class="row"><span>Amount Paid</span><span class="paid">${settings?.currency || '₹'}${bill.paid_amount}</span></div>
+    <div class="row" style="border-top: 1px solid #f1f5f9; padding-top: 8px;"><span>Balance Due</span><span class="balance">${settings?.currency || '₹'}${bill.balance}</span></div>
     <div class="row"><span>Payment Method</span><span style="text-transform: capitalize; font-weight: 600; color: #1e293b;">${bill.payment_method}</span></div>
   </div>
 
@@ -759,7 +759,7 @@ function generateReceiptHTML(bill, treatments = [], settings) {
   ` : ''}
 
   <div class="footer">
-    Thank you for choosing ${settings.clinic_name || "Dr. Mahe's Dentistry"}!<br>
+    Thank you for choosing ${settings?.clinic_name || "Dr. Mahe's Dentistry"}!<br>
     Wish you a healthy, beautiful smile.
   </div>
 </body>

@@ -20,7 +20,9 @@ export default function Settings() {
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
-    getSettings().then(s => setValues(s))
+    getSettings()
+      .then(s => setValues(s && typeof s === 'object' ? s : {}))
+      .catch(e => console.error('Failed to load settings:', e))
   }, [])
 
   async function handleSave() {
