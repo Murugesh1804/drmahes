@@ -23,6 +23,7 @@ const PORT = process.env.PORT || 5000
 const ALLOWED_ORIGINS = [
   'https://portal.drmahesdentistry.in',
   'https://drmahesdentistry.in',
+  'https://www.drmahesdentistry.in',
   'http://localhost:5173',   // Vite dev server
   'http://localhost:5000',
 ]
