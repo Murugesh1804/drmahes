@@ -11,8 +11,9 @@
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
@@ -20,67 +21,68 @@
     color: #0f172a;
   }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+  /* Premium custom scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
-    border-radius: 3px;
+    border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 }
 
 @layer components {
-  /* ── Buttons ──────────────────────────────────────────────── */
+  /* ── Buttons ─────────────────────────────────────────────── */
   .btn {
     @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm
-           transition-all duration-150 cursor-pointer select-none min-h-[44px]
+           transition-all duration-150 cursor-pointer select-none min-h-[40px]
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700 active:scale-[0.98]
-           shadow-sm hover:shadow-md;
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 active:scale-[0.97]
+           shadow-sm hover:shadow-md shadow-primary-900/10;
   }
   .btn-secondary {
     @apply btn bg-white text-slate-700 border border-slate-200
-           hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98];
+           hover:bg-slate-50 hover:border-slate-300 active:scale-[0.97]
+           shadow-sm;
   }
   .btn-danger {
-    @apply btn bg-red-500 text-white hover:bg-red-600 active:scale-[0.98];
+    @apply btn bg-red-500 text-white hover:bg-red-600 active:scale-[0.97]
+           shadow-sm hover:shadow-md shadow-red-900/10;
   }
   .btn-ghost {
     @apply btn bg-transparent text-slate-600 hover:bg-slate-100;
   }
   .btn-lg {
-    @apply px-6 py-4 text-base min-h-[56px] rounded-2xl;
+    @apply px-6 py-3.5 text-base min-h-[52px] rounded-2xl;
   }
   .btn-icon {
-    @apply p-2.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer;
+    @apply p-2.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer text-slate-500
+           hover:text-slate-700;
   }
 
-  /* ── Cards ────────────────────────────────────────────────── */
+  /* ── Cards ───────────────────────────────────────────────── */
   .card {
-    @apply bg-white rounded-2xl shadow-sm border border-slate-100 p-5;
+    @apply bg-white rounded-2xl shadow-sm border border-slate-100/80 p-5;
   }
   .card-hover {
-    @apply card cursor-pointer hover:shadow-md hover:border-primary-200
-           transition-all duration-150 active:scale-[0.99];
+    @apply card cursor-pointer hover:shadow-md hover:border-primary-200/60
+           transition-all duration-200 active:scale-[0.99];
   }
 
-  /* ── Form inputs ──────────────────────────────────────────── */
+  /* ── Form inputs ─────────────────────────────────────────── */
   .input {
-    @apply w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800
+    @apply w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800
            bg-white placeholder-slate-400
-           focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent
+           focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400
            transition-all duration-150;
   }
   .input-lg {
-    @apply input text-base py-4 rounded-2xl;
+    @apply input text-base py-3.5 rounded-2xl;
   }
   .label {
-    @apply block text-sm font-semibold text-slate-600 mb-1.5;
+    @apply block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide;
   }
   .select {
     @apply input appearance-none cursor-pointer;
@@ -89,54 +91,54 @@
     @apply input resize-none;
   }
 
-  /* ── Status badges ────────────────────────────────────────── */
+  /* ── Status badges ───────────────────────────────────────── */
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold;
   }
   .badge-waiting    { @apply badge bg-amber-100 text-amber-700; }
   .badge-progress   { @apply badge bg-blue-100  text-blue-700; }
-  .badge-done       { @apply badge bg-green-100 text-green-700; }
+  .badge-done       { @apply badge bg-emerald-100 text-emerald-700; }
   .badge-cancelled  { @apply badge bg-slate-100 text-slate-500; }
-  .badge-paid       { @apply badge bg-green-100 text-green-700; }
+  .badge-paid       { @apply badge bg-emerald-100 text-emerald-700; }
   .badge-partial    { @apply badge bg-orange-100 text-orange-700; }
   .badge-pending    { @apply badge bg-red-100   text-red-700; }
 
-  /* ── Page layout ──────────────────────────────────────────── */
+  /* ── Page layout ─────────────────────────────────────────── */
   .page-header {
-    @apply flex items-center justify-between mb-6;
+    @apply flex items-center justify-between mb-6 gap-3;
   }
   .page-title {
-    @apply text-2xl font-bold text-slate-800;
+    @apply text-xl font-bold text-slate-800 tracking-tight;
   }
   .page-sub {
-    @apply text-sm text-slate-500 mt-0.5;
+    @apply text-sm text-slate-400 mt-0.5;
   }
 
-  /* ── Sidebar item ─────────────────────────────────────────── */
+  /* ── Sidebar nav item ────────────────────────────────────── */
   .nav-item {
-    @apply flex items-center gap-3 px-3 py-3 rounded-xl text-slate-400
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400
            font-medium text-sm cursor-pointer transition-all duration-150
-           hover:bg-white/10 hover:text-white select-none;
+           hover:bg-white/10 hover:text-slate-200 select-none;
   }
   .nav-item.active {
-    @apply bg-primary-600 text-white shadow-lg shadow-primary-900/30;
+    @apply bg-primary-600/90 text-white shadow-lg shadow-primary-900/40;
   }
 
-  /* ── Stat card ────────────────────────────────────────────── */
+  /* ── Stat card ───────────────────────────────────────────── */
   .stat-card {
     @apply card flex items-center gap-4;
   }
   .stat-icon {
-    @apply w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0;
+    @apply w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0;
   }
   .stat-value {
-    @apply text-3xl font-bold text-slate-800 leading-none;
+    @apply text-2xl font-bold text-slate-800 leading-none tracking-tight;
   }
   .stat-label {
-    @apply text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1;
+    @apply text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1;
   }
 
-  /* ── Table ────────────────────────────────────────────────── */
+  /* ── Table ───────────────────────────────────────────────── */
   .tbl {
     @apply w-full text-sm;
   }
@@ -144,19 +146,19 @@
     @apply border-b border-slate-100;
   }
   .tbl th {
-    @apply px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider;
+    @apply px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider;
   }
   .tbl td {
-    @apply px-4 py-3 text-slate-700 border-b border-slate-50;
-  }
-  .tbl tbody tr:hover td {
-    @apply bg-slate-50;
+    @apply px-4 py-3 text-slate-700 border-b border-slate-50/80;
   }
   .tbl tbody tr:last-child td {
     @apply border-0;
   }
+  .tbl tbody tr:hover td {
+    @apply bg-slate-50/80;
+  }
 
-  /* ── Search bar ───────────────────────────────────────────── */
+  /* ── Search bar ──────────────────────────────────────────── */
   .search-wrap {
     @apply relative flex-1;
   }
@@ -167,18 +169,41 @@
     @apply input pl-10;
   }
 
-  /* ── Divider ──────────────────────────────────────────────── */
+  /* ── Divider ─────────────────────────────────────────────── */
   .divider {
-    @apply border-t border-slate-100 my-5;
+    @apply border-t border-slate-100 my-4;
   }
 
-  /* ── Empty state ──────────────────────────────────────────── */
+  /* ── Empty state ─────────────────────────────────────────── */
   .empty-state {
     @apply flex flex-col items-center justify-center py-20 text-center text-slate-400;
   }
+
+  /* ── Skeleton loading ────────────────────────────────────── */
+  .skeleton {
+    @apply bg-slate-200 rounded-xl animate-pulse;
+  }
 }
 
-/* Kiosk mode full page */
+/* ── Custom Animations ─────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in  { animation: fadeIn  0.25s ease forwards; }
+.animate-slide-in { animation: slideIn 0.25s ease forwards; }
+.animate-scale-in { animation: scaleIn 0.2s ease forwards; }
+
+/* ── Kiosk mode full page ──────────────────────────────────── */
 .kiosk-page {
   position: fixed;
   inset: 0;
@@ -187,9 +212,19 @@
   overflow-y: auto;
 }
 
-/* Print styles */
+/* ── Print styles ──────────────────────────────────────────── */
 @media print {
   body * { visibility: hidden; }
   .print-area, .print-area * { visibility: visible; }
   .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+}
+
+/* ── Tablet-specific layout tweaks ────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .page-header {
+    @apply flex-wrap;
+  }
+  .stat-value {
+    @apply text-xl;
+  }
 }

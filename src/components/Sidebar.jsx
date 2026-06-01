@@ -1,7 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Calendar, Activity,
-  Receipt, ListOrdered, Monitor, Settings, X, LogOut
+  Receipt, ListOrdered, Monitor, Settings, X, LogOut,
+  ShieldCheck
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 
@@ -19,76 +20,106 @@ export default function Sidebar({ isOpen, onClose }) {
   const { settings, logout } = useApp()
 
   return (
-    <aside
-      className={`fixed md:relative inset-y-0 left-0 z-50 flex flex-col w-60 flex-shrink-0 h-full transition-transform duration-300 transform ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      } md:translate-x-0`}
-      style={{ background: '#0f172a' }}
-    >
-      {/* Logo */}
-      <div className="px-5 py-6 border-b border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img
-            src="/logo.png"
-            className="w-10 h-10 object-contain rounded-xl bg-white/10 p-1 flex-shrink-0"
-            alt="Logo"
-            onError={(e) => { e.target.style.display = 'none' }}
-          />
-          <div>
-            <p className="text-white font-bold text-sm leading-tight line-clamp-1">
-              {settings?.clinic_name || 'Dental Clinic'}
-            </p>
-            <p className="text-slate-500 text-xs mt-0.5 line-clamp-1">
-              {settings?.doctor_name || 'Management'}
-            </p>
+    <>
+      {/* Backdrop overlay (mobile only) */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      <aside
+        className={`
+          fixed md:relative inset-y-0 left-0 z-50
+          flex flex-col w-60 flex-shrink-0 h-full
+          transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+        style={{ background: 'linear-gradient(180deg, #0c1525 0%, #0f1e35 100%)' }}
+      >
+        {/* ── Logo & Clinic Name ─────────────────────────── */}
+        <div className="px-4 py-5 border-b border-white/8 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 ring-1 ring-white/10">
+              <img
+                src="/logo.png"
+                className="w-7 h-7 object-contain"
+                alt="Logo"
+                onError={(e) => { e.target.style.display = 'none' }}
+              />
+            </div>
+            <div className="min-w-0">
+              <p className="text-white font-bold text-sm leading-tight line-clamp-1 tracking-tight">
+                {settings?.clinic_name || "Dr. Mahe's"}
+              </p>
+              <p className="text-slate-500 text-[11px] mt-0.5 font-medium line-clamp-1">
+                {settings?.doctor_name || 'Management'}
+              </p>
+            </div>
+          </div>
+          {/* Close button — mobile only */}
+          <button
+            onClick={onClose}
+            className="md:hidden text-slate-500 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* ── Navigation ─────────────────────────────────── */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-3 mb-3">
+            Main Menu
+          </p>
+          {navItems.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={() => onClose?.()}
+              className={({ isActive }) =>
+                `nav-item ${isActive ? 'active' : ''}`
+              }
+            >
+              <Icon size={17} strokeWidth={2} />
+              <span>{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* ── Bottom Actions ──────────────────────────────── */}
+        <div className="px-3 pb-5 border-t border-white/8 pt-3 space-y-0.5">
+          <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-3 mb-2">
+            System
+          </p>
+          <NavLink
+            to="/settings"
+            onClick={() => onClose?.()}
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            <Settings size={17} strokeWidth={2} />
+            <span>Settings</span>
+          </NavLink>
+
+          <button
+            id="btn-logout"
+            onClick={() => {
+              if (confirm('Log out of CMS portal?')) logout()
+            }}
+            className="nav-item w-full text-left border-0 bg-transparent text-red-400/70 hover:text-red-300 hover:bg-red-500/10"
+          >
+            <LogOut size={17} strokeWidth={2} />
+            <span>Log Out</span>
+          </button>
+
+          {/* Security badge */}
+          <div className="flex items-center gap-2 px-3 pt-3 mt-1 border-t border-white/5">
+            <ShieldCheck size={12} className="text-emerald-500 flex-shrink-0" />
+            <span className="text-[10px] text-slate-600 font-medium">JWT Secured Session</span>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="md:hidden text-slate-400 hover:text-white p-1"
-        >
-          <X size={20} />
-        </button>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `nav-item ${isActive ? 'active' : ''}`
-            }
-          >
-            <Icon size={18} strokeWidth={2} />
-            <span>{label}</span>
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Bottom */}
-      <div className="px-3 pb-5 border-t border-white/10 pt-3 space-y-1">
-        <NavLink
-          to="/settings"
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-          <Settings size={18} strokeWidth={2} />
-          <span>Settings</span>
-        </NavLink>
-        <button
-          id="btn-logout"
-          onClick={() => {
-            if (confirm('Are you sure you want to log out of the CMS portal?')) {
-              logout()
-            }
-          }}
-          className="nav-item w-full text-left bg-transparent border-0 cursor-pointer text-slate-400 hover:text-white flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-sm transition-all duration-150 hover:bg-white/10 select-none"
-        >
-          <LogOut size={18} strokeWidth={2} />
-          <span>Logout</span>
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
 }

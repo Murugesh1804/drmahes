@@ -41,11 +41,13 @@ export default function Settings() {
     setBacking(true)
     try {
       const result = await createBackup()
-      if (result.success) {
-        notify(`Backup saved to: ${result.path}`)
+      if (result && result.message) {
+        notify(result.message)
       } else {
-        notify('Backup cancelled', 'error')
+        notify('Data is stored in MongoDB Atlas — use Atlas dashboard to export.')
       }
+    } catch (e) {
+      notify('Backup info unavailable', 'error')
     } finally { setBacking(false) }
   }
 

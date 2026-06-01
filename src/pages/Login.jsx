@@ -11,7 +11,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!password) {
       setError('Please enter your portal password')
@@ -21,17 +21,15 @@ export default function Login() {
     setIsSubmitting(true)
     setError('')
 
-    // Slight timeout for a smooth feeling
-    setTimeout(() => {
-      const success = login(password)
-      setIsSubmitting(false)
-      if (success) {
-        notify('Welcome back! Portal unlocked.')
-      } else {
-        setError('Invalid security password')
-        setPassword('')
-      }
-    }, 450)
+    const result = await login(password)
+    setIsSubmitting(false)
+
+    if (result.success) {
+      notify('Welcome back! Portal unlocked.')
+    } else {
+      setError(result.error || 'Invalid security password')
+      setPassword('')
+    }
   }
 
   return (

@@ -111,28 +111,40 @@ let connected = false
 async function initDatabase() {
   if (connected) return mongoose.connection
 
+  // Low-RAM VPS optimizations
+  mongoose.set('bufferCommands', false) // Fail fast if DB not connected
+
   try {
-    console.log(`Connecting to MongoDB at: ${MONGODB_URI}`)
-    await mongoose.connect(MONGODB_URI)
+    console.log(`[db] Connecting to MongoDB...`)
+    await mongoose.connect(MONGODB_URI, {
+      maxPoolSize: 3,          // Limit connections (saves RAM on small VPS)
+      serverSelectionTimeoutMS: 10000, // 10s timeout
+      socketTimeoutMS: 45000,
+      heartbeatFrequencyMS: 30000,
+    })
     connected = true
-    console.log('MongoDB connection established successfully.')
+    console.log('[db] MongoDB connected successfully.')
 
     await seedSettings()
   } catch (err) {
-    console.error('Failed to connect to MongoDB:', err)
+    console.error('[db] Failed to connect to MongoDB:', err.message)
+    // Don't crash — let server run, routes will return 500 until DB connects
   }
 
   return mongoose.connection
 }
 
 async function seedSettings() {
+  const bcrypt = require('bcryptjs')
+  const hashedPassword = await bcrypt.hash('admin123', 10)
+
   const defaults = [
     { key: 'clinic_name',    value: "Dr. Mahe's Dentistry" },
     { key: 'doctor_name',    value: 'Dr. Mahe' },
     { key: 'clinic_phone',   value: '+91 94440 12345' },
     { key: 'clinic_address', value: '1st Floor, Kundrathur Main Rd, Jaya Nagar, Porur, Chennai - 600116' },
     { key: 'currency',       value: '₹' },
-    { key: 'cms_password',    value: 'admin123' }
+    { key: 'cms_password',    value: hashedPassword }
   ]
 
   for (const item of defaults) {

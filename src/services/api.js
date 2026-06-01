@@ -1,16 +1,35 @@
 // src/services/api.js
 // Hybrid client: delegates queries to Electron IPC (if present) or falls back to REST API.
+// All web requests include JWT Authorization header. 401 triggers auto-logout.
 
 const BASE_URL = '/api'
 const isElectron = typeof window !== 'undefined' && window.electronAPI !== undefined
 
+/** Get stored JWT token from sessionStorage */
+function getToken() {
+  return typeof sessionStorage !== 'undefined'
+    ? sessionStorage.getItem('cms_token')
+    : null
+}
+
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`
+  const token = getToken()
   const headers = {
     'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...options.headers,
   }
+
   const response = await fetch(url, { ...options, headers })
+
+  // Token expired or invalid — trigger auto-logout
+  if (response.status === 401) {
+    window.dispatchEvent(new CustomEvent('cms:session-expired'))
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.error || 'Session expired')
+  }
+
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: 'Unknown API error' }))
     throw new Error(err.error || `HTTP error ${response.status}`)
@@ -158,8 +177,8 @@ export const setSetting = (key, val) => {
 // ── Backup ─────────────────────────────────────────────────
 export const createBackup = async () => {
   if (isElectron) return window.electronAPI.createBackup()
-  window.location.href = `${BASE_URL}/backup/download`
-  return { success: true, path: 'Downloads folder' }
+  // Web mode: call API and return info message
+  return request('/backup/download')
 }
 
 // ── Kiosk (Responsive HTML5 Fullscreen alternative) ────────

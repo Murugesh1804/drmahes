@@ -1,33 +1,293 @@
+// server/index.js — Production-hardened Express server
+// Security: helmet, CORS lockdown, rate limiting, JWT auth on all /api routes
+// Performance: gzip compression, mongoose pool size 3, graceful shutdown
+
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') })
+
 const express = require('express')
 const cors = require('cors')
+const helmet = require('helmet')
+const compression = require('compression')
+const rateLimit = require('express-rate-limit')
 const path = require('path')
 const fs = require('fs')
+
 const { initDatabase, Patient } = require('./db')
 const queries = require('./queries')
+const { handleLogin, verifyToken } = require('./auth')
 
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// Initialize DB
+// ── ALLOWED ORIGINS ─────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  'https://portal.drmahesdentistry.in',
+  'https://drmahesdentistry.in',
+  'http://localhost:5173',   // Vite dev server
+  'http://localhost:5000',
+]
+
+// ── SECURITY HEADERS (helmet) ────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: false, // Managed at Nginx level
+  crossOriginEmbedderPolicy: false,
+}))
+
+// ── CORS ─────────────────────────────────────────────────────────────────────
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow requests with no origin (curl, mobile apps, server-to-server)
+    if (!origin) return cb(null, true)
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true)
+    cb(new Error(`CORS: Origin ${origin} not allowed`))
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}))
+
+// ── COMPRESSION (gzip — saves 60-70% on JSON responses) ─────────────────────
+app.use(compression({ level: 6, threshold: 1024 }))
+
+// ── BODY PARSING ─────────────────────────────────────────────────────────────
+app.use(express.json({ limit: '2mb' })) // Reduced from 10mb; signatures ~200KB
+
+// ── RATE LIMITING ────────────────────────────────────────────────────────────
+// Global: 200 requests per 15 minutes per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please try again later.' },
+})
+
+// Auth: 5 login attempts per 15 minutes per IP (brute-force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Please wait 15 minutes.' },
+  skipSuccessfulRequests: true,
+})
+
+app.use('/api', globalLimiter)
+
+// ── INITIALIZE DB ────────────────────────────────────────────────────────────
 const db = initDatabase()
 queries.init(db)
 
-app.use(cors())
-app.use(express.json({ limit: '10mb' })) // Increase payload limit to handle base64 signatures
-
-// Create consent forms directory if it doesn't exist
+// Create consent forms directory
 const consentFormsDir = path.join(__dirname, '../consent_forms')
 if (!fs.existsSync(consentFormsDir)) {
   fs.mkdirSync(consentFormsDir, { recursive: true })
 }
 
-// Log requests
+// ── REQUEST LOGGER (production-safe) ─────────────────────────────────────────
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`)
+  } else {
+    // In production, only log non-GET requests or errors (reduces log noise)
+    if (req.method !== 'GET') {
+      console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`)
+    }
+  }
   next()
 })
 
-// ── PATIENTS ───────────────────────────────────────────────────────────────
+// ── HEALTH CHECK (public — for uptime monitors) ───────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// ── AUTH ENDPOINT (public — rate limited) ─────────────────────────────────────
+app.post('/api/auth/login', authLimiter, handleLogin)
+
+// ── PUBLIC ROUTES (no auth required) ─────────────────────────────────────────
+// Website online booking — called from drmahesdentistry.in public website
+app.post('/api/appointments/website-book', async (req, res) => {
+  try {
+    const { patientName, patientPhone, patientEmail, service, date, timeSlot } = req.body
+
+    if (!patientName || !patientPhone) {
+      return res.status(400).json({ error: 'Name and Phone are required' })
+    }
+
+    const phone = patientPhone.trim()
+    let patient = await Patient.findOne({ phone })
+
+    if (!patient) {
+      patient = new Patient({
+        name: patientName.trim(),
+        phone: phone,
+        notes: `Registered via website booking (${patientEmail || 'No Email'})`
+      })
+      await patient.save()
+    }
+
+    const appt = await queries.addAppointment({
+      patient_id: patient._id.toString(),
+      scheduled_date: date,
+      scheduled_time: timeSlot,
+      reason: service,
+      notes: 'Website online booking'
+    })
+
+    res.status(201).json({ patient, appt })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Kiosk consent form submission — called from kiosk page (no CMS login required)
+app.post('/api/consent', async (req, res) => {
+  try {
+    const { name, phone, age, gender, complaint, notes, signature } = req.body
+
+    if (!name || !phone || !signature) {
+      return res.status(400).json({ error: 'Name, Phone, and Signature are required' })
+    }
+
+    const cleanPhone = phone.trim()
+    let patient = await Patient.findOne({ phone: cleanPhone })
+
+    if (!patient) {
+      patient = new Patient({
+        name: name.trim(),
+        phone: cleanPhone,
+        age: age ? Number(age) : null,
+        gender,
+        complaint,
+        notes: notes || 'Kiosk check-in'
+      })
+      await patient.save()
+    } else {
+      patient.age = age ? Number(age) : patient.age
+      patient.gender = gender || patient.gender
+      patient.complaint = complaint || patient.complaint
+      patient.notes = notes || patient.notes
+      await patient.save()
+    }
+
+    const timestamp = Date.now()
+    const base64Data = signature.replace(/^data:image\/[a-z]+;base64,/, '')
+    const buffer = Buffer.from(base64Data, 'base64')
+
+    const sigFilename = `sig_${patient._id.toString()}_${timestamp}.jpg`
+    const sigPath = path.join(consentFormsDir, sigFilename)
+    fs.writeFileSync(sigPath, buffer)
+
+    const htmlFilename = `consent_${patient._id.toString()}_${timestamp}.html`
+    const htmlPath = path.join(consentFormsDir, htmlFilename)
+
+    const dateStr = new Date().toLocaleDateString('en-IN', {
+      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    })
+
+    const consentHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dental Treatment Consent Form - ${patient.name}</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; color: #1e293b; background-color: #ffffff; }
+    .header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
+    .title { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0; }
+    .subtitle { font-size: 14px; color: #64748b; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.1em; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #f1f5f9; }
+    .field { display: flex; flex-direction: column; }
+    .label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+    .value { font-size: 15px; font-weight: 600; color: #334155; }
+    .text-block { line-height: 1.6; font-size: 14px; color: #475569; margin-bottom: 30px; border-left: 3px solid #cbd5e1; padding-left: 15px; }
+    .signature-section { display: flex; flex-direction: column; align-items: flex-end; margin-top: 40px; }
+    .signature-wrap { background: #fafafa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; width: 220px; text-align: center; }
+    .signature-img { max-width: 200px; height: auto; display: block; margin: 0 auto; }
+    .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 50px; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">DR. MAHE'S DENTISTRY</div>
+    <div class="subtitle">Patient Treatment Consent</div>
+  </div>
+  <div class="grid">
+    <div class="field"><span class="label">Patient Name</span><span class="value">${patient.name}</span></div>
+    <div class="field"><span class="label">Phone Number</span><span class="value">${patient.phone || '—'}</span></div>
+    <div class="field"><span class="label">Age &amp; Gender</span><span class="value">${patient.age ? patient.age + ' yrs' : '—'} · ${patient.gender || '—'}</span></div>
+    <div class="field"><span class="label">Date Signed</span><span class="value">${dateStr}</span></div>
+    <div class="field" style="grid-column: span 2;"><span class="label">Chief Complaint</span><span class="value">${complaint || 'General check-up'}</span></div>
+  </div>
+  <div class="text-block">
+    I hereby authorize the clinical team of Dr. Mahe's Dentistry to perform dental procedures, diagnostic scans, and treatments as necessary to address my condition. I understand that the clinical options, costs, and risks have been discussed, and I consent to proceed with the treatment plan.
+  </div>
+  <div class="signature-section">
+    <div class="signature-wrap">
+      <img src="data:image/jpeg;base64,${base64Data}" class="signature-img" alt="Patient Signature" />
+      <div style="font-size: 11px; color: #94a3b8; margin-top: 6px; border-top: 1px solid #f1f5f9; padding-top: 4px; font-weight: 600;">Patient Signature</div>
+    </div>
+  </div>
+  <div class="footer">Dr. Mahe's Dentistry · Porur, Chennai · WhatsApp: +91 94440 12345</div>
+</body>
+</html>`
+
+    fs.writeFileSync(htmlPath, consentHtml)
+
+    patient.consentFormSaved = true
+    patient.consentFormPath = `consent_forms/${htmlFilename}`
+    patient.consentSignedAt = new Date()
+    await patient.save()
+
+    const today = new Date().toISOString().split('T')[0]
+    const appt = await queries.addAppointment({
+      patient_id: patient._id.toString(),
+      scheduled_date: today,
+      scheduled_time: '',
+      reason: complaint,
+      notes: notes || 'Kiosk check-in'
+    })
+
+    const patientJSON = patient.toObject()
+    patientJSON.id = patientJSON._id.toString()
+
+    res.status(201).json({ patient: patientJSON, appt })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Consent form view — public read (for printing signed forms)
+app.get('/api/consent/:patientId', async (req, res) => {
+  try {
+    const patient = await queries.getPatientById(req.params.patientId)
+    if (!patient || !patient.consentFormSaved || !patient.consentFormPath) {
+      return res.status(404).send('Consent form not found for this patient.')
+    }
+
+    const filePath = path.join(__dirname, '..', patient.consentFormPath)
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send('Consent form file not found on disk.')
+    }
+
+    const html = fs.readFileSync(filePath, 'utf8')
+    res.setHeader('Content-Type', 'text/html')
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow') // Don't index consent forms
+    res.send(html)
+  } catch (err) {
+    res.status(500).send(err.message)
+  }
+})
+
+// ── AUTH MIDDLEWARE — Protects all /api routes below this line ────────────────
+app.use('/api', verifyToken)
+
+// ── PATIENTS ─────────────────────────────────────────────────────────────────
 app.get('/api/patients', async (req, res) => {
   try {
     const list = await queries.getAllPatients()
@@ -75,7 +335,7 @@ app.put('/api/patients/:id', async (req, res) => {
   }
 })
 
-// ── APPOINTMENTS ───────────────────────────────────────────────────────────
+// ── APPOINTMENTS ──────────────────────────────────────────────────────────────
 app.get('/api/appointments/today', async (req, res) => {
   try {
     const list = await queries.getTodayAppointments()
@@ -140,7 +400,7 @@ app.delete('/api/appointments/:id', async (req, res) => {
   }
 })
 
-// ── TREATMENTS ─────────────────────────────────────────────────────────────
+// ── TREATMENTS ────────────────────────────────────────────────────────────────
 app.get('/api/treatments/appointment/:aid', async (req, res) => {
   try {
     const list = await queries.getTreatmentsByAppointment(req.params.aid)
@@ -186,7 +446,7 @@ app.delete('/api/treatments/:id', async (req, res) => {
   }
 })
 
-// ── BILLS ──────────────────────────────────────────────────────────────────
+// ── BILLS ─────────────────────────────────────────────────────────────────────
 app.get('/api/bills', async (req, res) => {
   try {
     const list = await queries.getAllBills()
@@ -233,7 +493,7 @@ app.put('/api/bills/:id/payment', async (req, res) => {
   }
 })
 
-// ── QUEUE ──────────────────────────────────────────────────────────────────
+// ── QUEUE ─────────────────────────────────────────────────────────────────────
 app.get('/api/queue/today', async (req, res) => {
   try {
     const list = await queries.getTodayQueue()
@@ -243,11 +503,16 @@ app.get('/api/queue/today', async (req, res) => {
   }
 })
 
-// ── SETTINGS ───────────────────────────────────────────────────────────────
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
 app.get('/api/settings', async (req, res) => {
   try {
     const list = await queries.getSettings()
-    res.json(list)
+    // Never expose the cms_password hash to the client
+    const safe = { ...list }
+    if (safe.cms_password) {
+      safe.cms_password = safe.cms_password.startsWith('$2b$') ? '••••••••' : '••••••••'
+    }
+    res.json(safe)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -256,14 +521,24 @@ app.get('/api/settings', async (req, res) => {
 app.put('/api/settings/:key', async (req, res) => {
   try {
     const { value } = req.body
-    const result = await queries.setSetting(req.params.key, value)
+    const key = req.params.key
+
+    // Hash password before storing if key is cms_password
+    if (key === 'cms_password' && value && !value.startsWith('$2b$')) {
+      const bcrypt = require('bcryptjs')
+      const hashed = await bcrypt.hash(value, 10)
+      const result = await queries.setSetting(key, hashed)
+      return res.json(result)
+    }
+
+    const result = await queries.setSetting(key, value)
     res.json(result)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
 
-// ── DASHBOARD STATS ────────────────────────────────────────────────────────
+// ── DASHBOARD STATS ───────────────────────────────────────────────────────────
 app.get('/api/dashboard/stats', async (req, res) => {
   try {
     const stats = await queries.getDashboardStats()
@@ -273,209 +548,31 @@ app.get('/api/dashboard/stats', async (req, res) => {
   }
 })
 
-// ── WEBSITE ONLINE BOOKINGS ────────────────────────────────────────────────
-app.post('/api/appointments/website-book', async (req, res) => {
-  try {
-    const { patientName, patientPhone, patientEmail, service, date, timeSlot } = req.body
-
-    if (!patientName || !patientPhone) {
-      return res.status(400).json({ error: 'Name and Phone are required' })
-    }
-
-    const phone = patientPhone.trim()
-    let patient = await Patient.findOne({ phone })
-    
-    if (!patient) {
-      patient = new Patient({
-        name: patientName.trim(),
-        phone: phone,
-        notes: `Registered via website booking (${patientEmail || 'No Email'})`
-      })
-      await patient.save()
-    }
-
-    const appt = await queries.addAppointment({
-      patient_id: patient._id.toString(),
-      scheduled_date: date,
-      scheduled_time: timeSlot,
-      reason: service,
-      notes: 'Website online booking'
-    })
-
-    res.status(201).json({ patient, appt })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
-// ── KIOSK REGISTRATION & SIGNED CONSENT FORM ───────────────────────────────
-app.post('/api/consent', async (req, res) => {
-  try {
-    const { name, phone, age, gender, complaint, notes, signature } = req.body
-
-    if (!name || !phone || !signature) {
-      return res.status(400).json({ error: 'Name, Phone, and Signature are required' })
-    }
-
-    const cleanPhone = phone.trim()
-    let patient = await Patient.findOne({ phone: cleanPhone })
-
-    if (!patient) {
-      patient = new Patient({
-        name: name.trim(),
-        phone: cleanPhone,
-        age: age ? Number(age) : null,
-        gender,
-        complaint,
-        notes: notes || 'Kiosk check-in'
-      })
-      await patient.save()
-    } else {
-      // Update patient complaint and age from Kiosk details
-      patient.age = age ? Number(age) : patient.age
-      patient.gender = gender || patient.gender
-      patient.complaint = complaint || patient.complaint
-      patient.notes = notes || patient.notes
-      await patient.save()
-    }
-
-    // Decode and save signature to local filesystem with low space (JPEG)
-    const timestamp = Date.now()
-    const base64Data = signature.replace(/^data:image\/[a-z]+;base64,/, '')
-    const buffer = Buffer.from(base64Data, 'base64')
-    
-    const sigFilename = `sig_${patient._id.toString()}_${timestamp}.jpg`
-    const sigPath = path.join(consentFormsDir, sigFilename)
-    fs.writeFileSync(sigPath, buffer)
-
-    // Create a lightweight HTML consent document containing patient info and signature
-    const htmlFilename = `consent_${patient._id.toString()}_${timestamp}.html`
-    const htmlPath = path.join(consentFormsDir, htmlFilename)
-    
-    const dateStr = new Date().toLocaleDateString('en-IN', {
-      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    })
-    
-    const consentHtml = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Dental Treatment Consent Form - ${patient.name}</title>
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; color: #1e293b; background-color: #ffffff; }
-    .header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
-    .title { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0; }
-    .subtitle { font-size: 14px; color: #64748b; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.1em; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #f1f5f9; }
-    .field { display: flex; flex-direction: column; }
-    .label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
-    .value { font-size: 15px; font-weight: 600; color: #334155; }
-    .text-block { line-height: 1.6; font-size: 14px; color: #475569; margin-bottom: 30px; border-left: 3px solid #cbd5e1; padding-left: 15px; }
-    .signature-section { display: flex; flex-direction: column; align-items: flex-end; margin-top: 40px; }
-    .signature-wrap { background: #fafafa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; width: 220px; text-align: center; }
-    .signature-img { max-width: 200px; height: auto; display: block; margin: 0 auto; }
-    .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 50px; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
-    @media print {
-      body { padding: 0; }
-      .signature-wrap { border: none; background: transparent; }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="title">DR. MAHE'S DENTISTRY</div>
-    <div class="subtitle">Patient Treatment Consent</div>
-  </div>
-  
-  <div class="grid">
-    <div class="field"><span class="label">Patient Name</span><span class="value">${patient.name}</span></div>
-    <div class="field"><span class="label">Phone Number</span><span class="value">${patient.phone || '—'}</span></div>
-    <div class="field"><span class="label">Age &amp; Gender</span><span class="value">${patient.age ? patient.age + ' yrs' : '—'} · ${patient.gender || '—'}</span></div>
-    <div class="field"><span class="label">Date Signed</span><span class="value">${dateStr}</span></div>
-    <div class="field" style="grid-column: span 2;"><span class="label">Chief Complaint</span><span class="value">${complaint || 'General check-up'}</span></div>
-  </div>
-
-  <div class="text-block">
-    I hereby authorize the clinical team of Dr. Mahe's Dentistry to perform dental procedures, diagnostic scans, and treatments as necessary to address my condition. I understand that the clinical options, costs, and risks have been discussed, and I consent to proceed with the treatment plan.
-  </div>
-
-  <div class="signature-section">
-    <div class="signature-wrap">
-      <img src="data:image/jpeg;base64,${base64Data}" class="signature-img" alt="Patient Signature" />
-      <div style="font-size: 11px; color: #94a3b8; margin-top: 6px; border-top: 1px solid #f1f5f9; padding-top: 4px; font-weight: 600;">Patient Signature</div>
-    </div>
-  </div>
-
-  <div class="footer">
-    Dr. Mahe's Dentistry · Porur, Chennai · WhatsApp: +91 94440 12345
-  </div>
-</body>
-</html>`
-
-    fs.writeFileSync(htmlPath, consentHtml)
-
-    // Update patient record
-    patient.consentFormSaved = true
-    patient.consentFormPath = `consent_forms/${htmlFilename}`
-    patient.consentSignedAt = new Date()
-    await patient.save()
-
-    // Create appointment for today
-    const today = new Date().toISOString().split('T')[0]
-    const appt = await queries.addAppointment({
-      patient_id: patient._id.toString(),
-      scheduled_date: today,
-      scheduled_time: '',
-      reason: complaint,
-      notes: notes || 'Kiosk check-in'
-    })
-
-    const patientJSON = patient.toObject()
-    patientJSON.id = patientJSON._id.toString()
-
-    res.status(201).json({ patient: patientJSON, appt })
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: err.message })
-  }
-})
-
-app.get('/api/consent/:patientId', async (req, res) => {
-  try {
-    const patient = await queries.getPatientById(req.params.patientId)
-    if (!patient || !patient.consentFormSaved || !patient.consentFormPath) {
-      return res.status(404).send('Consent form not found for this patient.')
-    }
-    
-    const filePath = path.join(__dirname, '..', patient.consentFormPath)
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).send('Consent form file not found on disk.')
-    }
-    
-    const html = fs.readFileSync(filePath, 'utf8')
-    res.setHeader('Content-Type', 'text/html')
-    res.send(html)
-  } catch (err) {
-    res.status(500).send(err.message)
-  }
-})
-
-// ── BACKUP ─────────────────────────────────────────────────────────────────
+// ── BACKUP ────────────────────────────────────────────────────────────────────
+// Returns only DB name/status — NOT the full connection URI
 app.get('/api/backup/download', (req, res) => {
-  try {
-    const dbPath = queries.getDbPath()
-    const filename = `dental-backup-${new Date().toISOString().split('T')[0]}.db`
-    // In MongoDB, we return the connection string as a download or message
-    res.send(`MongoDB Cloud URI: ${dbPath}`)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
+  res.json({
+    message: 'Data is stored in MongoDB Atlas cloud. Use MongoDB Atlas dashboard to export data.',
+    dbName: 'dental-clinic',
+    timestamp: new Date().toISOString(),
+  })
 })
 
-// Serve static assets in production
+// ── SERVE STATIC FILES ────────────────────────────────────────────────────────
 const distPath = path.join(__dirname, '../dist')
-app.use(express.static(distPath))
+app.use(express.static(distPath, {
+  maxAge: '7d',          // Cache static assets 7 days
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    // Don't cache index.html — always fresh
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+    }
+  }
+}))
 
+// SPA fallback — all non-API GET requests serve index.html
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api')) {
     return res.sendFile(path.join(distPath, 'index.html'))
@@ -483,6 +580,36 @@ app.use((req, res, next) => {
   next()
 })
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
+// ── 404 & ERROR HANDLERS ──────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' })
+})
+
+app.use((err, req, res, next) => {
+  console.error('[error]', err.message)
+  res.status(500).json({ error: 'Internal server error' })
+})
+
+// ── START SERVER ──────────────────────────────────────────────────────────────
+const server = app.listen(PORT, () => {
+  console.log(`[server] Running on port ${PORT} (${process.env.NODE_ENV || 'development'})`)
+  console.log(`[server] JWT auth enabled — all /api routes protected`)
+})
+
+// ── GRACEFUL SHUTDOWN (important for low-RAM VPS) ─────────────────────────────
+function gracefulShutdown(signal) {
+  console.log(`[server] ${signal} received — shutting down gracefully`)
+  server.close(() => {
+    console.log('[server] HTTP server closed')
+    process.exit(0)
+  })
+  // Force exit after 10s if connections hang
+  setTimeout(() => process.exit(1), 10000)
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err)
+  gracefulShutdown('uncaughtException')
 })

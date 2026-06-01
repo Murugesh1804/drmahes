@@ -15,11 +15,17 @@ import Settings from './pages/Settings'
 import Login from './pages/Login'
 
 function AppLayout() {
-  const { loadSettings, isAuthenticated } = useApp()
+  const { loadSettings, isAuthenticated, onTokenExpired } = useApp()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => { loadSettings() }, [loadSettings])
+
+  // Listen for JWT expiry events from api.js
+  useEffect(() => {
+    window.addEventListener('cms:session-expired', onTokenExpired)
+    return () => window.removeEventListener('cms:session-expired', onTokenExpired)
+  }, [onTokenExpired])
 
   // Close sidebar on navigate (on mobile)
   useEffect(() => {
