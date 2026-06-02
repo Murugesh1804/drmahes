@@ -5,12 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dr. Mahe's Dentistry — Advanced Dental Care, Porur, Chennai</title>
-  <meta name="description" content="Dr. Maheswari's modern dental clinic in Porur, Chennai. Expert dental implants, root canal, orthodontics, cosmetic dentistry and oral surgery in a comfortable, fully sterilized environment.">
-  <meta name="keywords" content="dentist porur chennai, dental clinic porur, dr maheswari dentist, dental implants chennai, root canal porur, orthodontics braces chennai">
+  <meta name="description"
+    content="Dr. Maheswari's modern dental clinic in Porur, Chennai. Expert dental implants, root canal, orthodontics, cosmetic dentistry and oral surgery in a comfortable, fully sterilized environment.">
+  <meta name="keywords"
+    content="dentist porur chennai, dental clinic porur, dr maheswari dentist, dental implants chennai, root canal porur, orthodontics braces chennai">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <style>
     /* ─── DESIGN TOKENS ──────────────────────────────────────────── */
@@ -30,9 +34,9 @@
       --border-accent: rgba(196, 176, 151, 0.35);
       --white: #FFFFFF;
       --success: #2E7D32;
-      --shadow-sm: 0 2px 12px rgba(0,0,0,0.04);
-      --shadow-md: 0 8px 28px rgba(0,0,0,0.07);
-      --shadow-lg: 0 20px 50px rgba(0,0,0,0.10);
+      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.10);
       --font-heading: 'Poppins', sans-serif;
       --font-body: 'Open Sans', sans-serif;
       --header-height: 80px;
@@ -50,16 +54,27 @@
       --bg-card: #1A1A1A;
       --text-primary: #EEEEEE;
       --text-secondary: #AAAAAA;
-      --border: rgba(255,255,255,0.08);
-      --border-accent: rgba(196,176,151,0.4);
-      --shadow-sm: 0 2px 12px rgba(0,0,0,0.25);
-      --shadow-md: 0 8px 28px rgba(0,0,0,0.35);
-      --shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(196, 176, 151, 0.4);
+      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.5);
     }
 
     /* ─── RESET ──────────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; font-size: 16px; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
     body {
       font-family: var(--font-body);
       background-color: var(--bg-primary);
@@ -68,95 +83,275 @@
       overflow-x: hidden;
       transition: background-color 0.4s ease, color 0.4s ease;
     }
-    h1, h2, h3, h4, h5, h6 {
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
       font-family: var(--font-heading);
       color: var(--text-primary);
       font-weight: 600;
       line-height: 1.2;
     }
-    a { color: inherit; text-decoration: none; transition: color 0.3s ease; }
-    ul { list-style: none; }
-    button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; background: none; border: none; }
-    button { cursor: pointer; }
-    img { max-width: 100%; display: block; }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
 
     /* ─── LAYOUT ─────────────────────────────────────────────────── */
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-    .section-padding { padding: 100px 0; }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .section-padding {
+      padding: 100px 0;
+    }
 
     /* ─── BUTTONS ────────────────────────────────────────────────── */
     .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 13px 30px; font-weight: 600; font-size: 0.82rem; border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 30px;
+      font-weight: 600;
+      font-size: 0.82rem;
+      border-radius: 4px;
       transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
-    .btn-primary { background-color: #111111; color: #FFFFFF; border: 1.5px solid #111111; }
-    .btn-primary:hover { background-color: var(--accent); border-color: var(--accent); color: #111111; }
-    .btn-secondary { background-color: transparent; color: var(--text-primary); border: 1.5px solid var(--border); }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-primary {
+      background-color: #111111;
+      color: #FFFFFF;
+      border: 1.5px solid #111111;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: #111111;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-primary);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
 
     /* ─── HEADER ─────────────────────────────────────────────────── */
     .header {
-      position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
-      background-color: transparent; backdrop-filter: blur(14px);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--header-height);
+      background-color: transparent;
+      backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      z-index: 1000; border-bottom: 1px solid transparent;
+      z-index: 1000;
+      border-bottom: 1px solid transparent;
       transition: background-color 0.35s ease, border-color 0.35s ease;
     }
+
     .header.scrolled {
       background-color: var(--bg-primary);
       border-bottom-color: var(--border);
     }
+
     .nav-container {
-      display: flex; align-items: center; justify-content: space-between; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
     }
-    .logo { display: flex; align-items: center; gap: 12px; }
-    .logo-img { height: 42px; width: auto; object-fit: contain; }
-    .logo-text { font-size: 1.18rem; font-weight: 700; letter-spacing: -0.02em; }
-    .logo-text span { color: var(--accent); font-weight: 400; }
-    .nav-links { display: flex; gap: 30px; align-items: center; }
-    .nav-link { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
-    .nav-link:hover { color: var(--accent); }
-    .nav-book-btn { padding: 9px 20px; margin-left: 6px; }
-    .nav-controls { display: flex; align-items: center; gap: 12px; }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .logo-img {
+      height: 96px;
+      width: auto;
+      object-fit: contain;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+      will-change: transform;
+    }
+
+    .logo-img:hover {
+      transform: scale(1.07);
+      opacity: 0.9;
+    }
+
+    .logo-text {
+      font-size: 1.18rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-text span {
+      color: var(--accent);
+      font-weight: 400;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .nav-link {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .nav-link:hover {
+      color: var(--accent);
+    }
+
+    .nav-book-btn {
+      padding: 9px 20px;
+      margin-left: 6px;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
     .theme-toggle-btn {
-      width: 36px; height: 36px; border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
       border: 1.5px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; transition: border-color 0.3s, background-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: border-color 0.3s, background-color 0.3s;
     }
-    .theme-toggle-btn:hover { border-color: var(--accent); }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--accent);
+    }
 
     /* Hamburger */
     .hamburger {
-      display: none; flex-direction: column; justify-content: center; gap: 5px;
-      width: 38px; height: 38px; border-radius: 4px;
-      border: 1.5px solid var(--border); padding: 9px;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 38px;
+      height: 38px;
+      border-radius: 4px;
+      border: 1.5px solid var(--border);
+      padding: 9px;
       transition: border-color 0.3s;
     }
+
     .hamburger span {
-      display: block; height: 1.5px; background-color: var(--text-primary);
-      transition: all 0.3s ease; border-radius: 2px; transform-origin: center;
+      display: block;
+      height: 1.5px;
+      background-color: var(--text-primary);
+      transition: all 0.3s ease;
+      border-radius: 2px;
+      transform-origin: center;
     }
-    .hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
-    .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    .hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
-    .hamburger:hover { border-color: var(--accent); }
+
+    .hamburger.open span:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+
+    .hamburger.open span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    .hamburger.open span:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+
+    .hamburger:hover {
+      border-color: var(--accent);
+    }
 
     /* Mobile overlay */
     .mobile-nav {
-      display: none; position: fixed;
-      top: var(--header-height); left: 0; right: 0; bottom: 0;
-      background-color: var(--bg-primary); z-index: 998;
-      flex-direction: column; align-items: center; justify-content: center; gap: 28px;
-      opacity: 0; pointer-events: none;
+      display: none;
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--bg-primary);
+      z-index: 998;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity 0.3s ease;
     }
-    .mobile-nav.open { opacity: 1; pointer-events: all; }
-    .mobile-nav .nav-link { font-size: 1.3rem; letter-spacing: 0.12em; }
-    .mobile-nav .btn { min-width: 200px; justify-content: center; margin-top: 8px; }
+
+    .mobile-nav.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .mobile-nav .nav-link {
+      font-size: 1.3rem;
+      letter-spacing: 0.12em;
+    }
+
+    .mobile-nav .btn {
+      min-width: 200px;
+      justify-content: center;
+      margin-top: 8px;
+    }
 
     /* ─── HERO ───────────────────────────────────────────────────── */
     .hero {
@@ -167,409 +362,1162 @@
       display: flex;
       align-items: center;
     }
-    .hero-grid {
-      display: grid; grid-template-columns: 1.1fr 0.9fr;
-      gap: 64px; align-items: center;
-    }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 10px; margin-bottom: 22px;
-      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em;
-      color: var(--accent); font-weight: 700;
-    }
-    .hero-badge::before {
-      content: ''; display: inline-block; width: 28px; height: 1px; background-color: var(--accent);
-    }
-    .hero-title {
-      font-size: 3.6rem; line-height: 1.1; margin-bottom: 22px;
-      letter-spacing: -0.025em; font-weight: 700;
-    }
-    .hero-title em { color: var(--accent); font-style: italic; font-weight: 400; }
-    .hero-desc {
-      font-size: 1rem; color: var(--text-secondary); margin-bottom: 36px;
-      max-width: 540px; line-height: 1.75;
-    }
-    .hero-actions { display: flex; gap: 14px; margin-bottom: 44px; flex-wrap: wrap; }
-    .hero-pills { display: flex; gap: 10px; flex-wrap: wrap; }
-    .hero-pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 16px; border: 1px solid var(--border-accent);
-      border-radius: 100px; font-size: 0.76rem; font-weight: 500;
-      color: var(--text-secondary); background-color: var(--bg-card);
-    }
-    .hero-pill-dot { width: 7px; height: 7px; border-radius: 50%; background-color: var(--accent); flex-shrink: 0; }
 
-    .hero-visual { position: relative; }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .hero-badge::before {
+      content: '';
+      display: inline-block;
+      width: 28px;
+      height: 1px;
+      background-color: var(--accent);
+    }
+
+    .hero-title {
+      font-size: 3.6rem;
+      line-height: 1.1;
+      margin-bottom: 22px;
+      letter-spacing: -0.025em;
+      font-weight: 700;
+    }
+
+    .hero-title em {
+      color: var(--accent);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-bottom: 36px;
+      max-width: 540px;
+      line-height: 1.75;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 44px;
+      flex-wrap: wrap;
+    }
+
+    .hero-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border: 1px solid var(--border-accent);
+      border-radius: 100px;
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background-color: var(--bg-card);
+    }
+
+    .hero-pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .hero-visual {
+      position: relative;
+    }
+
     .hero-img-mask {
-      border-radius: var(--radius); overflow: hidden;
-      box-shadow: var(--shadow-lg); aspect-ratio: 4/5;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 4/5;
       background-color: #d8d4ce;
     }
-    .hero-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
-    .hero-img-mask:hover .hero-img { transform: scale(1.04); }
+
+    .hero-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+
+    .hero-img-mask:hover .hero-img {
+      transform: scale(1.04);
+    }
+
     .hero-float-card {
-      position: absolute; bottom: -24px; left: -32px;
-      background-color: var(--bg-card); border: 1px solid var(--border);
-      padding: 22px 26px; border-radius: 8px;
-      max-width: 265px; box-shadow: var(--shadow-md);
+      position: absolute;
+      bottom: -24px;
+      left: -32px;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 22px 26px;
+      border-radius: 8px;
+      max-width: 265px;
+      box-shadow: var(--shadow-md);
     }
+
     .hero-float-card-title {
-      font-size: 0.86rem; font-weight: 700; margin-bottom: 5px;
-      display: flex; align-items: center; gap: 8px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .hero-float-card-desc { font-size: 0.76rem; color: var(--text-secondary); line-height: 1.55; }
+
+    .hero-float-card-desc {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
 
     /* ─── MARQUEE ────────────────────────────────────────────────── */
     .marquee {
-      background-color: #111111; color: #FFFFFF;
-      padding: 20px 0; overflow: hidden; white-space: nowrap;
+      background-color: #111111;
+      color: #FFFFFF;
+      padding: 20px 0;
+      overflow: hidden;
+      white-space: nowrap;
     }
-    .marquee-content { display: inline-block; animation: marquee 38s linear infinite; }
+
+    .marquee-content {
+      display: inline-block;
+      animation: marquee 38s linear infinite;
+    }
+
     .marquee-text {
-      display: inline-flex; align-items: center; gap: 36px;
-      font-family: var(--font-heading); font-weight: 600;
-      font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.1em; padding-right: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 36px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding-right: 36px;
     }
-    .marquee-text .dot { color: var(--accent); font-size: 1.3rem; line-height: 1; }
-    @keyframes marquee { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(-50%,0,0); } }
+
+    .marquee-text .dot {
+      color: var(--accent);
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+
+    @keyframes marquee {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+
+      100% {
+        transform: translate3d(-50%, 0, 0);
+      }
+    }
 
     /* ─── SECTION HEADER ─────────────────────────────────────────── */
-    .section-header { text-align: center; max-width: 680px; margin: 0 auto 64px; }
-    .section-badge {
-      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em;
-      color: var(--accent); font-weight: 700; margin-bottom: 14px; display: block;
+    .section-header {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 64px;
     }
-    .section-title { font-size: 2.4rem; margin-bottom: 14px; letter-spacing: -0.02em; }
-    .section-desc { font-size: 0.93rem; color: var(--text-secondary); line-height: 1.75; }
+
+    .section-badge {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .section-title {
+      font-size: 2.4rem;
+      margin-bottom: 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-desc {
+      font-size: 0.93rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+    }
 
     /* ─── DOCTOR SECTION ─────────────────────────────────────────── */
-    .doctor-section { background-color: var(--bg-primary); }
-    .doctor-layout {
-      display: grid; grid-template-columns: 0.85fr 1.15fr;
-      gap: 80px; align-items: center;
+    .doctor-section {
+      background-color: var(--bg-primary);
     }
-    .doctor-img-wrap { position: relative; }
+
+    .doctor-layout {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .doctor-img-wrap {
+      position: relative;
+    }
+
     .doctor-img-frame {
-      border-radius: var(--radius); overflow: hidden;
-      box-shadow: var(--shadow-lg); aspect-ratio: 3/4;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 3/4;
       background-color: var(--bg-secondary);
     }
+
     .doctor-img-frame img {
-      width: 100%; height: 100%; object-fit: cover; object-position: center top;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
     }
+
     .doctor-badge {
-      position: absolute; bottom: -18px; right: -18px;
-      background-color: #111111; color: #FFFFFF;
-      padding: 20px 24px; border-radius: 8px;
+      position: absolute;
+      bottom: -18px;
+      right: -18px;
+      background-color: #111111;
+      color: #FFFFFF;
+      padding: 20px 24px;
+      border-radius: 8px;
       box-shadow: var(--shadow-lg);
     }
+
     .doctor-badge-label {
-      font-size: 0.66rem; text-transform: uppercase;
-      letter-spacing: 0.12em; color: var(--accent); margin-bottom: 5px;
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 5px;
     }
-    .doctor-badge-value { font-size: 0.9rem; font-weight: 700; }
+
+    .doctor-badge-value {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
 
     .doctor-info {}
-    .doctor-info .hero-badge { display: inline-flex; margin-bottom: 16px; }
-    .doctor-name { font-size: 2.9rem; letter-spacing: -0.025em; margin-bottom: 6px; font-weight: 800; }
+
+    .doctor-info .hero-badge {
+      display: inline-flex;
+      margin-bottom: 16px;
+    }
+
+    .doctor-name {
+      font-size: 2.9rem;
+      letter-spacing: -0.025em;
+      margin-bottom: 6px;
+      font-weight: 800;
+    }
+
     .doctor-quals {
-      font-size: 0.84rem; color: var(--accent); font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px;
+      font-size: 0.84rem;
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 24px;
     }
+
     .doctor-bio {
-      font-size: 0.95rem; color: var(--text-secondary);
-      line-height: 1.8; margin-bottom: 28px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 28px;
     }
-    .doctor-specs { display: flex; flex-direction: column; gap: 11px; margin-bottom: 36px; }
-    .spec-row { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; font-weight: 500; }
+
+    .doctor-specs {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      margin-bottom: 36px;
+    }
+
+    .spec-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
     .spec-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background-color: var(--accent); flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent);
+      flex-shrink: 0;
     }
 
     /* ─── TREATMENTS ─────────────────────────────────────────────── */
-    .treatments-section { background-color: var(--bg-secondary); }
-    .treatments-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px;
-    }
-    .tx-card {
-      background-color: var(--bg-card); border-radius: var(--radius);
-      overflow: hidden; border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      transition: transform 0.4s cubic-bezier(0.25,0.8,0.25,1), box-shadow 0.4s;
-      display: flex; flex-direction: column;
-    }
-    .tx-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-md); }
-    .tx-img-wrap {
-      aspect-ratio: 16/10; overflow: hidden; position: relative;
+    .treatments-section {
       background-color: var(--bg-secondary);
     }
+
+    .treatments-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 26px;
+    }
+
+    .tx-card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tx-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tx-img-wrap {
+      aspect-ratio: 16/10;
+      overflow: hidden;
+      position: relative;
+      background-color: var(--bg-secondary);
+    }
+
     .tx-img-wrap img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       transition: transform 0.55s ease;
       filter: brightness(0.96) saturate(1.05);
     }
-    .tx-card:hover .tx-img-wrap img { transform: scale(1.08); }
+
+    .tx-card:hover .tx-img-wrap img {
+      transform: scale(1.08);
+    }
+
     .tx-img-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.45) 100%);
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.45) 100%);
     }
-    .tx-body { padding: 26px 28px; flex-grow: 1; display: flex; flex-direction: column; }
-    .tx-icon { font-size: 1.5rem; margin-bottom: 12px; }
-    .tx-name { font-size: 1.12rem; font-weight: 700; margin-bottom: 9px; }
+
+    .tx-body {
+      padding: 26px 28px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tx-icon {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .tx-name {
+      font-size: 1.12rem;
+      font-weight: 700;
+      margin-bottom: 9px;
+    }
+
     .tx-desc {
-      font-size: 0.83rem; color: var(--text-secondary);
-      line-height: 1.65; flex-grow: 1; margin-bottom: 18px;
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      flex-grow: 1;
+      margin-bottom: 18px;
     }
+
     .tx-link {
-      font-size: 0.76rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.07em; color: var(--accent);
-      display: inline-flex; align-items: center; gap: 6px;
-      transition: gap 0.25s ease; align-self: flex-start;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: gap 0.25s ease;
+      align-self: flex-start;
     }
-    .tx-link:hover { gap: 11px; }
+
+    .tx-link:hover {
+      gap: 11px;
+    }
 
     /* ─── BOOKING SECTION ────────────────────────────────────────── */
-    .booking-section { background-color: var(--bg-primary); }
-    .booking-layout {
-      display: grid; grid-template-columns: 0.75fr 1.25fr;
-      background-color: var(--bg-card);
-      border-radius: 14px; border: 1px solid var(--border);
-      overflow: hidden; box-shadow: var(--shadow-lg);
+    .booking-section {
+      background-color: var(--bg-primary);
     }
+
+    .booking-layout {
+      display: grid;
+      grid-template-columns: 0.75fr 1.25fr;
+      background-color: var(--bg-card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
     .booking-info {
       padding: 60px 52px;
-      background-color: #111111; color: #FFFFFF;
-      display: flex; flex-direction: column; justify-content: space-between;
+      background-color: #111111;
+      color: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    .booking-info-title { font-size: 1.9rem; color: #FFFFFF; margin-bottom: 14px; line-height: 1.2; }
-    .booking-info-desc { font-size: 0.86rem; color: #888888; margin-bottom: 44px; line-height: 1.75; }
-    .contact-list { display: flex; flex-direction: column; gap: 22px; }
-    .contact-row { display: flex; gap: 16px; align-items: flex-start; }
-    .contact-icon { font-size: 1.1rem; color: var(--accent); margin-top: 1px; flex-shrink: 0; }
+
+    .booking-info-title {
+      font-size: 1.9rem;
+      color: #FFFFFF;
+      margin-bottom: 14px;
+      line-height: 1.2;
+    }
+
+    .booking-info-desc {
+      font-size: 0.86rem;
+      color: #888888;
+      margin-bottom: 44px;
+      line-height: 1.75;
+    }
+
+    .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .contact-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .contact-icon {
+      font-size: 1.1rem;
+      color: var(--accent);
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
     .contact-label {
-      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em;
-      color: #666666; margin-bottom: 4px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #666666;
+      margin-bottom: 4px;
     }
-    .contact-value { font-size: 0.9rem; color: #FFFFFF; }
-    .contact-value a { color: #FFFFFF; }
-    .contact-value a:hover { color: var(--accent); }
 
-    .booking-wizard-panel { padding: 56px 60px; }
+    .contact-value {
+      font-size: 0.9rem;
+      color: #FFFFFF;
+    }
+
+    .contact-value a {
+      color: #FFFFFF;
+    }
+
+    .contact-value a:hover {
+      color: var(--accent);
+    }
+
+    .booking-wizard-panel {
+      padding: 56px 60px;
+    }
+
     .wizard-steps {
-      display: flex; align-items: center; gap: 0; margin-bottom: 44px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 44px;
     }
+
     .step-dot {
-      width: 32px; height: 32px; border-radius: 50%;
-      border: 1.5px solid var(--border); background-color: var(--bg-primary);
-      color: var(--text-secondary); font-size: 0.82rem; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; transition: all 0.3s ease; position: relative; z-index: 1;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background-color: var(--bg-primary);
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
     }
-    .step-dot.active { border-color: var(--accent); background-color: var(--accent); color: #111111; }
-    .step-dot.done { border-color: #111111; background-color: #111111; color: #FFFFFF; }
+
+    .step-dot.active {
+      border-color: var(--accent);
+      background-color: var(--accent);
+      color: #111111;
+    }
+
+    .step-dot.done {
+      border-color: #111111;
+      background-color: #111111;
+      color: #FFFFFF;
+    }
+
     .step-line {
-      flex: 1; height: 1px; background-color: var(--border);
+      flex: 1;
+      height: 1px;
+      background-color: var(--border);
     }
 
-    .wizard-panel { display: none; animation: wFadeIn 0.35s ease forwards; }
-    .wizard-panel.active { display: block; }
-    @keyframes wFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .wizard-panel {
+      display: none;
+      animation: wFadeIn 0.35s ease forwards;
+    }
 
-    .wizard-title { font-size: 1.3rem; margin-bottom: 22px; }
+    .wizard-panel.active {
+      display: block;
+    }
+
+    @keyframes wFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .wizard-title {
+      font-size: 1.3rem;
+      margin-bottom: 22px;
+    }
 
     /* Service grid */
     .svc-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 11px;
-      max-height: 310px; overflow-y: auto; padding-right: 4px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+      max-height: 310px;
+      overflow-y: auto;
+      padding-right: 4px;
     }
-    .svc-grid::-webkit-scrollbar { width: 4px; }
-    .svc-grid::-webkit-scrollbar-thumb { background-color: var(--border-accent); border-radius: 2px; }
+
+    .svc-grid::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .svc-grid::-webkit-scrollbar-thumb {
+      background-color: var(--border-accent);
+      border-radius: 2px;
+    }
+
     .svc-card {
-      border: 1.5px solid var(--border); border-radius: 8px; padding: 14px 16px;
-      cursor: pointer; transition: all 0.25s; background-color: var(--bg-primary);
-      display: flex; align-items: center; gap: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.25s;
+      background-color: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .svc-card:hover { border-color: var(--accent); background-color: var(--bg-secondary); }
+
+    .svc-card:hover {
+      border-color: var(--accent);
+      background-color: var(--bg-secondary);
+    }
+
     .svc-card.active {
-      border-color: var(--accent); background-color: var(--bg-secondary);
-      box-shadow: 0 0 0 3px rgba(196,176,151,0.18);
+      border-color: var(--accent);
+      background-color: var(--bg-secondary);
+      box-shadow: 0 0 0 3px rgba(196, 176, 151, 0.18);
     }
-    .svc-icon { font-size: 1.2rem; flex-shrink: 0; }
-    .svc-name { font-size: 0.86rem; font-weight: 600; line-height: 1.3; }
+
+    .svc-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .svc-name {
+      font-size: 0.86rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
 
     .wizard-footer {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-top: 32px; border-top: 1px solid var(--border); padding-top: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+      border-top: 1px solid var(--border);
+      padding-top: 22px;
     }
 
     /* Datetime */
-    .dt-wrap { display: flex; flex-direction: column; gap: 20px; }
-    .dt-label { font-size: 0.74rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.06em; margin-bottom: 8px; }
+    .dt-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .dt-label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
     .date-picker {
-      padding: 13px 14px; border: 1.5px solid var(--border); border-radius: 6px;
-      background-color: var(--bg-primary); outline: none; width: 100%;
+      padding: 13px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      background-color: var(--bg-primary);
+      outline: none;
+      width: 100%;
       color: var(--text-primary);
     }
-    .date-picker:focus { border-color: var(--accent); }
-    .time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .time-btn {
-      padding: 10px 4px; border-radius: 5px; border: 1.5px solid var(--border);
-      font-size: 0.74rem; text-align: center; transition: all 0.25s;
-      background-color: var(--bg-primary); font-weight: 500;
+
+    .date-picker:focus {
+      border-color: var(--accent);
     }
-    .time-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .time-btn.active { background-color: #111111; color: #FFFFFF; border-color: #111111; }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .time-btn {
+      padding: 10px 4px;
+      border-radius: 5px;
+      border: 1.5px solid var(--border);
+      font-size: 0.74rem;
+      text-align: center;
+      transition: all 0.25s;
+      background-color: var(--bg-primary);
+      font-weight: 500;
+    }
+
+    .time-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .time-btn.active {
+      background-color: #111111;
+      color: #FFFFFF;
+      border-color: #111111;
+    }
 
     /* Form */
-    .fg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .fg { display: flex; flex-direction: column; gap: 7px; }
-    .fg label { font-size: 0.74rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.06em; }
+    .fg-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .fg {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .fg label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.06em;
+    }
+
     .form-in {
-      padding: 13px 14px; border: 1.5px solid var(--border); border-radius: 6px;
-      background-color: var(--bg-primary); outline: none; width: 100%;
+      padding: 13px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      background-color: var(--bg-primary);
+      outline: none;
+      width: 100%;
       color: var(--text-primary);
     }
-    .form-in:focus { border-color: var(--accent); }
+
+    .form-in:focus {
+      border-color: var(--accent);
+    }
 
     /* Success */
     .booking-success {
-      display: none; flex-direction: column; align-items: center;
-      text-align: center; padding: 32px 0; animation: wFadeIn 0.4s ease forwards;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 32px 0;
+      animation: wFadeIn 0.4s ease forwards;
     }
+
     .success-check {
-      width: 66px; height: 66px; border-radius: 50%; background-color: var(--success);
-      color: #FFFFFF; display: flex; align-items: center; justify-content: center;
-      font-size: 1.9rem; margin-bottom: 22px;
-      box-shadow: 0 4px 20px rgba(46,125,50,0.25);
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background-color: var(--success);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.9rem;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 20px rgba(46, 125, 50, 0.25);
     }
+
     .success-receipt {
-      width: 100%; background-color: var(--bg-secondary); border-radius: 8px;
-      padding: 20px; margin: 22px 0 28px; text-align: left;
-      border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px;
+      width: 100%;
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 22px 0 28px;
+      text-align: left;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
+
     .receipt-row {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      border-bottom: 1px dashed var(--border); padding-bottom: 10px; font-size: 0.84rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 10px;
+      font-size: 0.84rem;
     }
-    .receipt-row:last-child { border-bottom: none; padding-bottom: 0; }
-    .receipt-label { color: var(--text-secondary); }
-    .receipt-val { font-weight: 600; text-align: right; }
+
+    .receipt-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .receipt-label {
+      color: var(--text-secondary);
+    }
+
+    .receipt-val {
+      font-weight: 600;
+      text-align: right;
+    }
 
     /* ─── LOCATION SECTION ───────────────────────────────────────── */
-    .location-section { background-color: var(--bg-secondary); }
-    .location-layout { display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: start; }
-    .location-cards { display: flex; flex-direction: column; gap: 18px; }
+    .location-section {
+      background-color: var(--bg-secondary);
+    }
+
+    .location-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 56px;
+      align-items: start;
+    }
+
+    .location-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
     .loc-card {
-      background-color: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 26px 28px;
-      box-shadow: var(--shadow-sm); transition: border-color 0.3s;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px 28px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.3s;
     }
-    .loc-card:hover { border-color: var(--border-accent); }
+
+    .loc-card:hover {
+      border-color: var(--border-accent);
+    }
+
     .loc-label {
-      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.14em;
-      color: var(--accent); font-weight: 700; margin-bottom: 7px;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 7px;
     }
-    .loc-main { font-size: 0.96rem; font-weight: 700; margin-bottom: 4px; }
-    .loc-sub { font-size: 0.84rem; color: var(--text-secondary); line-height: 1.55; }
-    .loc-sub a { color: var(--accent); }
-    .loc-sub a:hover { text-decoration: underline; }
-    .loc-closed { color: #C0392B; font-weight: 600; }
+
+    .loc-main {
+      font-size: 0.96rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .loc-sub {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    .loc-sub a {
+      color: var(--accent);
+    }
+
+    .loc-sub a:hover {
+      text-decoration: underline;
+    }
+
+    .loc-closed {
+      color: #C0392B;
+      font-weight: 600;
+    }
 
     .directions-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 13px 26px; background-color: #111111; color: #FFFFFF;
-      border-radius: 4px; font-size: 0.8rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: 0.07em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 26px;
+      background-color: #111111;
+      color: #FFFFFF;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
       transition: background-color 0.3s, color 0.3s;
     }
-    .directions-btn:hover { background-color: var(--accent); color: #111111; }
+
+    .directions-btn:hover {
+      background-color: var(--accent);
+      color: #111111;
+    }
 
     .map-frame {
-      border-radius: 12px; overflow: hidden;
-      box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
       aspect-ratio: 4/3.2;
     }
-    .map-frame iframe { width: 100%; height: 100%; border: none; display: block; }
+
+    .map-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
 
     /* ─── FAQs ───────────────────────────────────────────────────── */
-    .faqs-section { background-color: var(--bg-primary); }
-    .faqs-list { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+    .faqs-section {
+      background-color: var(--bg-primary);
+    }
+
+    .faqs-list {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
     .faq-item {
-      border: 1px solid var(--border); background-color: var(--bg-card);
-      border-radius: 7px; overflow: hidden; transition: border-color 0.3s;
+      border: 1px solid var(--border);
+      background-color: var(--bg-card);
+      border-radius: 7px;
+      overflow: hidden;
+      transition: border-color 0.3s;
     }
-    .faq-item:hover { border-color: var(--border-accent); }
+
+    .faq-item:hover {
+      border-color: var(--border-accent);
+    }
+
     .faq-btn {
-      width: 100%; display: flex; align-items: center; justify-content: space-between;
-      padding: 21px 24px; text-align: left; font-weight: 600; font-size: 0.98rem; cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 21px 24px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.98rem;
+      cursor: pointer;
     }
-    .faq-icon { font-size: 1.2rem; color: var(--accent); transition: transform 0.3s ease; flex-shrink: 0; margin-left: 16px; }
+
+    .faq-icon {
+      font-size: 1.2rem;
+      color: var(--accent);
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+
     .faq-answer {
-      max-height: 0; overflow: hidden;
-      transition: max-height 0.35s cubic-bezier(0,1,0,1);
-      padding: 0 24px; color: var(--text-secondary); font-size: 0.89rem; line-height: 1.75;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0, 1, 0, 1);
+      padding: 0 24px;
+      color: var(--text-secondary);
+      font-size: 0.89rem;
+      line-height: 1.75;
     }
-    .faq-item.open .faq-answer { max-height: 500px; padding-bottom: 22px; transition: max-height 0.35s cubic-bezier(1,0,1,0); }
-    .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+    .faq-item.open .faq-answer {
+      max-height: 500px;
+      padding-bottom: 22px;
+      transition: max-height 0.35s cubic-bezier(1, 0, 1, 0);
+    }
+
+    .faq-item.open .faq-icon {
+      transform: rotate(45deg);
+    }
 
     /* ─── FOOTER ─────────────────────────────────────────────────── */
-    .footer { background-color: #111111; color: #FFFFFF; padding: 80px 0 36px; }
-    .footer-grid { display: grid; grid-template-columns: 1.2fr 0.85fr 1fr; gap: 56px; margin-bottom: 56px; }
-    .footer-brand { display: flex; flex-direction: column; gap: 18px; }
-    .footer-desc { font-size: 0.83rem; color: #777777; line-height: 1.8; }
-    .footer-col h4 {
-      font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.1em;
-      color: var(--accent); margin-bottom: 20px;
+    .footer {
+      background-color: #111111;
+      color: #FFFFFF;
+      padding: 80px 0 36px;
     }
-    .footer-list { display: flex; flex-direction: column; gap: 10px; }
-    .footer-item { font-size: 0.83rem; color: #777777; transition: color 0.3s; }
-    .footer-item:hover { color: var(--accent); }
-    .footer-item a { color: #777777; transition: color 0.3s; }
-    .footer-item a:hover { color: var(--accent); }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.85fr 1fr;
+      gap: 56px;
+      margin-bottom: 56px;
+    }
+
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .footer-desc {
+      font-size: 0.83rem;
+      color: #777777;
+      line-height: 1.8;
+    }
+
+    .footer-col h4 {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .footer-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-item {
+      font-size: 0.83rem;
+      color: #777777;
+      transition: color 0.3s;
+    }
+
+    .footer-item:hover {
+      color: var(--accent);
+    }
+
+    .footer-item a {
+      color: #777777;
+      transition: color 0.3s;
+    }
+
+    .footer-item a:hover {
+      color: var(--accent);
+    }
+
     .footer-bottom {
-      border-top: 1px solid rgba(255,255,255,0.07); padding-top: 26px;
-      display: flex; justify-content: space-between; font-size: 0.75rem; color: #555555;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      padding-top: 26px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #555555;
     }
 
     /* ─── RESPONSIVE ─────────────────────────────────────────────── */
     @media (max-width: 1060px) {
-      .hero-grid { grid-template-columns: 1fr; gap: 52px; text-align: center; }
-      .hero-badge { display: none; }
-      .hero-desc { margin-left: auto; margin-right: auto; }
-      .hero-actions { justify-content: center; }
-      .hero-pills { justify-content: center; }
-      .hero-float-card { left: 12px; bottom: 12px; }
-      .doctor-layout { grid-template-columns: 1fr; gap: 52px; }
-      .doctor-img-frame { max-width: 400px; margin: 0 auto; }
-      .doctor-badge { right: calc(50% - 200px - 18px); }
-      .treatments-grid { grid-template-columns: repeat(2, 1fr); }
-      .booking-layout { grid-template-columns: 1fr; }
-      .booking-info, .booking-wizard-panel { padding: 48px; }
-      .location-layout { grid-template-columns: 1fr; }
-      .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 52px;
+        text-align: center;
+      }
+
+      .hero-badge {
+        display: none;
+      }
+
+      .hero-desc {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
+
+      .hero-pills {
+        justify-content: center;
+      }
+
+      .hero-float-card {
+        left: 12px;
+        bottom: 12px;
+      }
+
+      .doctor-layout {
+        grid-template-columns: 1fr;
+        gap: 52px;
+      }
+
+      .doctor-img-frame {
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .doctor-badge {
+        right: calc(50% - 200px - 18px);
+      }
+
+      .treatments-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .booking-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .booking-info,
+      .booking-wizard-panel {
+        padding: 48px;
+      }
+
+      .location-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
     }
 
     @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .hamburger { display: flex; }
-      .mobile-nav { display: flex; }
-      .hero-title { font-size: 2.6rem; }
-      .section-title { font-size: 2rem; }
-      .doctor-name { font-size: 2.3rem; }
-      .treatments-grid { grid-template-columns: 1fr; }
-      .time-grid { grid-template-columns: repeat(3, 1fr); }
-      .footer-grid { grid-template-columns: 1fr; gap: 36px; }
-      .footer-bottom { flex-direction: column; gap: 6px; }
-      .hero-float-card { display: none; }
-      .fg-grid { grid-template-columns: 1fr; }
-      .svc-grid { grid-template-columns: 1fr; max-height: 340px; }
+      .logo-img {
+        height: 86px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .mobile-nav {
+        display: flex;
+      }
+
+      .hero-title {
+        font-size: 2.6rem;
+      }
+
+      .section-title {
+        font-size: 2rem;
+      }
+
+      .doctor-name {
+        font-size: 2.3rem;
+      }
+
+      .treatments-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .time-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 36px;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .hero-float-card {
+        display: none;
+      }
+
+      .fg-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .svc-grid {
+        grid-template-columns: 1fr;
+        max-height: 340px;
+      }
     }
 
     @media (max-width: 480px) {
-      .hero-title { font-size: 2.1rem; }
-      .booking-info, .booking-wizard-panel { padding: 30px 22px; }
-      .section-padding { padding: 72px 0; }
-      .doctor-badge { display: none; }
+      .logo-img {
+        height: 68px;
+      }
+
+      .hero-title {
+        font-size: 2.1rem;
+      }
+
+      .booking-info,
+      .booking-wizard-panel {
+        padding: 30px 22px;
+      }
+
+      .section-padding {
+        padding: 72px 0;
+      }
+
+      .doctor-badge {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -581,7 +1529,6 @@
     <div class="container nav-container">
       <a href="#" class="logo">
         <img src="assets/nav_logo.png" alt="Dr. Mahe's Dentistry" class="logo-img">
-        <div class="logo-text">Dr. Mahe's <span>Dentistry</span></div>
       </a>
 
       <nav class="nav-links" aria-label="Main navigation">
@@ -619,7 +1566,8 @@
         <div class="hero-badge">Welcome to Dr. Mahe's Dentistry · Porur, Chennai</div>
         <h1 class="hero-title">Advanced Dental Care with a <em>Gentle Touch</em></h1>
         <p class="hero-desc">
-          At Dr. Mahe's Dentistry, we provide modern, compassionate dental treatment in a calm, hygienic, and patient-first environment. From routine check-ups to advanced implants — we're here for every smile.
+          At Dr. Mahe's Dentistry, we provide modern, compassionate dental treatment in a calm, hygienic and
+          patient-first environment. From routine check-ups to advanced implants — we're here for every smile.
         </p>
         <div class="hero-actions">
           <a href="#booking" class="btn btn-primary">Book Consultation</a>
@@ -633,11 +1581,13 @@
       </div>
       <div class="hero-visual">
         <div class="hero-img-mask">
-          <img src="assets/reception_area.png" alt="Dr. Mahe's Dentistry — modern reception area, Porur Chennai" class="hero-img" loading="eager">
+          <img src="assets/reception_area.png" alt="Dr. Mahe's Dentistry — modern reception area, Porur Chennai"
+            class="hero-img" loading="eager">
         </div>
         <div class="hero-float-card">
           <div class="hero-float-card-title">✔ Patient Comfort First</div>
-          <div class="hero-float-card-desc">Modern equipment, personalized care, and complete transparency in every treatment plan.</div>
+          <div class="hero-float-card-desc">Modern equipment, personalized care and complete transparency in every
+            treatment plan.</div>
         </div>
       </div>
     </div>
@@ -647,10 +1597,16 @@
   <div class="marquee" aria-hidden="true">
     <div class="marquee-content">
       <div class="marquee-text">
-        <span class="dot">✦</span> Advanced Sterilization <span class="dot">✦</span> Painless Root Canals <span class="dot">✦</span> Cosmetic Veneers <span class="dot">✦</span> Premium Implants <span class="dot">✦</span> Digital X-Rays <span class="dot">✦</span> Orthodontics &amp; Braces <span class="dot">✦</span> Smile Makeovers <span class="dot">✦</span> Oral Surgery
+        <span class="dot">✦</span> Advanced Sterilization <span class="dot">✦</span> Painless Root Canals <span
+          class="dot">✦</span> Cosmetic Veneers <span class="dot">✦</span> Premium Implants <span class="dot">✦</span>
+        Digital X-Rays <span class="dot">✦</span> Orthodontics &amp; Braces <span class="dot">✦</span> Smile Makeovers
+        <span class="dot">✦</span> Oral Surgery
       </div>
       <div class="marquee-text">
-        <span class="dot">✦</span> Advanced Sterilization <span class="dot">✦</span> Painless Root Canals <span class="dot">✦</span> Cosmetic Veneers <span class="dot">✦</span> Premium Implants <span class="dot">✦</span> Digital X-Rays <span class="dot">✦</span> Orthodontics &amp; Braces <span class="dot">✦</span> Smile Makeovers <span class="dot">✦</span> Oral Surgery
+        <span class="dot">✦</span> Advanced Sterilization <span class="dot">✦</span> Painless Root Canals <span
+          class="dot">✦</span> Cosmetic Veneers <span class="dot">✦</span> Premium Implants <span class="dot">✦</span>
+        Digital X-Rays <span class="dot">✦</span> Orthodontics &amp; Braces <span class="dot">✦</span> Smile Makeovers
+        <span class="dot">✦</span> Oral Surgery
       </div>
     </div>
   </div>
@@ -659,38 +1615,74 @@
   <section class="doctor-section section-padding" id="doctor">
     <div class="container">
       <div class="doctor-layout">
+
         <div class="doctor-img-wrap">
           <div class="doctor-img-frame">
-            <!--
-              TODO: Replace the image below with a real photo of Dr. Maheswari.
-              Recommended size: 500×650px or similar portrait orientation.
-            -->
-            <img
-              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=520&h=680&fit=crop&q=82"
-              alt="Dr. Maheswari — Endodontist & Implantologist, Dr. Mahe's Dentistry Porur Chennai"
-              loading="lazy">
+            <img src="assets/dr.mahe.png"
+              alt="Dr. Maheswari BDS — General Dentist at Dr. Mahe's Dentistry, Porur Chennai" loading="lazy">
           </div>
+
           <div class="doctor-badge">
             <div class="doctor-badge-label">Specialization</div>
-            <div class="doctor-badge-value">Endodontist &amp; Implantologist</div>
+            <div class="doctor-badge-value">General & Family Dentistry</div>
           </div>
         </div>
 
         <div class="doctor-info">
-          <div class="hero-badge" style="display:inline-flex; margin-bottom:16px;">Meet Your Doctor</div>
-          <h2 class="doctor-name">Dr. Maheswari</h2>
-          <div class="doctor-quals">BDS, MDS — Endodontics &amp; Implantology</div>
-          <p class="doctor-bio">
-            Dr. Maheswari brings a patient-first philosophy to every treatment. With advanced training in endodontics and implant surgery, she specializes in painless root canal procedures, dental implant rehabilitation, and comprehensive smile makeovers. Her clinic is built around the belief that great dentistry should feel comfortable, be transparent, and create lasting confidence.
-          </p>
-          <div class="doctor-specs">
-            <div class="spec-row"><div class="spec-dot"></div>Advanced Root Canal Treatment (Single-Sitting RCT)</div>
-            <div class="spec-row"><div class="spec-dot"></div>Dental Implants &amp; Bone Grafting</div>
-            <div class="spec-row"><div class="spec-dot"></div>Smile Makeovers &amp; Cosmetic Dentistry</div>
-            <div class="spec-row"><div class="spec-dot"></div>Orthodontics — Braces &amp; Clear Aligners</div>
-            <div class="spec-row"><div class="spec-dot"></div>Paediatric &amp; Preventive Dentistry</div>
+
+          <div class="hero-badge" style="display:inline-flex; margin-bottom:16px;">
+            Meet Your Doctor
           </div>
-          <a href="#booking" class="btn btn-primary">Book a Consultation with Dr. Maheswari</a>
+
+          <h2 class="doctor-name">Dr. Maheswari</h2>
+
+          <div class="doctor-quals">
+            BDS — General Dentist
+          </div>
+
+          <p class="doctor-bio">
+            At Dr. Mahe's Dentistry, we provide expert general dentistry
+            with a gentle, patient-first approach. From precise root canal treatments
+            and aesthetic smile enhancements to comfortable and stress-free dental care
+            for children, Dr.Maheswari is dedicated to creating a positive experience for patients
+            of all ages. Her focus is on delivering quality dental care with compassion,
+            transparency, educating patients about oral hygiene and achieving long-lasting results.
+          </p>
+
+          <div class="doctor-specs">
+            <div class="spec-row">
+              <div class="spec-dot"></div>
+              Teeth Cleaning & Preventive Care
+            </div>
+
+            <div class="spec-row">
+              <div class="spec-dot"></div>
+              Root Canal Treatment (RCT)
+            </div>
+
+
+
+            <div class="spec-row">
+              <div class="spec-dot"></div>
+              Cosmetic & Aesthetic Dentistry
+            </div>
+
+            <div class="spec-row">
+              <div class="spec-dot"></div>
+              Kids & Family Dental Care
+            </div>
+
+            <div class="spec-row">
+              <div class="spec-dot"></div>
+              Tooth Fillings, Crowns & Smile Restoration
+            </div>
+
+          </div>
+
+          <a href="#booking" class="btn btn-primary">
+            Book a Consultation with Dr. Maheswari
+          </a>
+
         </div>
       </div>
     </div>
@@ -702,7 +1694,8 @@
       <div class="section-header">
         <span class="section-badge">What We Offer</span>
         <h2 class="section-title">Our Core Treatments</h2>
-        <p class="section-desc">Expert dental care across all specialities — performed with precision, modern equipment, and genuine care for your comfort.</p>
+        <p class="section-desc">Expert dental care across all specialities — performed with precision, modern equipment,
+          and genuine care for your comfort.</p>
       </div>
       <div class="treatments-grid" id="treatmentsGrid">
         <!-- Rendered by JavaScript -->
@@ -716,7 +1709,8 @@
       <div class="section-header">
         <span class="section-badge">Appointments</span>
         <h2 class="section-title">Book a Consultation</h2>
-        <p class="section-desc">Select your treatment, pick a date and time, and share your details. Our coordinator will confirm your slot via call or WhatsApp.</p>
+        <p class="section-desc">Select your treatment, pick a date and time and share your details. Our coordinator
+          will confirm your slot via call or WhatsApp.</p>
       </div>
 
       <div class="booking-layout">
@@ -724,7 +1718,8 @@
         <div class="booking-info">
           <div>
             <h3 class="booking-info-title">Schedule Your Visit</h3>
-            <p class="booking-info-desc">Fill the form on the right. We'll contact you within a few hours to confirm your appointment.</p>
+            <p class="booking-info-desc">Fill the form on the right. We'll contact you within a few hours to confirm
+              your appointment.</p>
           </div>
           <div class="contact-list">
             <div class="contact-row">
@@ -830,7 +1825,8 @@
           <div class="booking-success" id="bookingSuccess">
             <div class="success-check">✓</div>
             <h3 style="font-size:1.7rem; margin-bottom:8px;">Appointment Requested!</h3>
-            <p style="font-size:0.87rem; color:var(--text-secondary); max-width:360px; line-height:1.65;">Your request is registered. Our coordinator will call or WhatsApp you shortly to confirm your slot.</p>
+            <p style="font-size:0.87rem; color:var(--text-secondary); max-width:360px; line-height:1.65;">Your request
+              is registered. Our coordinator will call or WhatsApp you shortly to confirm your slot.</p>
             <div class="success-receipt">
               <div class="receipt-row">
                 <span class="receipt-label">Treatment</span>
@@ -858,7 +1854,8 @@
       <div class="section-header">
         <span class="section-badge">Find Us</span>
         <h2 class="section-title">Locate Our Clinic</h2>
-        <p class="section-desc">Conveniently located on Porur High Road, Chennai — easy to reach by bus, auto, cab, or private vehicle.</p>
+        <p class="section-desc">Conveniently located on Porur High Road, Chennai — easy to reach by bus, auto, cab, or
+          private vehicle.</p>
       </div>
       <div class="location-layout">
         <div class="location-cards">
@@ -869,18 +1866,18 @@
           </div>
           <div class="loc-card">
             <div class="loc-label">📞 Phone &amp; WhatsApp</div>
-            <div class="loc-main"><a href="tel:+919444012345" style="color:var(--text-primary);">+91 94440 12345</a></div>
-            <div class="loc-sub"><a href="https://wa.me/919444012345" target="_blank" rel="noopener noreferrer">💬 Chat on WhatsApp →</a></div>
+            <div class="loc-main"><a href="tel:+919444012345" style="color:var(--text-primary);">+91 94440 12345</a>
+            </div>
+            <div class="loc-sub"><a href="https://wa.me/919444012345" target="_blank" rel="noopener noreferrer">💬 Chat
+                on WhatsApp →</a></div>
           </div>
           <div class="loc-card">
             <div class="loc-label">🕐 Clinic Hours</div>
             <div class="loc-main">Monday – Saturday</div>
             <div class="loc-sub">9:30 AM – 8:30 PM<br><span class="loc-closed">Sunday: Closed</span></div>
           </div>
-          <a
-            href="https://www.google.com/maps/search/Porur+High+Road+Porur+Chennai+600116"
-            target="_blank" rel="noopener noreferrer"
-            class="directions-btn">
+          <a href="https://www.google.com/maps/search/Porur+High+Road+Porur+Chennai+600116" target="_blank"
+            rel="noopener noreferrer" class="directions-btn">
             ↗ &nbsp;Get Directions on Google Maps
           </a>
         </div>
@@ -889,9 +1886,7 @@
           <div class="map-frame">
             <iframe
               src="https://maps.google.com/maps?q=Porur+High+Road,+Porur,+Chennai,+Tamil+Nadu+600116&output=embed&z=15"
-              allowfullscreen=""
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
               title="Dr. Mahe's Dentistry location — Porur Chennai">
             </iframe>
           </div>
@@ -915,7 +1910,9 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>Use the booking form on this page — select your treatment, a preferred date and time, and enter your contact details. Our clinic coordinator will reach out via phone or WhatsApp within a few hours to confirm your slot.</p>
+            <p>Use the booking form on this page — select your treatment, a preferred date and time and enter your
+              contact details. Our clinic coordinator will reach out via phone or WhatsApp within a few hours to confirm
+              your slot.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -924,7 +1921,8 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>Have a light meal before your appointment unless anesthesia is planned. Bring a list of any medications or health conditions (diabetes, hypertension, blood thinners) so we can plan your treatment safely.</p>
+            <p>Have a light meal before your appointment unless anesthesia is planned. Bring a list of any medications
+              or health conditions (diabetes, hypertension, blood thinners) so we can plan your treatment safely.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -933,7 +1931,9 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>We follow strict international Class-B autoclave sterilization standards. All instruments are vacuum-packed and sterilized. They are opened fresh in front of the patient for every procedure. Disposable barriers are replaced after each patient — no exceptions.</p>
+            <p>We follow strict international Class-B autoclave sterilization standards. All instruments are
+              vacuum-packed and sterilized. They are opened fresh in front of the patient for every procedure.
+              Disposable barriers are replaced after each patient — no exceptions.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -942,7 +1942,8 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>We accept Cash, Debit/Credit Cards, and all major UPI apps — GPay, PhonePe, and Paytm. Digital receipts are generated for all payments.</p>
+            <p>We accept Cash, Debit/Credit Cards and all major UPI apps — GPay, PhonePe and Paytm. Digital receipts
+              are generated for all payments.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -951,7 +1952,8 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>Yes. The clinic is on Porur High Road, which is well served by MTC bus routes and easily accessible by auto-rickshaw or cab. On-street parking is available for two-wheelers and cars.</p>
+            <p>Yes. The clinic is on Porur High Road, which is well served by MTC bus routes and easily accessible by
+              auto-rickshaw or cab. On-street parking is available for two-wheelers and cars.</p>
           </div>
         </div>
       </div>
@@ -963,10 +1965,12 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <div class="logo">
-          <img src="assets/nav_logo.png" alt="Dr. Mahe's Dentistry" class="logo-img" style="filter:brightness(0.82) grayscale(0.15);">
+          <img src="assets/nav_logo.png" alt="Dr. Mahe's Dentistry" class="logo-img"
+            style="filter:brightness(0.82) grayscale(0.15);">
           <div class="logo-text" style="color:#FFFFFF;">Dr. Mahe's <span>Dentistry</span></div>
         </div>
-        <p class="footer-desc">Modern dental care centred on precision, patient comfort, and full transparency. Implants, endodontics, orthodontics, and cosmetic dentistry — by Dr. Maheswari in Porur, Chennai.</p>
+        <p class="footer-desc">Modern dental care centred on precision, patient comfort and full transparency.
+          Implants, endodontics, orthodontics and cosmetic dentistry — by Dr. Maheswari in Porur, Chennai.</p>
       </div>
       <div class="footer-col">
         <h4>Quick Links</h4>
@@ -983,7 +1987,8 @@
         <h4>Contact Us</h4>
         <ul class="footer-list">
           <li class="footer-item"><a href="tel:+919444012345">+91 94440 12345</a></li>
-          <li class="footer-item"><a href="https://wa.me/919444012345" target="_blank" rel="noopener">WhatsApp Us</a></li>
+          <li class="footer-item"><a href="https://wa.me/919444012345" target="_blank" rel="noopener">WhatsApp Us</a>
+          </li>
           <li class="footer-item" style="margin-top:6px;">Porur High Road, Porur</li>
           <li class="footer-item">Chennai, Tamil Nadu — 600116</li>
           <li class="footer-item" style="margin-top:10px; color:var(--accent);">Mon – Sat: 9:30 AM – 8:30 PM</li>
@@ -1010,31 +2015,31 @@
       {
         name: 'Root Canal Treatment',
         icon: '🔬',
-        desc: 'Painless, single-sitting endodontic therapy to save infected teeth, eliminate pain, and preserve your natural smile.',
+        desc: 'Painless, single-sitting endodontic therapy to save infected teeth, eliminate pain and preserve your natural smile.',
         img: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=700&h=420&fit=crop&q=82',
       },
       {
         name: 'Orthodontics & Braces',
         icon: '⛓',
-        desc: 'Metal, ceramic, and self-ligating braces — precisely customized alignment for children, teens, and adults.',
+        desc: 'Metal, ceramic and self-ligating braces — precisely customized alignment for children, teens and adults.',
         img: 'https://images.unsplash.com/photo-1588776814546-1ffbb29d6390?w=700&h=420&fit=crop&q=82',
       },
       {
         name: 'Cosmetic Dentistry',
         icon: '✨',
-        desc: 'Porcelain veneers, composite bonding, and whitening treatments to craft a confident, radiant smile.',
+        desc: 'Porcelain veneers, composite bonding and whitening treatments to craft a confident, radiant smile.',
         img: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=700&h=420&fit=crop&q=82',
       },
       {
         name: 'Oral Surgery',
         icon: '💉',
-        desc: 'Expert removal of wisdom teeth, impacted molars, and complex extractions with precision and minimal discomfort.',
+        desc: 'Expert removal of wisdom teeth, impacted molars and complex extractions with precision and minimal discomfort.',
         img: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=700&h=420&fit=crop&q=82',
       },
       {
         name: 'Crowns & Veneers',
         icon: '👑',
-        desc: 'Premium zirconia, e.max, and metal-ceramic restorations — precision-crafted to protect and beautifully restore your teeth.',
+        desc: 'Premium zirconia, e.max and metal-ceramic restorations — precision-crafted to protect and beautifully restore your teeth.',
         img: 'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=700&h=420&fit=crop&q=82',
       },
     ];
@@ -1090,7 +2095,7 @@
     });
 
     function setDots(step) {
-      ['dot1','dot2','dot3'].forEach((id, i) => {
+      ['dot1', 'dot2', 'dot3'].forEach((id, i) => {
         const el = document.getElementById(id);
         const n = i + 1;
         el.className = 'step-dot' + (n < step ? ' done' : n === step ? ' active' : '');
@@ -1131,7 +2136,7 @@
     }
 
     function submitBooking() {
-      const name  = document.getElementById('pName').value.trim();
+      const name = document.getElementById('pName').value.trim();
       const phone = document.getElementById('pPhone').value.trim();
       const email = document.getElementById('pEmail').value.trim();
       if (!name || !phone) { alert('Please enter your name and phone number.'); return; }
@@ -1148,30 +2153,30 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          patientName:  name,
+          patientName: name,
           patientPhone: phone,
           patientEmail: email,
-          service:      bState.service,
-          date:         bState.date,
-          timeSlot:     bState.time,
+          service: bState.service,
+          date: bState.date,
+          timeSlot: bState.time,
         }),
       })
-      .then(r => { if (!r.ok) throw new Error('Server error'); return r.json(); })
-      .then(() => {
-        document.getElementById('step3').classList.remove('active');
-        document.getElementById('rService').textContent  = bState.service;
-        const fmt = new Date(bState.date).toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-        document.getElementById('rDateTime').textContent = `${fmt} @ ${bState.time}`;
-        const success = document.getElementById('bookingSuccess');
-        success.style.display = 'flex';
-        setDots(4); // All done
-      })
-      .catch(err => {
-        console.error('Booking error:', err);
-        alert('Unable to submit booking. Please call us at +91 94440 12345.');
-        btn.textContent = 'Confirm Booking';
-        btn.disabled = false;
-      });
+        .then(r => { if (!r.ok) throw new Error('Server error'); return r.json(); })
+        .then(() => {
+          document.getElementById('step3').classList.remove('active');
+          document.getElementById('rService').textContent = bState.service;
+          const fmt = new Date(bState.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+          document.getElementById('rDateTime').textContent = `${fmt} @ ${bState.time}`;
+          const success = document.getElementById('bookingSuccess');
+          success.style.display = 'flex';
+          setDots(4); // All done
+        })
+        .catch(err => {
+          console.error('Booking error:', err);
+          alert('Unable to submit booking. Please call us at +91 94440 12345.');
+          btn.textContent = 'Confirm Booking';
+          btn.disabled = false;
+        });
     }
 
     function resetBooking() {
@@ -1179,7 +2184,7 @@
       svcGrid.querySelectorAll('.svc-card').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('apptDate').value = '';
-      document.getElementById('pName').value  = '';
+      document.getElementById('pName').value = '';
       document.getElementById('pPhone').value = '';
       document.getElementById('pEmail').value = '';
       document.getElementById('bookingSuccess').style.display = 'none';
@@ -1218,7 +2223,7 @@
 
     /* ── HAMBURGER ── */
     const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const mobileNav    = document.getElementById('mobileNav');
+    const mobileNav = document.getElementById('mobileNav');
 
     hamburgerBtn.addEventListener('click', () => {
       const open = hamburgerBtn.classList.toggle('open');
