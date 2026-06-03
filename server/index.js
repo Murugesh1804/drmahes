@@ -12,7 +12,7 @@ const rateLimit = require('express-rate-limit')
 const path = require('path')
 const fs = require('fs')
 
-const { initDatabase, Patient } = require('./db')
+const { initDatabase, Patient, Appointment } = require('./db')
 const queries = require('./queries')
 const { handleLogin, verifyToken } = require('./auth')
 
@@ -25,7 +25,10 @@ const ALLOWED_ORIGINS = [
   'https://drmahesdentistry.in',
   'https://www.drmahesdentistry.in',
   'http://localhost:5173',   // Vite dev server
+  'http://localhost:5500',
   'http://localhost:5000',
+  'http://127.0.0.1:5500',
+  'http://127.0.0.1:5000',
 ]
 
 // ── SECURITY HEADERS (helmet) ────────────────────────────────────────────────
@@ -141,6 +144,35 @@ app.post('/api/appointments/website-book', async (req, res) => {
     })
 
     res.status(201).json({ patient, appt })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Public endpoint to get available slots for a specific date
+app.get('/api/appointments/available-slots', async (req, res) => {
+  try {
+    const { date } = req.query
+    if (!date) {
+      return res.status(400).json({ error: 'Date query parameter is required' })
+    }
+
+    const allSlots = [
+      '10:00 AM', '11:00 AM', '12:00 PM',
+      '04:00 PM', '05:00 PM', '06:00 PM',
+      '07:00 PM', '08:00 PM', '09:00 PM'
+    ]
+
+    // Find non-cancelled appointments for this date
+    const booked = await Appointment.find({
+      scheduled_date: date,
+      status: { $ne: 'cancelled' }
+    }).select('scheduled_time').lean()
+
+    const bookedSlots = booked.map(a => a.scheduled_time)
+    const availableSlots = allSlots.filter(slot => !bookedSlots.includes(slot))
+
+    res.json({ date, availableSlots })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

@@ -73,6 +73,9 @@
     html {
       scroll-behavior: smooth;
       font-size: 16px;
+      overflow-x: hidden;
+      max-width: 100%;
+      width: 100%;
     }
 
     body {
@@ -81,6 +84,10 @@
       color: var(--text-primary);
       line-height: 1.65;
       overflow-x: hidden;
+      max-width: 100%;
+      width: 100%;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
       transition: background-color 0.4s ease, color 0.4s ease;
     }
 
@@ -211,7 +218,7 @@
     }
 
     .logo-img {
-      height: 96px;
+      height: 70px;
       width: auto;
       object-fit: contain;
       transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
@@ -503,6 +510,8 @@
       padding: 20px 0;
       overflow: hidden;
       white-space: nowrap;
+      width: 100%;
+      max-width: 100%;
     }
 
     .marquee-content {
@@ -1438,7 +1447,7 @@
 
     @media (max-width: 768px) {
       .logo-img {
-        height: 86px;
+        height: 60px;
       }
 
       .nav-links {
@@ -1499,7 +1508,7 @@
 
     @media (max-width: 480px) {
       .logo-img {
-        height: 68px;
+        height: 50px;
       }
 
       .hero-title {
@@ -1528,7 +1537,7 @@
   <header class="header" id="header">
     <div class="container nav-container">
       <a href="#" class="logo">
-        <img src="assets/nav_logo.png" alt="Dr. Mahe's Dentistry" class="logo-img">
+        <img src="assets/logo_white.png" alt="Dr. Mahe's Dentistry" class="logo-img">
       </a>
 
       <nav class="nav-links" aria-label="Main navigation">
@@ -1574,9 +1583,8 @@
           <a href="#treatments" class="btn btn-secondary">Our Treatments</a>
         </div>
         <div class="hero-pills">
-          <span class="hero-pill"><span class="hero-pill-dot"></span>Digital X-Ray &amp; 3D Scans</span>
-          <span class="hero-pill"><span class="hero-pill-dot"></span>Class-B Sterilized</span>
-          <span class="hero-pill"><span class="hero-pill-dot"></span>Mon – Sat · 9:30 AM – 8:30 PM</span>
+          <span class="hero-pill"><span class="hero-pill-dot"></span>Digital X-Ray</span>
+          <span class="hero-pill"><span class="hero-pill-dot"></span>Mon – Sat · 10:00 AM – 10:00 PM</span>
         </div>
       </div>
       <div class="hero-visual">
@@ -1726,21 +1734,29 @@
               <span class="contact-icon">📞</span>
               <div>
                 <div class="contact-label">Call or WhatsApp</div>
-                <div class="contact-value"><a href="tel:+919444012345">+91 94440 12345</a></div>
+                <div class="contact-value"><a href="tel:+919342803217">+91 93428 03217</a></div>
+              </div>
+            </div>
+            <div class="contact-row">
+              <span class="contact-icon">✉️</span>
+              <div>
+                <div class="contact-label">Email Us</div>
+                <div class="contact-value"><a href="mailto:smile@drmahesdentistry.in">smile@drmahesdentistry.in</a>
+                </div>
               </div>
             </div>
             <div class="contact-row">
               <span class="contact-icon">📍</span>
               <div>
                 <div class="contact-label">Location</div>
-                <div class="contact-value">Porur High Road, Porur<br>Chennai – 600116</div>
+                <div class="contact-value">1st floor, Kundrathur Main Rd,<br>Jaya Nagar, Porur, Chennai – 600116</div>
               </div>
             </div>
             <div class="contact-row">
               <span class="contact-icon">🕐</span>
               <div>
                 <div class="contact-label">Clinic Hours</div>
-                <div class="contact-value">Mon – Sat: 9:30 AM – 8:30 PM</div>
+                <div class="contact-value">Mon – Sat: 10:00 AM – 10:00 PM<br>(Sunday: On Appointment)</div>
               </div>
             </div>
           </div>
@@ -1780,13 +1796,15 @@
               <div>
                 <div class="dt-label">Available Time Slots</div>
                 <div class="time-grid" id="timeGrid">
-                  <button class="time-btn" onclick="pickTime('09:30 AM', this)">09:30 AM</button>
-                  <button class="time-btn" onclick="pickTime('10:30 AM', this)">10:30 AM</button>
-                  <button class="time-btn" onclick="pickTime('11:30 AM', this)">11:30 AM</button>
-                  <button class="time-btn" onclick="pickTime('04:30 PM', this)">04:30 PM</button>
-                  <button class="time-btn" onclick="pickTime('05:30 PM', this)">05:30 PM</button>
-                  <button class="time-btn" onclick="pickTime('06:30 PM', this)">06:30 PM</button>
-                  <button class="time-btn" onclick="pickTime('07:30 PM', this)">07:30 PM</button>
+                  <button class="time-btn" onclick="pickTime('10:00 AM', this)">10:00 AM</button>
+                  <button class="time-btn" onclick="pickTime('11:00 AM', this)">11:00 AM</button>
+                  <button class="time-btn" onclick="pickTime('12:00 PM', this)">12:00 PM</button>
+                  <button class="time-btn" onclick="pickTime('04:00 PM', this)">04:00 PM</button>
+                  <button class="time-btn" onclick="pickTime('05:00 PM', this)">05:00 PM</button>
+                  <button class="time-btn" onclick="pickTime('06:00 PM', this)">06:00 PM</button>
+                  <button class="time-btn" onclick="pickTime('07:00 PM', this)">07:00 PM</button>
+                  <button class="time-btn" onclick="pickTime('08:00 PM', this)">08:00 PM</button>
+                  <button class="time-btn" onclick="pickTime('09:00 PM', this)">09:00 PM</button>
                 </div>
               </div>
             </div>
@@ -1862,22 +1880,23 @@
           <div class="loc-card">
             <div class="loc-label">📍 Address</div>
             <div class="loc-main">Dr. Mahe's Dentistry</div>
-            <div class="loc-sub">Porur High Road, Porur<br>Chennai, Tamil Nadu — 600116</div>
+            <div class="loc-sub">1st floor, Kundrathur Main Rd,<br>Jaya Nagar, Porur, Chennai – 600116</div>
           </div>
           <div class="loc-card">
             <div class="loc-label">📞 Phone &amp; WhatsApp</div>
-            <div class="loc-main"><a href="tel:+919444012345" style="color:var(--text-primary);">+91 94440 12345</a>
+            <div class="loc-main"><a href="tel:+919342803217" style="color:var(--text-primary);">+91 93428 03217</a>
             </div>
-            <div class="loc-sub"><a href="https://wa.me/919444012345" target="_blank" rel="noopener noreferrer">💬 Chat
+            <div class="loc-sub"><a href="https://wa.me/919342803217" target="_blank" rel="noopener noreferrer">💬 Chat
                 on WhatsApp →</a></div>
           </div>
           <div class="loc-card">
             <div class="loc-label">🕐 Clinic Hours</div>
             <div class="loc-main">Monday – Saturday</div>
-            <div class="loc-sub">9:30 AM – 8:30 PM<br><span class="loc-closed">Sunday: Closed</span></div>
+            <div class="loc-sub">10:00 AM – 10:00 PM<br><span class="loc-closed" style="color: var(--accent);">Sunday:
+                Based on appointments</span></div>
           </div>
-          <a href="https://www.google.com/maps/search/Porur+High+Road+Porur+Chennai+600116" target="_blank"
-            rel="noopener noreferrer" class="directions-btn">
+          <a href="https://www.google.com/maps/search/?api=1&query=Dr.+Mahe%27s+Dentistry,+Jaya+Nagar,+Porur"
+            target="_blank" rel="noopener noreferrer" class="directions-btn">
             ↗ &nbsp;Get Directions on Google Maps
           </a>
         </div>
@@ -1885,7 +1904,7 @@
         <div>
           <div class="map-frame">
             <iframe
-              src="https://maps.google.com/maps?q=Porur+High+Road,+Porur,+Chennai,+Tamil+Nadu+600116&output=embed&z=15"
+              src="https://maps.google.com/maps?q=1st+floor,+Kundrathur+Main+Rd,+Jaya+Nagar,+Porur,+Chennai,+Tamil+Nadu+600116&output=embed&z=15"
               allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
               title="Dr. Mahe's Dentistry location — Porur Chennai">
             </iframe>
@@ -1965,9 +1984,7 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <div class="logo">
-          <img src="assets/nav_logo.png" alt="Dr. Mahe's Dentistry" class="logo-img"
-            style="filter:brightness(0.82) grayscale(0.15);">
-          <div class="logo-text" style="color:#FFFFFF;">Dr. Mahe's <span>Dentistry</span></div>
+          <img src="assets/logo_black.png" alt="Dr. Mahe's Dentistry" class="logo-img">
         </div>
         <p class="footer-desc">Modern dental care centred on precision, patient comfort and full transparency.
           Implants, endodontics, orthodontics and cosmetic dentistry — by Dr. Maheswari in Porur, Chennai.</p>
@@ -1986,13 +2003,14 @@
       <div class="footer-col">
         <h4>Contact Us</h4>
         <ul class="footer-list">
-          <li class="footer-item"><a href="tel:+919444012345">+91 94440 12345</a></li>
-          <li class="footer-item"><a href="https://wa.me/919444012345" target="_blank" rel="noopener">WhatsApp Us</a>
+          <li class="footer-item"><a href="tel:+919342803217">+91 93428 03217</a></li>
+          <li class="footer-item"><a href="https://wa.me/919342803217" target="_blank" rel="noopener">WhatsApp Us</a>
           </li>
-          <li class="footer-item" style="margin-top:6px;">Porur High Road, Porur</li>
-          <li class="footer-item">Chennai, Tamil Nadu — 600116</li>
-          <li class="footer-item" style="margin-top:10px; color:var(--accent);">Mon – Sat: 9:30 AM – 8:30 PM</li>
-          <li class="footer-item" style="color:#C0392B;">Sunday: Closed</li>
+          <li class="footer-item"><a href="mailto:smile@drmahesdentistry.in">smile@drmahesdentistry.in</a></li>
+          <li class="footer-item" style="margin-top:6px;">1st floor, Kundrathur Main Rd,</li>
+          <li class="footer-item">Jaya Nagar, Porur, Chennai — 600116</li>
+          <li class="footer-item" style="margin-top:10px; color:var(--accent);">Mon – Sat: 10:00 AM – 10:00 PM</li>
+          <li class="footer-item" style="color:var(--accent);">Sunday: On Appointment</li>
         </ul>
       </div>
     </div>
@@ -2126,7 +2144,41 @@
     }
 
     function onDateChange() {
-      bState.date = document.getElementById('apptDate').value;
+      const selectedDate = document.getElementById('apptDate').value;
+      bState.date = selectedDate;
+      if (!selectedDate) return;
+
+      const timeGrid = document.getElementById('timeGrid');
+      timeGrid.innerHTML = '<div style="grid-column: span 3; text-align: center; font-size: 0.86rem; color: var(--text-secondary);">Loading available slots...</div>';
+
+      const apiOrigin = (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
+        ? 'http://localhost:5000'
+        : 'https://portal.drmahesdentistry.in';
+
+      fetch(`${apiOrigin}/api/appointments/available-slots?date=${selectedDate}`)
+        .then(r => { if (!r.ok) throw new Error('Failed to load slots'); return r.json(); })
+        .then(data => {
+          timeGrid.innerHTML = '';
+          bState.time = ''; // Reset selected slot
+
+          if (!data.availableSlots || data.availableSlots.length === 0) {
+            timeGrid.innerHTML = '<div style="grid-column: span 3; text-align: center; font-size: 0.86rem; color: #C0392B; font-weight: 600;">No slots available for this day.</div>';
+            return;
+          }
+
+          data.availableSlots.forEach(slot => {
+            const btn = document.createElement('button');
+            btn.className = 'time-btn';
+            btn.type = 'button';
+            btn.textContent = slot;
+            btn.onclick = () => pickTime(slot, btn);
+            timeGrid.appendChild(btn);
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          timeGrid.innerHTML = '<div style="grid-column: span 3; text-align: center; font-size: 0.86rem; color: #C0392B;">Error loading slots.</div>';
+        });
     }
 
     function pickTime(slot, btn) {
@@ -2173,7 +2225,7 @@
         })
         .catch(err => {
           console.error('Booking error:', err);
-          alert('Unable to submit booking. Please call us at +91 94440 12345.');
+          alert('Unable to submit booking. Please call us at +91 93428 03217.');
           btn.textContent = 'Confirm Booking';
           btn.disabled = false;
         });
