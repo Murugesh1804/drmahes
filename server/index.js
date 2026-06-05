@@ -317,6 +317,20 @@ app.get('/api/consent/:patientId', async (req, res) => {
   }
 })
 
+// ── WHATSAPP WEBHOOK VERIFICATION (public) ──────────────────────────────────
+app.get('/api/webhook/whatsapp', (req, res) => {
+  const VERIFY_TOKEN = 'drmahe123'
+  const mode = req.query['hub.mode']
+  const token = req.query['hub.verify_token']
+  const challenge = req.query['hub.challenge']
+
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    return res.status(200).send(challenge)
+  }
+
+  return res.sendStatus(403)
+})
+
 // ── AUTH MIDDLEWARE — Protects all /api routes below this line ────────────────
 app.use('/api', verifyToken)
 
@@ -580,26 +594,6 @@ app.get('/api/dashboard/stats', async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
-
-// ── WHATSAPP WEBHOOK VERIFICATION (public) ─────────────────────────────────
-app.get("api/webhook/whatsapp", (req, res) => {
-
-  const VERIFY_TOKEN = "drmahe123";
-
-  const mode = req.query["hub.mode"];
-  const token = req.query["hub.verify_token"];
-  const challenge = req.query["hub.challenge"];
-
-  if (
-    mode === "subscribe" &&
-    token === VERIFY_TOKEN
-  ) {
-    return res.status(200).send(challenge);
-  }
-
-  return res.sendStatus(403);
-});
-
 
 // ── BACKUP ────────────────────────────────────────────────────────────────────
 // Returns only DB name/status — NOT the full connection URI
