@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Patient Check-in Kiosk</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                            950: '#042f2e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .hidden { display: none !important; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        canvas { touch-action: none; } /* Prevents scrolling while signing */
+    </style>
+</head>
+<body class="bg-[#060c18] text-slate-100 min-h-screen flex flex-col selection:bg-primary-500/30">
+
+    <!-- Top bar -->
+    <header class="flex items-center justify-between px-8 py-5 border-b border-slate-900/60 bg-[#0d1527]/80 backdrop-blur-md z-10 flex-shrink-0">
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-white/10 border border-white/5 shadow-md shadow-slate-950/20 rounded-xl flex items-center justify-center text-primary-400 font-black text-2xl">
+                D
+            </div>
+            <div>
+                <p id="clinic-name-display" class="text-white font-extrabold text-xl tracking-tight leading-none">Dr. Mahe's Dentistry</p>
+                <p class="text-slate-400 text-xs mt-1.5 font-medium tracking-wide uppercase">Patient Self Check-in</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="btn-fullscreen" class="text-xs text-slate-300 hover:text-white border border-slate-800 hover:border-slate-600 rounded-xl px-4 py-2.5 transition-all font-semibold bg-slate-950/30">
+                Fullscreen Kiosk
+            </button>
+        </div>
+    </header>
+
+    <!-- Progress Indicator -->
+    <div class="w-full max-w-lg mx-auto mt-8 px-6">
+        <div class="flex items-center justify-between relative">
+            <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-slate-800 -z-10 rounded-full"></div>
+            <div id="progress-bar" class="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary-500 -z-10 rounded-full transition-all duration-300" style="width: 10%"></div>
+
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center gap-2">
+                <div id="step1-icon" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-600 border-primary-500 text-white ring-4 ring-primary-950/50">1</div>
+                <span id="step1-text" class="text-xs font-bold transition-all duration-300 text-primary-400">Details</span>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="flex flex-col items-center gap-2">
+                <div id="step2-icon" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-[#0b1222] border-slate-800 text-slate-600">2</div>
+                <span id="step2-text" class="text-xs font-bold transition-all duration-300 text-slate-500">Consent</span>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="flex flex-col items-center gap-2">
+                <div id="step3-icon" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-[#0b1222] border-slate-800 text-slate-600">3</div>
+                <span id="step3-text" class="text-xs font-bold transition-all duration-300 text-slate-500">Complete</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-1 flex items-center justify-center px-6 py-6 overflow-y-auto">
+        
+        <!-- STEP 1: FORM -->
+        <div id="view-form" class="w-full max-w-2xl bg-[#0b1222]/80 p-8 rounded-[2rem] border border-slate-900/60 shadow-2xl shadow-slate-950/40 animate-fade-in my-6">
+            <div class="text-center mb-8">
+                <h1 class="text-white text-3xl font-black tracking-tight mb-2">Welcome to Our Clinic</h1>
+                <p class="text-slate-400 text-sm">Please register your information to enter the treatment queue</p>
+            </div>
+
+            <div id="form-error" class="hidden bg-red-500/10 border border-red-500/20 rounded-2xl px-5 py-3.5 text-red-300 text-sm font-semibold mb-6 text-center">
+                ⚠️ <span id="form-error-text"></span>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Name -->
+                <div>
+                    <label class="block text-slate-300 font-bold text-sm mb-2">Full Name *</label>
+                    <input id="f-name" class="w-full bg-[#060a12]/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl px-5 py-4 text-white text-base placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Enter your full name">
+                </div>
+
+                <!-- Phone -->
+                <div>
+                    <label class="block text-slate-300 font-bold text-sm mb-2">Phone Number *</label>
+                    <input id="f-phone" type="tel" inputmode="tel" class="w-full bg-[#060a12]/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl px-5 py-4 text-white text-base placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Enter 10-digit mobile number">
+                </div>
+
+                <!-- Age + Gender -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-300 font-bold text-sm mb-2">Age (optional)</label>
+                        <input id="f-age" type="number" inputmode="numeric" min="1" max="120" class="w-full bg-[#060a12]/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl px-5 py-4 text-white text-base placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Enter your age">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-bold text-sm mb-2">Gender</label>
+                        <div class="flex gap-2" id="gender-buttons">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Complaint -->
+                <div>
+                    <label class="block text-slate-300 font-bold text-sm mb-3">Primary Dental Concern *</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" id="complaint-buttons">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                    <label class="block text-slate-300 font-bold text-sm mb-2">Details / Remarks (optional)</label>
+                    <textarea id="f-notes" class="w-full bg-[#060a12]/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl px-5 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none transition-all" rows="2" placeholder="Mention active tooth pain locations, systemic diseases, allergies, etc."></textarea>
+                </div>
+
+                <button id="btn-proceed" class="w-full bg-primary-600 hover:bg-primary-500 text-white font-extrabold text-lg py-4 rounded-2xl shadow-xl shadow-primary-950/40 transition-all mt-2 flex items-center justify-center gap-2">
+                    Proceed to Treatment Consent <span class="text-xl">→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: CONSENT -->
+        <div id="view-consent" class="hidden w-full max-w-2xl bg-[#0b1222]/80 p-8 rounded-[2rem] border border-slate-900/60 shadow-2xl animate-fade-in flex flex-col my-6">
+            <div class="flex items-center gap-3 mb-6">
+                <button id="btn-back-form" class="text-slate-400 hover:text-white p-2 hover:bg-slate-800/40 rounded-xl transition-all">←</button>
+                <div>
+                    <h2 class="text-white text-2xl font-bold tracking-tight">Clinical Consent</h2>
+                    <p class="text-slate-400 text-xs mt-0.5">Step 2: Sign declaration agreement</p>
+                </div>
+            </div>
+
+            <div id="consent-error" class="hidden bg-red-500/10 border border-red-500/20 rounded-2xl px-5 py-3 text-red-300 text-sm font-semibold mb-5 text-center">
+                ⚠️ <span id="consent-error-text"></span>
+            </div>
+
+            <div class="bg-[#060a12]/80 rounded-2xl p-6 border border-slate-800/80 text-slate-300 text-sm leading-relaxed mb-6 relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-24 h-24 bg-primary-500/5 rounded-full blur-2xl"></div>
+                <p class="font-semibold text-white mb-2 uppercase text-xs tracking-wider text-primary-400">Treatment Authorization</p>
+                I, <strong class="text-white" id="display-name"></strong>, hereby consent to undergo clinical diagnostic scans, dental cleanings, and treatments deemed necessary by the specialist team. I confirm the treatment options, procedural risks, and associated budgets have been outlined to my satisfaction.
+            </div>
+
+            <!-- Signature -->
+            <div class="flex flex-col">
+                <div class="flex justify-between items-center mb-2.5">
+                    <label class="text-slate-300 font-bold text-sm">Patient Signature Space *</label>
+                    <button id="btn-clear-sig" class="text-slate-500 hover:text-slate-300 text-xs transition-colors font-semibold">↺ Clear Canvas</button>
+                </div>
+                <div class="bg-white rounded-2xl overflow-hidden shadow-inner border-2 border-slate-800 p-2" style="height: 220px;">
+                    <canvas id="sig-canvas" class="w-full h-full cursor-crosshair bg-white touch-none"></canvas>
+                </div>
+                <p class="text-slate-500 text-xs text-center mt-2.5">Use your finger or mouse pointer to sign within the white box</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 mt-8">
+                <button id="btn-back-form2" class="flex-1 bg-slate-950/60 hover:bg-slate-900/60 text-slate-300 border border-slate-800 font-bold py-4 rounded-2xl transition-all">
+                    Back to Details
+                </button>
+                <button id="btn-submit" class="flex-1 bg-primary-600 hover:bg-primary-500 text-white font-extrabold text-base py-4 rounded-2xl shadow-lg transition-all">
+                    Agree & Finish Check In ✓
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: SUCCESS -->
+        <div id="view-success" class="hidden text-center animate-fade-in max-w-md w-full bg-[#0b1222]/80 p-8 rounded-[2rem] border border-slate-900/60 shadow-2xl my-6">
+            <div class="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-5 text-emerald-400 text-4xl">✓</div>
+            <h2 class="text-white text-3xl font-black mb-1">Check-in Complete!</h2>
+            <p class="text-slate-400 text-sm mb-8">Please wait in the reception. We will call you shortly.</p>
+
+            <div class="bg-[#060a12]/80 rounded-2xl p-8 border border-slate-800/80 mb-8 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-primary-500/5 to-transparent pointer-events-none"></div>
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1.5">Your Queue Number</p>
+                <p id="success-queue" class="text-primary-400 text-8xl font-black leading-none">1</p>
+                <p id="success-name" class="text-white mt-5 text-lg font-bold">John Doe</p>
+                <p id="success-complaint" class="text-slate-400 text-sm mt-0.5 font-medium">Check-up</p>
+            </div>
+
+            <button id="btn-done" class="w-full bg-slate-850 hover:bg-slate-800 text-white font-bold py-4 rounded-2xl transition-all border border-slate-800">
+                Done / Next Patient →
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // --- CONSTANTS ---
+        const GENDERS = ['Male', 'Female', 'Other'];
+        const COMPLAINTS = [
+            { name: 'Toothache', icon: '⚡' },
+            { name: 'Tooth Sensitivity', icon: '❄️' },
+            { name: 'Bleeding Gums', icon: '🩸' },
+            { name: 'Broken Tooth', icon: '💥' },
+            { name: 'Cleaning Required', icon: '🧼' },
+            { name: 'Check-up', icon: '🔍' },
+            { name: 'Cavity / Filling', icon: '🕳️' },
+            { name: 'Missing Tooth', icon: '🦷' },
+            { name: 'Braces / Alignment', icon: '😬' },
+            { name: 'Other', icon: '💬' },
+        ];
+
+        // --- STATE ---
+        let state = {
+            step: 'form', // form, consent, success
+            form: { name: '', phone: '', age: '', gender: 'Male', complaint: '', notes: '' },
+            hasSigned: false
+        };
+
+        // --- DOM ELEMENTS ---
+        const el = id => document.getElementById(id);
+        const views = {
+            form: el('view-form'),
+            consent: el('view-consent'),
+            success: el('view-success')
+        };
+        const steps = [
+            { icon: el('step1-icon'), text: el('step1-text') },
+            { icon: el('step2-icon'), text: el('step2-text') },
+            { icon: el('step3-icon'), text: el('step3-text') }
+        ];
+
+        // --- INITIALIZATION ---
+        function renderGenderButtons() {
+            const container = el('gender-buttons');
+            container.innerHTML = '';
+            GENDERS.forEach(g => {
+                const btn = document.createElement('button');
+                const isSelected = state.form.gender === g;
+                btn.className = `flex-1 py-4 rounded-2xl font-bold text-sm transition-all border ${isSelected ? 'bg-primary-600 border-primary-500 text-white shadow-lg' : 'bg-[#060a12]/80 border-slate-800 text-slate-400 hover:bg-slate-900/40'}`;
+                btn.textContent = g;
+                btn.onclick = () => { state.form.gender = g; renderGenderButtons(); };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderComplaintButtons() {
+            const container = el('complaint-buttons');
+            container.innerHTML = '';
+            COMPLAINTS.forEach(c => {
+                const btn = document.createElement('button');
+                const isSelected = state.form.complaint === c.name;
+                btn.className = `px-4 py-3.5 rounded-2xl font-bold text-xs text-left border flex items-center gap-2.5 transition-all ${isSelected ? 'bg-primary-950 border-primary-500 text-primary-300 shadow-md ring-1 ring-primary-500/30' : 'bg-[#060a12]/30 border-slate-900/60 text-slate-400 hover:border-slate-800 hover:bg-slate-900/20'}`;
+                btn.innerHTML = `<span class="text-base">${c.icon}</span><span>${c.name}</span>`;
+                btn.onclick = () => { state.form.complaint = c.name; renderComplaintButtons(); };
+                container.appendChild(btn);
+            });
+        }
+
+        function setStep(newStep) {
+            state.step = newStep;
+            
+            // Hide all views
+            Object.values(views).forEach(v => v.classList.add('hidden'));
+            
+            // Show current
+            views[newStep].classList.remove('hidden');
+
+            // Update Progress Bar
+            const bar = el('progress-bar');
+            if (newStep === 'form') bar.style.width = '10%';
+            if (newStep === 'consent') bar.style.width = '50%';
+            if (newStep === 'success') bar.style.width = '100%';
+
+            // Step 1 UI
+            if (newStep === 'form') {
+                steps[0].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-600 border-primary-500 text-white ring-4 ring-primary-950/50";
+                steps[0].icon.innerHTML = "1";
+                steps[0].text.className = "text-xs font-bold transition-all duration-300 text-primary-400";
+            } else {
+                steps[0].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-950 border-primary-600 text-primary-400";
+                steps[0].icon.innerHTML = "✓";
+                steps[0].text.className = "text-xs font-bold transition-all duration-300 text-slate-500";
+            }
+
+            // Step 2 UI
+            if (newStep === 'consent') {
+                steps[1].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-600 border-primary-500 text-white ring-4 ring-primary-950/50";
+                steps[1].icon.innerHTML = "2";
+                steps[1].text.className = "text-xs font-bold transition-all duration-300 text-primary-400";
+                
+                // Initialize canvas sizes
+                initCanvas();
+            } else if (newStep === 'success') {
+                steps[1].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-950 border-primary-600 text-primary-400";
+                steps[1].icon.innerHTML = "✓";
+                steps[1].text.className = "text-xs font-bold transition-all duration-300 text-slate-500";
+            } else {
+                steps[1].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-[#0b1222] border-slate-800 text-slate-600";
+                steps[1].icon.innerHTML = "2";
+                steps[1].text.className = "text-xs font-bold transition-all duration-300 text-slate-500";
+            }
+
+            // Step 3 UI
+            if (newStep === 'success') {
+                steps[2].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-emerald-600 border-emerald-500 text-white ring-4 ring-emerald-950/50";
+                steps[2].text.className = "text-xs font-bold transition-all duration-300 text-emerald-400";
+            } else {
+                steps[2].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-[#0b1222] border-slate-800 text-slate-600";
+                steps[2].text.className = "text-xs font-bold transition-all duration-300 text-slate-500";
+            }
+        }
+
+        // --- ACTIONS ---
+        function showError(view, msg) {
+            const errDiv = el(view + '-error');
+            const errTxt = el(view + '-error-text');
+            if(msg) {
+                errTxt.textContent = msg;
+                errDiv.classList.remove('hidden');
+            } else {
+                errDiv.classList.add('hidden');
+            }
+        }
+
+        el('btn-proceed').onclick = () => {
+            state.form.name = el('f-name').value;
+            state.form.phone = el('f-phone').value;
+            state.form.age = el('f-age').value;
+            state.form.notes = el('f-notes').value;
+
+            if (!state.form.name.trim()) return showError('form', 'Please enter your full name');
+            if (!state.form.phone.trim()) return showError('form', 'Please enter your phone number');
+            if (!state.form.complaint) return showError('form', 'Please select your complaint');
+            
+            showError('form', '');
+            el('display-name').textContent = state.form.name;
+            setStep('consent');
+        };
+
+        el('btn-back-form').onclick = () => setStep('form');
+        el('btn-back-form2').onclick = () => setStep('form');
+
+        // --- SIGNATURE CANVAS LOGIC ---
+        const canvas = el('sig-canvas');
+        let ctx = null;
+        let drawing = false;
+        let lastPos = {x:0, y:0};
+
+        function initCanvas() {
+            if(!ctx) {
+                ctx = canvas.getContext('2d');
+            }
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            clearCanvas();
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#0f766e';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            state.hasSigned = false;
+            showError('consent', '');
+        }
+
+        el('btn-clear-sig').onclick = clearCanvas;
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startDrawing(e) {
+            e.preventDefault();
+            drawing = true;
+            lastPos = getPos(e);
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(lastPos.x, lastPos.y);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            lastPos = pos;
+            state.hasSigned = true;
+        }
+
+        function stopDrawing(e) {
+            if(e) e.preventDefault();
+            drawing = false;
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+        
+        canvas.addEventListener('touchstart', startDrawing, {passive: false});
+        canvas.addEventListener('touchmove', draw, {passive: false});
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function getCompressedSignature() {
+            if (!state.hasSigned) return null;
+            const smallCanvas = document.createElement('canvas');
+            smallCanvas.width = 400;
+            smallCanvas.height = 200;
+            const sCtx = smallCanvas.getContext('2d');
+            sCtx.drawImage(canvas, 0, 0, smallCanvas.width, smallCanvas.height);
+            return smallCanvas.toDataURL('image/jpeg', 0.3);
+        }
+
+        // --- SUBMISSION ---
+        el('btn-submit').onclick = async () => {
+            if (!state.hasSigned) return showError('consent', 'Please sign the consent form before checking in.');
+            const sig = getCompressedSignature();
+            
+            const btn = el('btn-submit');
+            btn.disabled = true;
+            btn.textContent = 'Registering...';
+            showError('consent', '');
+
+            try {
+                const payload = {
+                    name: state.form.name.trim(),
+                    phone: state.form.phone.trim(),
+                    age: state.form.age ? Number(state.form.age) : null,
+                    gender: state.form.gender,
+                    complaint: state.form.complaint,
+                    notes: state.form.notes,
+                    signature: sig
+                };
+
+                const res = await fetch('/api/consent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if(!res.ok) throw new Error('API Error');
+                const data = await res.json();
+
+                // Success
+                el('success-queue').textContent = data.appt.queue_number;
+                el('success-name').textContent = data.patient.name;
+                el('success-complaint').textContent = state.form.complaint;
+                setStep('success');
+
+            } catch (err) {
+                console.error(err);
+                showError('consent', 'Something went wrong saving consent. Please ask staff for help.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Agree & Finish Check In ✓';
+            }
+        };
+
+        // --- RESET ---
+        el('btn-done').onclick = () => {
+            state.form = { name: '', phone: '', age: '', gender: 'Male', complaint: '', notes: '' };
+            el('f-name').value = '';
+            el('f-phone').value = '';
+            el('f-age').value = '';
+            el('f-notes').value = '';
+            renderGenderButtons();
+            renderComplaintButtons();
+            setStep('form');
+        };
+
+        // --- FULLSCREEN ---
+        el('btn-fullscreen').onclick = () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+                el('btn-fullscreen').textContent = 'Exit Fullscreen';
+            } else {
+                document.exitFullscreen();
+                el('btn-fullscreen').textContent = 'Fullscreen Kiosk';
+            }
+        };
+
+        // Initialize
+        renderGenderButtons();
+        renderComplaintButtons();
+
+    </script>
+</body>
+</html>

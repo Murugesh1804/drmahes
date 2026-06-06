@@ -160,6 +160,7 @@ async function getAppointmentsByDate(date) {
     scheduled_time: a.scheduled_time || '',
     reason: a.reason || '',
     status: a.status || 'waiting',
+    call_status: a.call_status || 'not_required',
     queue_number: a.queue_number || 1,
     notes: a.notes || '',
     created_at: a.created_at
@@ -190,6 +191,7 @@ async function getPatientAppointments(patientId) {
       ...a,
       id: a._id.toString(),
       patient_id: a.patient_id.toString(),
+      call_status: a.call_status || 'not_required',
       treatment_count: count,
       treatment_total: total
     })
@@ -216,6 +218,7 @@ async function addAppointment(data) {
     scheduled_time: data.scheduled_time || '',
     reason: data.reason || '',
     status: 'waiting',
+    call_status: data.call_status || 'not_required',
     queue_number: queueNumber,
     notes: data.notes || ''
   })
@@ -251,6 +254,34 @@ async function deleteAppointment(id) {
   if (!isValidObjectId(id)) return { success: false }
   await Appointment.findByIdAndDelete(id)
   return { success: true }
+}
+
+async function updateAppointmentCallStatus(id, call_status) {
+  if (!isValidObjectId(id)) return null
+  await Appointment.findByIdAndUpdate(id, { $set: { call_status } })
+  return { id, call_status }
+}
+
+async function getPendingCalls() {
+  const appts = await Appointment.find({ call_status: 'pending' })
+    .populate('patient_id')
+    .sort({ scheduled_date: 1, created_at: 1 })
+    .lean()
+
+  return appts.map(a => ({
+    id: a._id.toString(),
+    patient_id: a.patient_id ? a.patient_id._id.toString() : null,
+    patient_name: a.patient_id ? a.patient_id.name : '',
+    patient_phone: a.patient_id ? a.patient_id.phone : '',
+    patient_age: a.patient_id ? a.patient_id.age : null,
+    scheduled_date: a.scheduled_date,
+    scheduled_time: a.scheduled_time || '',
+    reason: a.reason || '',
+    status: a.status || 'waiting',
+    call_status: a.call_status,
+    notes: a.notes || '',
+    created_at: a.created_at
+  }))
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -481,6 +512,7 @@ async function getTodayQueue() {
     scheduled_time: a.scheduled_time || '',
     reason: a.reason || '',
     status: a.status || 'waiting',
+    call_status: a.call_status || 'not_required',
     queue_number: a.queue_number || 1,
     notes: a.notes || '',
     created_at: a.created_at
@@ -553,6 +585,7 @@ module.exports = {
   getAllPatients, searchPatients, getPatientById, addPatient, updatePatient,
   getTodayAppointments, getAppointmentsByDate, getPatientAppointments,
   addAppointment, updateAppointment, updateAppointmentStatus, deleteAppointment,
+  updateAppointmentCallStatus, getPendingCalls,
   getBlockedSlots, blockSlot, unblockSlot,
   getTreatmentsByAppointment, getTreatmentsByPatient, addTreatment, updateTreatment, deleteTreatment,
   getBillsByPatient, getBillById, createBill, updateBillPayment, getAllBills,

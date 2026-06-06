@@ -42,183 +42,247 @@ async function sendAppointmentConfirmation(toEmail, patientName, date, timeSlot,
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Appointment Confirmed - Dr. Mahe's Dentistry</title>
   <style>
+    :root {
+      --primary: #0ea5e9;
+      --primary-dark: #0284c7;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #334155;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f8fafc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
       margin: 0;
       padding: 0;
-      color: #1e293b;
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      padding: 40px 20px;
+      width: 100%;
+      box-sizing: border-box;
+      background-color: #f1f5f9;
     }
     .email-container {
       max-width: 600px;
-      margin: 40px auto;
-      background-color: #ffffff;
-      border-radius: 20px;
+      margin: 0 auto;
+      background-color: var(--card-bg);
+      border-radius: 24px;
       overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .header {
-      background: linear-gradient(135deg, #0ea5e9, #0284c7);
-      padding: 40px 30px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      padding: 48px 40px;
       text-align: center;
       color: #ffffff;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .logo-container {
+      margin-bottom: 8px;
+    }
+    .logo-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
     }
     .logo-text {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 800;
-      letter-spacing: 0.05em;
+      letter-spacing: -0.02em;
       margin: 0;
-      text-transform: uppercase;
+      color: #ffffff;
     }
     .logo-sub {
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: 500;
       opacity: 0.9;
-      margin-top: 4px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+      margin-top: 6px;
+      letter-spacing: 0.05em;
     }
     .content {
-      padding: 40px 35px;
+      padding: 48px 40px;
+      background-color: #ffffff;
     }
     .greeting {
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 700;
       color: #0f172a;
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
     .intro-text {
-      font-size: 15px;
+      font-size: 16px;
       line-height: 1.6;
       color: #475569;
-      margin-bottom: 30px;
+      margin-bottom: 36px;
     }
-    .details-card {
-      background-color: #f0f9ff;
-      border: 1px solid #e0f2fe;
-      border-radius: 16px;
-      padding: 25px;
-      margin-bottom: 30px;
+    .card-wrapper {
+      background-color: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 36px;
+      position: relative;
+    }
+    .card-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 6px; height: 100%;
+      background-color: var(--primary);
+      border-radius: 20px 0 0 20px;
     }
     .details-title {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
-      color: #0369a1;
+      color: var(--primary-dark);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 15px;
-      border-bottom: 1px solid #bae6fd;
-      padding-bottom: 8px;
-    }
-    .detail-row {
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
       display: flex;
-      margin-bottom: 12px;
-      font-size: 15px;
+      align-items: center;
+      gap: 8px;
     }
-    .detail-row:last-child {
-      margin-bottom: 0;
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
     .detail-label {
-      width: 110px;
+      font-size: 13px;
       font-weight: 600;
-      color: #64748b;
-      flex-shrink: 0;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     .detail-value {
-      font-weight: 700;
+      font-size: 17px;
+      font-weight: 600;
       color: #0f172a;
     }
-    .action-block {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .btn {
-      display: inline-block;
-      padding: 14px 30px;
-      background-color: #0284c7;
-      color: #ffffff !important;
-      text-decoration: none;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 15px;
-      box-shadow: 0 4px 6px -1px rgb(2 132 199 / 0.2);
-      transition: background-color 0.2s;
-    }
-    .btn:hover {
-      background-color: #0369a1;
-    }
     .note-box {
-      font-size: 13px;
+      font-size: 14px;
       line-height: 1.6;
-      color: #64748b;
-      background-color: #f8fafc;
-      border-left: 4px solid #cbd5e1;
-      padding: 15px;
-      border-radius: 0 12px 12px 0;
+      color: #475569;
+      background-color: #fffbeb;
+      border: 1px solid #fde68a;
+      padding: 20px 24px;
+      border-radius: 16px;
+      display: flex;
+      gap: 12px;
+    }
+    .note-icon {
+      font-size: 20px;
+      flex-shrink: 0;
     }
     .footer {
       background-color: #f8fafc;
-      padding: 30px;
+      padding: 36px 40px;
       text-align: center;
-      border-top: 1px solid #e2e8f0;
-      font-size: 12px;
-      color: #94a3b8;
-      line-height: 1.6;
+      border-top: 1px solid var(--border-color);
     }
     .footer-title {
       font-weight: 700;
-      color: #475569;
-      margin-bottom: 6px;
+      color: #334155;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+    .footer-text {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .footer-disclaimer {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    @media (max-width: 600px) {
+      .wrapper { padding: 20px 10px; }
+      .header { padding: 36px 24px; }
+      .content { padding: 36px 24px; }
+      .card-wrapper { padding: 24px; }
+      .footer { padding: 32px 24px; }
     }
   </style>
 </head>
 <body>
-  <div class="email-container">
-    <div class="header">
-      <div class="logo-text">DR. MAHE'S DENTISTRY</div>
-      <div class="logo-sub">Your Smile, Our Priority</div>
-    </div>
-    
-    <div class="content">
-      <div class="greeting">Hello ${patientName},</div>
-      <div class="intro-text">
-        Thank you for choosing Dr. Mahe's Dentistry. We are pleased to confirm that your appointment has been successfully booked. Please find the details of your visit below:
-      </div>
-      
-      <div class="details-card">
-        <div class="details-title">Appointment Summary</div>
-        
-        <div class="detail-row">
-          <span class="detail-label">Patient Name</span>
-          <span class="detail-value">${patientName}</span>
-        </div>
-        
-        <div class="detail-row">
-          <span class="detail-label">Date</span>
-          <span class="detail-value">${dateFormatted}</span>
-        </div>
-        
-        <div class="detail-row">
-          <span class="detail-label">Time Slot</span>
-          <span class="detail-value">${timeSlot || 'Walk-in'}</span>
-        </div>
-        
-        <div class="detail-row">
-          <span class="detail-label">Service</span>
-          <span class="detail-value">${service || 'General Consultation'}</span>
+  <div class="wrapper">
+    <div class="email-container">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-text">Dr. Mahe's Dentistry</div>
+          <div class="logo-sub">PREMIUM DENTAL CARE</div>
         </div>
       </div>
       
-      <div class="note-box">
-        <strong>Important Instructions:</strong> Please arrive 10 minutes prior to your scheduled time. If you need to reschedule or cancel your appointment, please contact the clinic at least 24 hours in advance.
+      <div class="content">
+        <div class="greeting">Hi ${patientName},</div>
+        <div class="intro-text">
+          Thank you for choosing Dr. Mahe's Dentistry. We're looking forward to your visit. Your appointment has been successfully confirmed. Here are your booking details:
+        </div>
+        
+        <div class="card-wrapper">
+          <div class="details-title">Appointment Details</div>
+          
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="detail-label">Date</span>
+              <span class="detail-value">${dateFormatted}</span>
+            </div>
+            
+            <div class="detail-item">
+              <span class="detail-label">Time</span>
+              <span class="detail-value">${timeSlot || 'Walk-in'}</span>
+            </div>
+            
+            <div class="detail-item">
+              <span class="detail-label">Service</span>
+              <span class="detail-value">${service || 'General Consultation'}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="note-box">
+          <div class="note-icon">💡</div>
+          <div>
+            <strong>Quick tip:</strong> Please arrive 10 minutes early to your appointment. Need to change your plans? Kindly let us know 24 hours in advance.
+          </div>
+        </div>
       </div>
-    </div>
-    
-    <div class="footer">
-      <div class="footer-title">Dr. Mahe's Dentistry</div>
-      1st Floor, Kundrathur Main Rd, Jaya Nagar, Porur, Chennai - 600116<br>
-      Clinic Phone: +91 94440 12345 · WhatsApp: +91 94440 12345<br>
-      <span style="display: block; margin-top: 15px; font-size: 10px;">This is an automated appointment confirmation email. Please do not reply directly to this message.</span>
+      
+      <div class="footer">
+        <div class="footer-title">Dr. Mahe's Dentistry</div>
+        <div class="footer-text">
+          1st Floor, Kundrathur Main Rd, Jaya Nagar<br>
+          Porur, Chennai - 600116
+        </div>
+        <div class="footer-text">
+          <strong>Phone:</strong> +91 94440 12345<br>
+          <strong>WhatsApp:</strong> +91 94440 12345
+        </div>
+        <div class="footer-disclaimer">
+          This is an automated message. Please do not reply directly to this email.
+        </div>
+      </div>
     </div>
   </div>
 </body>

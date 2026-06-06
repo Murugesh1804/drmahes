@@ -60,6 +60,10 @@ export const updateAppointment = (id, data) => request(`/appointments/${id}`, { 
 
 export const updateAppointmentStatus = (id, status) => request(`/appointments/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) })
 
+export const updateCallStatus = (id, status) => request(`/appointments/${id}/call-status`, { method: 'PUT', body: JSON.stringify({ status }) })
+
+export const getPendingCalls = () => request('/appointments/pending-calls')
+
 export const deleteAppointment = (id) => request(`/appointments/${id}`, { method: 'DELETE' })
 
 // ── Treatments ─────────────────────────────────────────────

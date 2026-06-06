@@ -151,7 +151,8 @@ app.post('/api/appointments/website-book', async (req, res) => {
       scheduled_date: date,
       scheduled_time: timeSlot,
       reason: service,
-      notes: 'Website online booking'
+      notes: 'Website online booking',
+      call_status: 'pending'
     })
 
     // Send confirmation email asynchronously if email is provided
@@ -441,6 +442,15 @@ app.put('/api/patients/:id', async (req, res) => {
 })
 
 // ── APPOINTMENTS ──────────────────────────────────────────────────────────────
+app.get('/api/appointments/pending-calls', async (req, res) => {
+  try {
+    const list = await queries.getPendingCalls()
+    res.json(list)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 app.get('/api/appointments/today', async (req, res) => {
   try {
     const list = await queries.getTodayAppointments()
@@ -490,6 +500,16 @@ app.put('/api/appointments/:id/status', async (req, res) => {
   try {
     const { status } = req.body
     const result = await queries.updateAppointmentStatus(req.params.id, status)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.put('/api/appointments/:id/call-status', async (req, res) => {
+  try {
+    const { status } = req.body
+    const result = await queries.updateAppointmentCallStatus(req.params.id, status)
     res.json(result)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -664,6 +684,18 @@ app.get('/api/backup/download', (req, res) => {
 })
 
 // ── SERVE STATIC FILES ────────────────────────────────────────────────────────
+const kioskPath = path.join(__dirname, '../kiosk')
+app.use('/kiosk', express.static(kioskPath, {
+  maxAge: '7d',
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+    }
+  }
+}))
+
 const distPath = path.join(__dirname, '../dist')
 app.use(express.static(distPath, {
   maxAge: '7d',          // Cache static assets 7 days

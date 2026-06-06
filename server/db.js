@@ -50,6 +50,11 @@ const appointmentSchema = new mongoose.Schema({
     enum: ['waiting', 'in-progress', 'done', 'cancelled'],
     default: 'waiting'
   },
+  call_status: {
+    type: String,
+    enum: ['pending', 'called', 'not_required'],
+    default: 'not_required'
+  },
   queue_number: { type: Number, default: 1 },
   notes: { type: String, default: '' }
 }, {

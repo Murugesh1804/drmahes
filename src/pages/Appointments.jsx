@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, ChevronLeft, ChevronRight, Search, Trash2, Clock, Lock, Unlock, CalendarX } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, Search, Trash2, Clock, Lock, Unlock, CalendarX, PhoneCall, CheckCircle } from 'lucide-react'
 import {
   getAppointmentsByDate, addAppointment,
   updateAppointmentStatus, deleteAppointment,
   getAllPatients, searchPatients,
   getBlockedSlots, blockSlot, unblockSlot,
+  getPendingCalls, updateCallStatus
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
@@ -170,8 +171,10 @@ function SlotManager({ date, appointments }) {
 export default function Appointments() {
   const { notify } = useApp()
   const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('schedule') // 'schedule' | 'tocall'
   const [date, setDate] = useState(dateStr(new Date()))
   const [appointments, setAppointments] = useState([])
+  const [pendingCalls, setPendingCalls] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [showSlotManager, setShowSlotManager] = useState(false)
   const [patientSearch, setPatientSearch] = useState('')
@@ -185,7 +188,18 @@ export default function Appointments() {
     setAppointments(data || [])
   }, [date])
 
-  useEffect(() => { load() }, [load])
+  const loadPending = useCallback(async () => {
+    const data = await getPendingCalls()
+    setPendingCalls(data || [])
+  }, [])
+
+  useEffect(() => {
+    if (activeTab === 'schedule') {
+      load()
+    } else {
+      loadPending()
+    }
+  }, [activeTab, date, load, loadPending])
 
   // Patient search within modal
   useEffect(() => {
@@ -240,11 +254,35 @@ export default function Appointments() {
     load()
   }
 
+  async function handleMarkCalled(id) {
+    await updateCallStatus(id, 'called')
+    notify('Appointment marked as called')
+    loadPending()
+  }
+
   const isToday = date === dateStr(new Date())
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Date Nav */}
+      {/* Tabs */}
+      <div className="flex border-b border-slate-200">
+        <button
+          className={`py-3 px-6 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'schedule' ? 'border-primary-600 text-primary-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          onClick={() => setActiveTab('schedule')}
+        >
+          Daily Schedule
+        </button>
+        <button
+          className={`py-3 px-6 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'tocall' ? 'border-primary-600 text-primary-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          onClick={() => setActiveTab('tocall')}
+        >
+          To Call {pendingCalls.length > 0 && <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">{pendingCalls.length}</span>}
+        </button>
+      </div>
+
+      {activeTab === 'schedule' && (
+        <div className="space-y-5 animate-fade-in">
+          {/* Date Nav */}
       <div className="card flex items-center gap-4">
         <button onClick={prevDay} className="btn-icon"><ChevronLeft size={18} /></button>
         <div className="flex-1 text-center">
@@ -374,6 +412,65 @@ export default function Appointments() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      </div>
+      )}
+
+      {activeTab === 'tocall' && (
+        <div className="space-y-5 animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <PhoneCall size={18} className="text-primary-600" />
+              Online Bookings - Pending Call
+            </h3>
+            <p className="text-sm text-slate-500">Call patients to confirm their online bookings.</p>
+          </div>
+
+          {pendingCalls.length === 0 ? (
+            <div className="empty-state">
+              <CheckCircle size={48} className="mb-3 text-emerald-400 opacity-50" />
+              <p className="font-semibold text-slate-600">All caught up!</p>
+              <p className="text-sm text-slate-400 mt-1">No pending calls for online bookings.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pendingCalls.map((a) => (
+                <div key={a.id} className="card bg-white border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <button
+                      onClick={() => navigate(`/patients/${a.patient_id}`)}
+                      className="font-bold text-slate-800 hover:text-primary-600 transition-colors text-left text-lg"
+                    >
+                      {a.patient_name}
+                    </button>
+                    <div className="flex items-center gap-4 mt-2 flex-wrap">
+                      <span className="text-sm text-slate-600 font-semibold flex items-center gap-1">
+                        <PhoneCall size={14} className="text-slate-400" /> {a.patient_phone}
+                      </span>
+                      <span className="text-sm text-slate-500 flex items-center gap-1">
+                        <CalendarX size={14} className="text-slate-400" /> {fmtDate(a.scheduled_date)}
+                      </span>
+                      {a.scheduled_time && (
+                        <span className="text-sm text-slate-500 flex items-center gap-1">
+                          <Clock size={14} className="text-slate-400" /> {a.scheduled_time}
+                        </span>
+                      )}
+                    </div>
+                    {a.reason && <p className="text-sm text-slate-600 mt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">{a.reason}</p>}
+                  </div>
+                  <div className="flex-shrink-0">
+                    <button
+                      onClick={() => handleMarkCalled(a.id)}
+                      className="btn-primary py-2 px-4 shadow-md bg-emerald-600 hover:bg-emerald-700 border-none"
+                    >
+                      <CheckCircle size={16} /> Mark as Called
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
