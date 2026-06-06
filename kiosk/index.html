@@ -455,7 +455,7 @@
                     signature: sig
                 };
 
-                const res = await fetch('/api/consent', {
+                const res = await fetch('https://portal.drmahesdentistry.in/api/consent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
