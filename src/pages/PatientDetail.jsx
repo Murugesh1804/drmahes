@@ -214,7 +214,7 @@ export default function PatientDetail() {
               <tbody>
                 {appointments.map(a => (
                   <tr key={a.id}>
-                    <td className="font-medium">{new Date(a.scheduled_date).toLocaleDateString('en-IN')}</td>
+                    <td className="font-medium">{new Date(a.scheduled_date + 'T00:00:00').toLocaleDateString('en-IN')}</td>
                     <td className="text-slate-500">{a.scheduled_time || '—'}</td>
                     <td className="text-slate-600 max-w-[160px] truncate">{a.reason || '—'}</td>
                     <td><span className={STATUS_COLORS[a.status]}>{a.status}</span></td>

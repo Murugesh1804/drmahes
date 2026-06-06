@@ -15,6 +15,7 @@ const fs = require('fs')
 const { initDatabase, Patient, Appointment } = require('./db')
 const queries = require('./queries')
 const { handleLogin, verifyToken } = require('./auth')
+const { sendAppointmentConfirmation } = require('./email')
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -124,7 +125,13 @@ app.post('/api/appointments/website-book', async (req, res) => {
     }
 
     const phone = patientPhone.trim()
+    const email = patientEmail ? patientEmail.trim().toLowerCase() : null
+
+    // Dedup: look up patient by phone first, then by email (if provided)
     let patient = await Patient.findOne({ phone })
+    if (!patient && email) {
+      patient = await Patient.findOne({ email })
+    }
 
     if (!patient) {
       patient = new Patient({
@@ -132,6 +139,10 @@ app.post('/api/appointments/website-book', async (req, res) => {
         phone: phone,
         notes: `Registered via website booking (${patientEmail || 'No Email'})`
       })
+      await patient.save()
+    } else {
+      // Returning patient — update phone/name if changed
+      if (!patient.phone && phone) patient.phone = phone
       await patient.save()
     }
 
@@ -142,6 +153,12 @@ app.post('/api/appointments/website-book', async (req, res) => {
       reason: service,
       notes: 'Website online booking'
     })
+
+    // Send confirmation email asynchronously if email is provided
+    if (email) {
+      sendAppointmentConfirmation(email, patientName.trim(), date, timeSlot, service)
+        .catch(err => console.error('[email-trigger] Error sending confirmation email in background:', err))
+    }
 
     res.status(201).json({ patient, appt })
   } catch (err) {
@@ -169,8 +186,15 @@ app.get('/api/appointments/available-slots', async (req, res) => {
       status: { $ne: 'cancelled' }
     }).select('scheduled_time').lean()
 
-    const bookedSlots = booked.map(a => a.scheduled_time)
-    const availableSlots = allSlots.filter(slot => !bookedSlots.includes(slot))
+    const bookedSlots = booked.map(a => a.scheduled_time).filter(Boolean)
+
+    // Find manually blocked slots for this date
+    const blockedRecords = await queries.getBlockedSlots(date)
+    const blockedSlots = blockedRecords.map(r => r.slot)
+
+    // Available = not booked by appointment AND not manually blocked
+    const takenSlots = new Set([...bookedSlots, ...blockedSlots])
+    const availableSlots = allSlots.filter(slot => !takenSlots.has(slot))
 
     res.json({ date, availableSlots })
   } catch (err) {
@@ -333,6 +357,40 @@ app.get('/api/webhook/whatsapp', (req, res) => {
 
 // ── AUTH MIDDLEWARE — Protects all /api routes below this line ────────────────
 app.use('/api', verifyToken)
+
+// ── SLOT BLOCKING (Authenticated) ─────────────────────────────────────────────────
+app.get('/api/slots/blocked', async (req, res) => {
+  try {
+    const { date } = req.query
+    if (!date) return res.status(400).json({ error: 'date query param required' })
+    const list = await queries.getBlockedSlots(date)
+    res.json(list)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.post('/api/slots/block', async (req, res) => {
+  try {
+    const { date, slot, reason } = req.body
+    if (!date || !slot) return res.status(400).json({ error: 'date and slot are required' })
+    const result = await queries.blockSlot(date, slot, reason || '')
+    res.status(201).json(result)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.delete('/api/slots/block', async (req, res) => {
+  try {
+    const { date, slot } = req.body
+    if (!date || !slot) return res.status(400).json({ error: 'date and slot are required' })
+    const result = await queries.unblockSlot(date, slot)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
 
 // ── PATIENTS ─────────────────────────────────────────────────────────────────
 app.get('/api/patients', async (req, res) => {

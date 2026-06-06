@@ -4,7 +4,7 @@ import { Plus, Search, X, Printer, CreditCard, ShoppingBag, Trash2 } from 'lucid
 import {
   getAllBills, getBillsByPatient, createBill, updateBillPayment,
   getAllPatients, searchPatients,
-  getTreatmentsByPatient, getPatientAppointments,
+  getTreatmentsByPatient, getTreatmentsByAppointment, getPatientAppointments,
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { Patient, Appointment, Treatment, Bill, Setting, getDbPath } = require('./db')
+const { Patient, Appointment, Treatment, Bill, Setting, BlockedSlot, getDbPath } = require('./db')
 
 let db = null
 
@@ -251,6 +251,40 @@ async function deleteAppointment(id) {
   if (!isValidObjectId(id)) return { success: false }
   await Appointment.findByIdAndDelete(id)
   return { success: true }
+}
+
+// ═══════════════════════════════════════════════════════════
+// BLOCKED SLOTS
+// ═══════════════════════════════════════════════════════════
+async function getBlockedSlots(date) {
+  const records = await BlockedSlot.find({ date }).lean()
+  return records.map(r => ({
+    id: r._id.toString(),
+    date: r.date,
+    slot: r.slot,
+    blocked_by: r.blocked_by,
+    reason: r.reason,
+    created_at: r.created_at
+  }))
+}
+
+async function blockSlot(date, slot, reason = '') {
+  try {
+    await BlockedSlot.findOneAndUpdate(
+      { date, slot },
+      { $set: { blocked_by: 'admin', reason } },
+      { upsert: true, new: true }
+    )
+    return { success: true, date, slot }
+  } catch (err) {
+    if (err.code === 11000) return { success: true, date, slot } // Already blocked
+    throw err
+  }
+}
+
+async function unblockSlot(date, slot) {
+  await BlockedSlot.deleteOne({ date, slot })
+  return { success: true, date, slot }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -519,6 +553,7 @@ module.exports = {
   getAllPatients, searchPatients, getPatientById, addPatient, updatePatient,
   getTodayAppointments, getAppointmentsByDate, getPatientAppointments,
   addAppointment, updateAppointment, updateAppointmentStatus, deleteAppointment,
+  getBlockedSlots, blockSlot, unblockSlot,
   getTreatmentsByAppointment, getTreatmentsByPatient, addTreatment, updateTreatment, deleteTreatment,
   getBillsByPatient, getBillById, createBill, updateBillPayment, getAllBills,
   getTodayQueue,

@@ -100,11 +100,27 @@ const settingSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 })
 
+// ── BLOCKED SLOT SCHEMA ─────────────────────────────────────────────────────
+// Stores manually blocked time slots per date (e.g. walk-in patient occupies a slot)
+const blockedSlotSchema = new mongoose.Schema({
+  date: { type: String, required: true, index: true }, // Format: YYYY-MM-DD
+  slot: { type: String, required: true },               // e.g. '04:00 PM'
+  blocked_by: { type: String, default: 'admin' },
+  reason: { type: String, default: '' }
+}, {
+  timestamps: { createdAt: 'created_at', updatedAt: false },
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+})
+// Compound unique index: one record per date+slot combination
+blockedSlotSchema.index({ date: 1, slot: 1 }, { unique: true })
+
 const Patient = mongoose.model('Patient', patientSchema)
 const Appointment = mongoose.model('Appointment', appointmentSchema)
 const Treatment = mongoose.model('Treatment', treatmentSchema)
 const Bill = mongoose.model('Bill', billSchema)
 const Setting = mongoose.model('Setting', settingSchema)
+const BlockedSlot = mongoose.model('BlockedSlot', blockedSlotSchema)
 
 let connected = false
 
@@ -166,5 +182,6 @@ module.exports = {
   Appointment,
   Treatment,
   Bill,
-  Setting
+  Setting,
+  BlockedSlot
 }

@@ -144,7 +144,7 @@ export default function Settings() {
       <div className="card bg-primary-50 border border-primary-100">
         <h2 className="font-bold text-primary-800 mb-1">About</h2>
         <p className="text-primary-600 text-sm">Dental Clinic Management System v1.0</p>
-        <p className="text-primary-500 text-xs mt-1">Offline-first · SQLite · Electron + React</p>
+        <p className="text-primary-500 text-xs mt-1">Cloud-connected · MongoDB Atlas · React + Express REST API</p>
       </div>
     </div>
   )
