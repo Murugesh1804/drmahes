@@ -5,1559 +5,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dr. Mahe's Dentistry — Advanced Dental Care, Porur, Chennai</title>
-  <meta name="description"
-    content="Dr. Maheswari's modern dental clinic in Porur, Chennai. Expert dental implants, root canal, orthodontics, cosmetic dentistry and oral surgery in a comfortable, fully sterilized environment.">
-  <meta name="keywords"
-    content="dentist porur chennai, dental clinic porur, dr maheswari dentist, dental implants chennai, root canal porur, orthodontics braces chennai">
+  <meta name="description" content="Dr. Maheswari's modern dental clinic in Porur, Chennai. Expert dental implants, root canal, orthodontics, cosmetic dentistry and oral surgery in a comfortable, fully sterilized environment.">
+  <meta name="keywords" content="dentist porur chennai, dental clinic porur, dr maheswari dentist, dental implants chennai, root canal porur, orthodontics braces chennai">
 
   <link rel="canonical" href="https://drmahesdentistry.in/" />
-
-  <!-- Robots -->
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-
-  <!-- Geo targeting (local SEO) -->
   <meta name="geo.region" content="IN-TN">
   <meta name="geo.placename" content="Porur, Chennai">
   <meta name="geo.position" content="13.0356;80.1594">
   <meta name="ICBM" content="13.0356, 80.1594">
 
-  <!-- Open Graph / Social -->
+  <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://drmahesdentistry.in/">
   <meta property="og:title" content="Dr. Mahe's Dentistry — Advanced Dental Care, Porur, Chennai">
-  <meta property="og:description" content="Dr. Maheswari's modern dental clinic in Porur, Chennai. Expert dental implants, root canal, orthodontics, cosmetic dentistry and oral surgery in a comfortable, fully sterilized environment.">
+  <meta property="og:description" content="Dr. Maheswari's modern dental clinic in Porur, Chennai. Expert dental implants, root canal, orthodontics, cosmetic dentistry and oral surgery.">
   <meta property="og:image" content="https://drmahesdentistry.in/assets/favicon.png">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://drmahesdentistry.in/">
   <meta name="twitter:title" content="Dr. Mahe's Dentistry — Advanced Dental Care, Porur, Chennai">
-  <meta name="twitter:description" content="Dr. Maheswari's modern dental clinic in Porur, Chennai. Expert dental implants, root canal, orthodontics, cosmetic dentistry and oral surgery in a comfortable, fully sterilized environment.">
+  <meta name="twitter:description" content="Dr. Maheswari's modern dental clinic in Porur, Chennai.">
   <meta name="twitter:image" content="https://drmahesdentistry.in/assets/favicon.png">
 
-  <!-- favicon -->
   <link rel="icon" type="image/x-icon" href="assets/favicon.png">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
 
-  <style>
-    /* ─── DESIGN TOKENS ──────────────────────────────────────────── */
-    :root {
-      --primary: #111111;
-      --primary-rgb: 17, 17, 17;
-      --secondary: #666666;
-      --accent: #C4B097;
-      --accent-hover: #A89680;
-      --accent-rgb: 196, 176, 151;
-      --bg-primary: #FFFFFF;
-      --bg-secondary: #F7F5F0;
-      --bg-card: #FFFFFF;
-      --text-primary: #111111;
-      --text-secondary: #555555;
-      --border: rgba(17, 17, 17, 0.08);
-      --border-accent: rgba(196, 176, 151, 0.35);
-      --white: #FFFFFF;
-      --success: #2E7D32;
-      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
-      --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.07);
-      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.10);
-      --font-heading: 'Poppins', sans-serif;
-      --font-body: 'Open Sans', sans-serif;
-      --header-height: 80px;
-      --radius: 10px;
-    }
-
-    [data-theme="dark"] {
-      --primary: #F0F0F0;
-      --primary-rgb: 240, 240, 240;
-      --secondary: #AAAAAA;
-      --accent: #C4B097;
-      --accent-hover: #D4C3AC;
-      --bg-primary: #0D0D0D;
-      --bg-secondary: #161616;
-      --bg-card: #1A1A1A;
-      --text-primary: #EEEEEE;
-      --text-secondary: #AAAAAA;
-      --border: rgba(255, 255, 255, 0.08);
-      --border-accent: rgba(196, 176, 151, 0.4);
-      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.25);
-      --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.35);
-      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.5);
-    }
-
-    /* ─── RESET ──────────────────────────────────────────────────── */
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-      font-size: 16px;
-      overflow-x: hidden;
-      max-width: 100%;
-      width: 100%;
-    }
-
-    body {
-      font-family: var(--font-body);
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.65;
-      overflow-x: hidden;
-      max-width: 100%;
-      width: 100%;
-      overflow-wrap: break-word;
-      word-wrap: break-word;
-      transition: background-color 0.4s ease, color 0.4s ease;
-    }
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      font-family: var(--font-heading);
-      color: var(--text-primary);
-      font-weight: 600;
-      line-height: 1.2;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-
-    ul {
-      list-style: none;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font-family: inherit;
-      font-size: inherit;
-      color: inherit;
-      background: none;
-      border: none;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    img {
-      max-width: 100%;
-      display: block;
-    }
-
-    /* ─── LAYOUT ─────────────────────────────────────────────────── */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    .section-padding {
-      padding: 100px 0;
-    }
-
-    /* ─── BUTTONS ────────────────────────────────────────────────── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 13px 30px;
-      font-weight: 600;
-      font-size: 0.82rem;
-      border-radius: 4px;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .btn-primary {
-      background-color: #111111;
-      color: #FFFFFF;
-      border: 1.5px solid #111111;
-    }
-
-    .btn-primary:hover {
-      background-color: var(--accent);
-      border-color: var(--accent);
-      color: #111111;
-    }
-
-    .btn-secondary {
-      background-color: transparent;
-      color: var(--text-primary);
-      border: 1.5px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    /* ─── HEADER ─────────────────────────────────────────────────── */
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: var(--header-height);
-      background-color: transparent;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      z-index: 1000;
-      border-bottom: 1px solid transparent;
-      transition: background-color 0.35s ease, border-color 0.35s ease;
-    }
-
-    .header.scrolled {
-      background-color: var(--bg-primary);
-      border-bottom-color: var(--border);
-    }
-
-    .nav-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 100%;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-    }
-
-    .logo-img {
-      height: 70px;
-      width: auto;
-      object-fit: contain;
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
-      will-change: transform;
-    }
-
-    .logo-img:hover {
-      transform: scale(1.07);
-      opacity: 0.9;
-    }
-
-    .logo-text {
-      font-size: 1.18rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .logo-text span {
-      color: var(--accent);
-      font-weight: 400;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 30px;
-      align-items: center;
-    }
-
-    .nav-link {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-    }
-
-    .nav-link:hover {
-      color: var(--accent);
-    }
-
-    .nav-book-btn {
-      padding: 9px 20px;
-      margin-left: 6px;
-    }
-
-    .nav-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .theme-toggle-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1.5px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      transition: border-color 0.3s, background-color 0.3s;
-    }
-
-    .theme-toggle-btn:hover {
-      border-color: var(--accent);
-    }
-
-    /* Hamburger */
-    .hamburger {
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      gap: 5px;
-      width: 38px;
-      height: 38px;
-      border-radius: 4px;
-      border: 1.5px solid var(--border);
-      padding: 9px;
-      transition: border-color 0.3s;
-    }
-
-    .hamburger span {
-      display: block;
-      height: 1.5px;
-      background-color: var(--text-primary);
-      transition: all 0.3s ease;
-      border-radius: 2px;
-      transform-origin: center;
-    }
-
-    .hamburger.open span:nth-child(1) {
-      transform: translateY(6.5px) rotate(45deg);
-    }
-
-    .hamburger.open span:nth-child(2) {
-      opacity: 0;
-      transform: scaleX(0);
-    }
-
-    .hamburger.open span:nth-child(3) {
-      transform: translateY(-6.5px) rotate(-45deg);
-    }
-
-    .hamburger:hover {
-      border-color: var(--accent);
-    }
-
-    /* Mobile overlay */
-    .mobile-nav {
-      display: none;
-      position: fixed;
-      top: var(--header-height);
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: var(--bg-primary);
-      z-index: 998;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .mobile-nav.open {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .mobile-nav .nav-link {
-      font-size: 1.3rem;
-      letter-spacing: 0.12em;
-    }
-
-    .mobile-nav .btn {
-      min-width: 200px;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
-    /* ─── HERO ───────────────────────────────────────────────────── */
-    .hero {
-      padding-top: calc(var(--header-height) + 72px);
-      padding-bottom: 90px;
-      background-color: var(--bg-secondary);
-      min-height: 93vh;
-      display: flex;
-      align-items: center;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 64px;
-      align-items: center;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 22px;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    .hero-badge::before {
-      content: '';
-      display: inline-block;
-      width: 28px;
-      height: 1px;
-      background-color: var(--accent);
-    }
-
-    .hero-title {
-      font-size: 3.6rem;
-      line-height: 1.1;
-      margin-bottom: 22px;
-      letter-spacing: -0.025em;
-      font-weight: 700;
-    }
-
-    .hero-title em {
-      color: var(--accent);
-      font-style: italic;
-      font-weight: 400;
-    }
-
-    .hero-desc {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      margin-bottom: 36px;
-      max-width: 540px;
-      line-height: 1.75;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 14px;
-      margin-bottom: 44px;
-      flex-wrap: wrap;
-    }
-
-    .hero-pills {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .hero-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border: 1px solid var(--border-accent);
-      border-radius: 100px;
-      font-size: 0.76rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      background-color: var(--bg-card);
-    }
-
-    .hero-pill-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background-color: var(--accent);
-      flex-shrink: 0;
-    }
-
-    .hero-visual {
-      position: relative;
-    }
-
-    .hero-img-mask {
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-      aspect-ratio: 4/5;
-      background-color: #d8d4ce;
-    }
-
-    .hero-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.6s ease;
-    }
-
-    .hero-img-mask:hover .hero-img {
-      transform: scale(1.04);
-    }
-
-    .hero-float-card {
-      position: absolute;
-      bottom: -24px;
-      left: -32px;
-      background-color: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 22px 26px;
-      border-radius: 8px;
-      max-width: 265px;
-      box-shadow: var(--shadow-md);
-    }
-
-    .hero-float-card-title {
-      font-size: 0.86rem;
-      font-weight: 700;
-      margin-bottom: 5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hero-float-card-desc {
-      font-size: 0.76rem;
-      color: var(--text-secondary);
-      line-height: 1.55;
-    }
-
-    /* ─── MARQUEE ────────────────────────────────────────────────── */
-    .marquee {
-      background-color: #111111;
-      color: #FFFFFF;
-      padding: 20px 0;
-      overflow: hidden;
-      white-space: nowrap;
-      width: 100%;
-      max-width: 100%;
-    }
-
-    .marquee-content {
-      display: inline-block;
-      animation: marquee 38s linear infinite;
-    }
-
-    .marquee-text {
-      display: inline-flex;
-      align-items: center;
-      gap: 36px;
-      font-family: var(--font-heading);
-      font-weight: 600;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding-right: 36px;
-    }
-
-    .marquee-text .dot {
-      color: var(--accent);
-      font-size: 1.3rem;
-      line-height: 1;
-    }
-
-    @keyframes marquee {
-      0% {
-        transform: translate3d(0, 0, 0);
-      }
-
-      100% {
-        transform: translate3d(-50%, 0, 0);
-      }
-    }
-
-    /* ─── SECTION HEADER ─────────────────────────────────────────── */
-    .section-header {
-      text-align: center;
-      max-width: 680px;
-      margin: 0 auto 64px;
-    }
-
-    .section-badge {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--accent);
-      font-weight: 700;
-      margin-bottom: 14px;
-      display: block;
-    }
-
-    .section-title {
-      font-size: 2.4rem;
-      margin-bottom: 14px;
-      letter-spacing: -0.02em;
-    }
-
-    .section-desc {
-      font-size: 0.93rem;
-      color: var(--text-secondary);
-      line-height: 1.75;
-    }
-
-    /* ─── DOCTOR SECTION ─────────────────────────────────────────── */
-    .doctor-section {
-      background-color: var(--bg-primary);
-    }
-
-    .doctor-layout {
-      display: grid;
-      grid-template-columns: 0.85fr 1.15fr;
-      gap: 80px;
-      align-items: center;
-    }
-
-    .doctor-img-wrap {
-      position: relative;
-    }
-
-    .doctor-img-frame {
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-      aspect-ratio: 3/4;
-      background-color: var(--bg-secondary);
-    }
-
-    .doctor-img-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center top;
-    }
-
-    .doctor-badge {
-      position: absolute;
-      bottom: -18px;
-      right: -18px;
-      background-color: #111111;
-      color: #FFFFFF;
-      padding: 20px 24px;
-      border-radius: 8px;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .doctor-badge-label {
-      font-size: 0.66rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--accent);
-      margin-bottom: 5px;
-    }
-
-    .doctor-badge-value {
-      font-size: 0.9rem;
-      font-weight: 700;
-    }
-
-    .doctor-info {}
-
-    .doctor-info .hero-badge {
-      display: inline-flex;
-      margin-bottom: 16px;
-    }
-
-    .doctor-name {
-      font-size: 2.9rem;
-      letter-spacing: -0.025em;
-      margin-bottom: 6px;
-      font-weight: 800;
-    }
-
-    .doctor-quals {
-      font-size: 0.84rem;
-      color: var(--accent);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 24px;
-    }
-
-    .doctor-bio {
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      line-height: 1.8;
-      margin-bottom: 28px;
-    }
-
-    .doctor-specs {
-      display: flex;
-      flex-direction: column;
-      gap: 11px;
-      margin-bottom: 36px;
-    }
-
-    .spec-row {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .spec-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: var(--accent);
-      flex-shrink: 0;
-    }
-
-    /* ─── TREATMENTS ─────────────────────────────────────────────── */
-    .treatments-section {
-      background-color: var(--bg-secondary);
-    }
-
-    .treatments-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 26px;
-    }
-
-    .tx-card {
-      background-color: var(--bg-card);
-      border-radius: var(--radius);
-      overflow: hidden;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .tx-card:hover {
-      transform: translateY(-8px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .tx-img-wrap {
-      aspect-ratio: 16/10;
-      overflow: hidden;
-      position: relative;
-      background-color: var(--bg-secondary);
-    }
-
-    .tx-img-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.55s ease;
-      filter: brightness(0.96) saturate(1.05);
-    }
-
-    .tx-card:hover .tx-img-wrap img {
-      transform: scale(1.08);
-    }
-
-    .tx-img-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.45) 100%);
-    }
-
-    .tx-body {
-      padding: 26px 28px;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .tx-icon {
-      font-size: 1.5rem;
-      margin-bottom: 12px;
-    }
-
-    .tx-name {
-      font-size: 1.12rem;
-      font-weight: 700;
-      margin-bottom: 9px;
-    }
-
-    .tx-desc {
-      font-size: 0.83rem;
-      color: var(--text-secondary);
-      line-height: 1.65;
-      flex-grow: 1;
-      margin-bottom: 18px;
-    }
-
-    .tx-link {
-      font-size: 0.76rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--accent);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: gap 0.25s ease;
-      align-self: flex-start;
-    }
-
-    .tx-link:hover {
-      gap: 11px;
-    }
-
-    /* ─── BOOKING SECTION ────────────────────────────────────────── */
-    .booking-section {
-      background-color: var(--bg-primary);
-    }
-
-    .booking-layout {
-      display: grid;
-      grid-template-columns: 0.75fr 1.25fr;
-      background-color: var(--bg-card);
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .booking-info {
-      padding: 60px 52px;
-      background-color: #111111;
-      color: #FFFFFF;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .booking-info-title {
-      font-size: 1.9rem;
-      color: #FFFFFF;
-      margin-bottom: 14px;
-      line-height: 1.2;
-    }
-
-    .booking-info-desc {
-      font-size: 0.86rem;
-      color: #888888;
-      margin-bottom: 44px;
-      line-height: 1.75;
-    }
-
-    .contact-list {
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-    }
-
-    .contact-row {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-    }
-
-    .contact-icon {
-      font-size: 1.1rem;
-      color: var(--accent);
-      margin-top: 1px;
-      flex-shrink: 0;
-    }
-
-    .contact-label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: #666666;
-      margin-bottom: 4px;
-    }
-
-    .contact-value {
-      font-size: 0.9rem;
-      color: #FFFFFF;
-    }
-
-    .contact-value a {
-      color: #FFFFFF;
-    }
-
-    .contact-value a:hover {
-      color: var(--accent);
-    }
-
-    .booking-wizard-panel {
-      padding: 56px 60px;
-    }
-
-    .wizard-steps {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin-bottom: 44px;
-    }
-
-    .step-dot {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      border: 1.5px solid var(--border);
-      background-color: var(--bg-primary);
-      color: var(--text-secondary);
-      font-size: 0.82rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.3s ease;
-      position: relative;
-      z-index: 1;
-    }
-
-    .step-dot.active {
-      border-color: var(--accent);
-      background-color: var(--accent);
-      color: #111111;
-    }
-
-    .step-dot.done {
-      border-color: #111111;
-      background-color: #111111;
-      color: #FFFFFF;
-    }
-
-    .step-line {
-      flex: 1;
-      height: 1px;
-      background-color: var(--border);
-    }
-
-    .wizard-panel {
-      display: none;
-      animation: wFadeIn 0.35s ease forwards;
-    }
-
-    .wizard-panel.active {
-      display: block;
-    }
-
-    @keyframes wFadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .wizard-title {
-      font-size: 1.3rem;
-      margin-bottom: 22px;
-    }
-
-    /* Service grid */
-    .svc-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 11px;
-      max-height: 310px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-
-    .svc-grid::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    .svc-grid::-webkit-scrollbar-thumb {
-      background-color: var(--border-accent);
-      border-radius: 2px;
-    }
-
-    .svc-card {
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
-      cursor: pointer;
-      transition: all 0.25s;
-      background-color: var(--bg-primary);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .svc-card:hover {
-      border-color: var(--accent);
-      background-color: var(--bg-secondary);
-    }
-
-    .svc-card.active {
-      border-color: var(--accent);
-      background-color: var(--bg-secondary);
-      box-shadow: 0 0 0 3px rgba(196, 176, 151, 0.18);
-    }
-
-    .svc-icon {
-      font-size: 1.2rem;
-      flex-shrink: 0;
-    }
-
-    .svc-name {
-      font-size: 0.86rem;
-      font-weight: 600;
-      line-height: 1.3;
-    }
-
-    .wizard-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 32px;
-      border-top: 1px solid var(--border);
-      padding-top: 22px;
-    }
-
-    /* Datetime */
-    .dt-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .dt-label {
-      font-size: 0.74rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--text-secondary);
-      letter-spacing: 0.06em;
-      margin-bottom: 8px;
-    }
-
-    .date-picker {
-      padding: 13px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      background-color: var(--bg-primary);
-      outline: none;
-      width: 100%;
-      color: var(--text-primary);
-    }
-
-    .date-picker:focus {
-      border-color: var(--accent);
-    }
-
-    .time-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-
-    .time-btn {
-      padding: 10px 4px;
-      border-radius: 5px;
-      border: 1.5px solid var(--border);
-      font-size: 0.74rem;
-      text-align: center;
-      transition: all 0.25s;
-      background-color: var(--bg-primary);
-      font-weight: 500;
-    }
-
-    .time-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .time-btn.active {
-      background-color: #111111;
-      color: #FFFFFF;
-      border-color: #111111;
-    }
-
-    /* Form */
-    .fg-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .fg {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-
-    .fg label {
-      font-size: 0.74rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--text-secondary);
-      letter-spacing: 0.06em;
-    }
-
-    .form-in {
-      padding: 13px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      background-color: var(--bg-primary);
-      outline: none;
-      width: 100%;
-      color: var(--text-primary);
-    }
-
-    .form-in:focus {
-      border-color: var(--accent);
-    }
-
-    /* Success */
-    .booking-success {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 32px 0;
-      animation: wFadeIn 0.4s ease forwards;
-    }
-
-    .success-check {
-      width: 66px;
-      height: 66px;
-      border-radius: 50%;
-      background-color: var(--success);
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.9rem;
-      margin-bottom: 22px;
-      box-shadow: 0 4px 20px rgba(46, 125, 50, 0.25);
-    }
-
-    .success-receipt {
-      width: 100%;
-      background-color: var(--bg-secondary);
-      border-radius: 8px;
-      padding: 20px;
-      margin: 22px 0 28px;
-      text-align: left;
-      border: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .receipt-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      border-bottom: 1px dashed var(--border);
-      padding-bottom: 10px;
-      font-size: 0.84rem;
-    }
-
-    .receipt-row:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-
-    .receipt-label {
-      color: var(--text-secondary);
-    }
-
-    .receipt-val {
-      font-weight: 600;
-      text-align: right;
-    }
-
-    /* ─── LOCATION SECTION ───────────────────────────────────────── */
-    .location-section {
-      background-color: var(--bg-secondary);
-    }
-
-    .location-layout {
-      display: grid;
-      grid-template-columns: 1fr 1.1fr;
-      gap: 56px;
-      align-items: start;
-    }
-
-    .location-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .loc-card {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 26px 28px;
-      box-shadow: var(--shadow-sm);
-      transition: border-color 0.3s;
-    }
-
-    .loc-card:hover {
-      border-color: var(--border-accent);
-    }
-
-    .loc-label {
-      font-size: 0.68rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--accent);
-      font-weight: 700;
-      margin-bottom: 7px;
-    }
-
-    .loc-main {
-      font-size: 0.96rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .loc-sub {
-      font-size: 0.84rem;
-      color: var(--text-secondary);
-      line-height: 1.55;
-    }
-
-    .loc-sub a {
-      color: var(--accent);
-    }
-
-    .loc-sub a:hover {
-      text-decoration: underline;
-    }
-
-    .loc-closed {
-      color: #C0392B;
-      font-weight: 600;
-    }
-
-    .directions-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 13px 26px;
-      background-color: #111111;
-      color: #FFFFFF;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .directions-btn:hover {
-      background-color: var(--accent);
-      color: #111111;
-    }
-
-    .map-frame {
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid var(--border);
-      aspect-ratio: 4/3.2;
-    }
-
-    .map-frame iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-
-    /* ─── FAQs ───────────────────────────────────────────────────── */
-    .faqs-section {
-      background-color: var(--bg-primary);
-    }
-
-    .faqs-list {
-      max-width: 800px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .faq-item {
-      border: 1px solid var(--border);
-      background-color: var(--bg-card);
-      border-radius: 7px;
-      overflow: hidden;
-      transition: border-color 0.3s;
-    }
-
-    .faq-item:hover {
-      border-color: var(--border-accent);
-    }
-
-    .faq-btn {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 21px 24px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 0.98rem;
-      cursor: pointer;
-    }
-
-    .faq-icon {
-      font-size: 1.2rem;
-      color: var(--accent);
-      transition: transform 0.3s ease;
-      flex-shrink: 0;
-      margin-left: 16px;
-    }
-
-    .faq-answer {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.35s cubic-bezier(0, 1, 0, 1);
-      padding: 0 24px;
-      color: var(--text-secondary);
-      font-size: 0.89rem;
-      line-height: 1.75;
-    }
-
-    .faq-item.open .faq-answer {
-      max-height: 500px;
-      padding-bottom: 22px;
-      transition: max-height 0.35s cubic-bezier(1, 0, 1, 0);
-    }
-
-    .faq-item.open .faq-icon {
-      transform: rotate(45deg);
-    }
-
-    /* ─── FOOTER ─────────────────────────────────────────────────── */
-    .footer {
-      background-color: #111111;
-      color: #FFFFFF;
-      padding: 80px 0 36px;
-    }
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 0.85fr 1fr;
-      gap: 56px;
-      margin-bottom: 56px;
-    }
-
-    .footer-brand {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .footer-desc {
-      font-size: 0.83rem;
-      color: #777777;
-      line-height: 1.8;
-    }
-
-    .footer-col h4 {
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--accent);
-      margin-bottom: 20px;
-    }
-
-    .footer-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .footer-item {
-      font-size: 0.83rem;
-      color: #777777;
-      transition: color 0.3s;
-    }
-
-    .footer-item:hover {
-      color: var(--accent);
-    }
-
-    .footer-item a {
-      color: #777777;
-      transition: color 0.3s;
-    }
-
-    .footer-item a:hover {
-      color: var(--accent);
-    }
-
-    .footer-bottom {
-      border-top: 1px solid rgba(255, 255, 255, 0.07);
-      padding-top: 26px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-      color: #555555;
-    }
-
-    /* ─── RESPONSIVE ─────────────────────────────────────────────── */
-    @media (max-width: 1060px) {
-      .hero-grid {
-        grid-template-columns: 1fr;
-        gap: 52px;
-        text-align: center;
-      }
-
-      .hero-badge {
-        display: none;
-      }
-
-      .hero-desc {
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      .hero-actions {
-        justify-content: center;
-      }
-
-      .hero-pills {
-        justify-content: center;
-      }
-
-      .hero-float-card {
-        left: 12px;
-        bottom: 12px;
-      }
-
-      .doctor-layout {
-        grid-template-columns: 1fr;
-        gap: 52px;
-      }
-
-      .doctor-img-frame {
-        max-width: 400px;
-        margin: 0 auto;
-      }
-
-      .doctor-badge {
-        right: calc(50% - 200px - 18px);
-      }
-
-      .treatments-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .booking-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .booking-info,
-      .booking-wizard-panel {
-        padding: 48px;
-      }
-
-      .location-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .footer-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 40px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .logo-img {
-        height: 60px;
-      }
-
-      .nav-links {
-        display: none;
-      }
-
-      .hamburger {
-        display: flex;
-      }
-
-      .mobile-nav {
-        display: flex;
-      }
-
-      .hero-title {
-        font-size: 2.6rem;
-      }
-
-      .section-title {
-        font-size: 2rem;
-      }
-
-      .doctor-name {
-        font-size: 2.3rem;
-      }
-
-      .treatments-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .time-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .footer-grid {
-        grid-template-columns: 1fr;
-        gap: 36px;
-      }
-
-      .footer-bottom {
-        flex-direction: column;
-        gap: 6px;
-      }
-
-      .hero-float-card {
-        display: none;
-      }
-
-      .fg-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .svc-grid {
-        grid-template-columns: 1fr;
-        max-height: 340px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .logo-img {
-        height: 50px;
-      }
-
-      .hero-title {
-        font-size: 2.1rem;
-      }
-
-      .booking-info,
-      .booking-wizard-panel {
-        padding: 30px 22px;
-      }
-
-      .section-padding {
-        padding: 72px 0;
-      }
-
-      .doctor-badge {
-        display: none;
-      }
-    }
-  </style>
-  <!-- ── Schema 1: Dentist (Local Business) ── -->
+  <!-- Schema: Dentist (Local Business) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -1577,112 +54,40 @@
       "postalCode": "600116",
       "addressCountry": "IN"
     },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 13.0356,
-      "longitude": 80.1594
-    },
+    "geo": { "@type": "GeoCoordinates", "latitude": 13.0356, "longitude": 80.1594 },
     "openingHoursSpecification": [
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
-        "opens": "10:00",
-        "closes": "22:00"
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": "Sunday",
-        "opens": "00:00",
-        "closes": "00:00",
-        "description": "By appointment only"
-      }
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"], "opens": "10:00", "closes": "22:00" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "00:00", "closes": "00:00" }
     ],
     "hasMap": "https://www.google.com/maps/search/?api=1&query=Dr.+Mahe%27s+Dentistry,+Jaya+Nagar,+Porur",
-    "sameAs": [
-      "https://wa.me/919342803217"
-    ],
+    "sameAs": ["https://wa.me/919342803217"],
     "medicalSpecialty": "http://schema.org/Dentistry"
   }
   </script>
 
-  <!-- ── Schema 2: FAQPage (Google rich results) ── -->
+  <!-- Schema: FAQPage -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "How do I book an appointment at Dr. Mahe's Dentistry?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Use the booking form on our website — select your treatment, a preferred date and time, and enter your contact details. Our clinic coordinator will reach out via phone or WhatsApp within a few hours to confirm your slot."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How do I prepare for a scaling or root canal session?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Have a light meal before your appointment unless anesthesia is planned. Bring a list of any medications or health conditions (diabetes, hypertension, blood thinners) so we can plan your treatment safely."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What sterilization protocols does Dr. Mahe's Dentistry follow?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We follow strict international Class-B autoclave sterilization standards. All instruments are vacuum-packed and sterilized, then opened fresh in front of the patient for every procedure. Disposable barriers are replaced after each patient — no exceptions."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What payment methods are accepted at Dr. Mahe's Dentistry?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We accept Cash, Debit/Credit Cards and all major UPI apps — GPay, PhonePe and Paytm. Digital receipts are generated for all payments."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is Dr. Mahe's Dentistry easily reachable by public transport?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes. The clinic is on Porur High Road, Chennai, well served by MTC bus routes and easily accessible by auto-rickshaw or cab. On-street parking is also available for two-wheelers and cars."
-        }
-      }
+      { "@type": "Question", "name": "How do I book an appointment at Dr. Mahe's Dentistry?", "acceptedAnswer": { "@type": "Answer", "text": "Use the booking form on our Contact page — select your treatment, a preferred date and time, and enter your contact details. Our coordinator will reach out via phone or WhatsApp within a few hours." } },
+      { "@type": "Question", "name": "What sterilization protocols does Dr. Mahe's Dentistry follow?", "acceptedAnswer": { "@type": "Answer", "text": "We follow strict international Class-B autoclave sterilization standards. All instruments are vacuum-packed and sterilized, opened fresh in front of the patient for every procedure." } },
+      { "@type": "Question", "name": "What payment methods are accepted?", "acceptedAnswer": { "@type": "Answer", "text": "We accept Cash, Debit/Credit Cards and all major UPI apps — GPay, PhonePe and Paytm. Digital receipts are generated for all payments." } }
     ]
   }
   </script>
 
-  <!-- ── Schema 3: BreadcrumbList ── -->
+  <!-- Schema: BreadcrumbList -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://drmahesdentistry.in/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Treatments",
-        "item": "https://drmahesdentistry.in/#treatments"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "Book Appointment",
-        "item": "https://drmahesdentistry.in/#booking"
-      }
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://drmahesdentistry.in/" }
     ]
   }
   </script>
-
 </head>
 
 <body>
@@ -1690,19 +95,16 @@
   <!-- ─── HEADER ─── -->
   <header class="header" id="header">
     <div class="container nav-container">
-      <a href="#" class="logo">
+      <a href="index.html" class="logo">
         <img src="assets/logo_white.png" alt="Dr. Mahe's Dentistry" class="logo-img">
       </a>
-
       <nav class="nav-links" aria-label="Main navigation">
-        <a href="#about" class="nav-link">About</a>
-        <a href="#doctor" class="nav-link">Our Doctor</a>
-        <a href="#treatments" class="nav-link">Treatments</a>
-        <a href="#location" class="nav-link">Location</a>
-        <a href="#faqs" class="nav-link">FAQs</a>
-        <a href="#booking" class="btn btn-secondary nav-book-btn">Book Now</a>
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="treatments.html" class="nav-link">Treatments</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+        <a href="contact.html#booking" class="btn btn-secondary nav-book-btn">Book Now</a>
       </nav>
-
       <div class="nav-controls">
         <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle dark/light mode">◑</button>
         <button class="hamburger" id="hamburgerBtn" aria-label="Open navigation" aria-expanded="false">
@@ -1714,16 +116,15 @@
 
   <!-- ─── MOBILE NAV ─── -->
   <div class="mobile-nav" id="mobileNav" role="dialog" aria-label="Mobile navigation">
-    <a href="#about" class="nav-link" onclick="closeMobileNav()">About</a>
-    <a href="#doctor" class="nav-link" onclick="closeMobileNav()">Our Doctor</a>
-    <a href="#treatments" class="nav-link" onclick="closeMobileNav()">Treatments</a>
-    <a href="#location" class="nav-link" onclick="closeMobileNav()">Location</a>
-    <a href="#faqs" class="nav-link" onclick="closeMobileNav()">FAQs</a>
-    <a href="#booking" class="btn btn-primary" onclick="closeMobileNav()">Book Appointment</a>
+    <a href="index.html" class="nav-link" onclick="closeMobileNav()">Home</a>
+    <a href="about.html" class="nav-link" onclick="closeMobileNav()">About</a>
+    <a href="treatments.html" class="nav-link" onclick="closeMobileNav()">Treatments</a>
+    <a href="contact.html" class="nav-link" onclick="closeMobileNav()">Contact</a>
+    <a href="contact.html#booking" class="btn btn-primary" onclick="closeMobileNav()">Book Appointment</a>
   </div>
 
   <!-- ─── HERO ─── -->
-  <section class="hero" id="about">
+  <section class="hero" id="hero">
     <div class="container hero-grid">
       <div class="hero-content">
         <div class="hero-badge">Welcome to Dr. Mahe's Dentistry · Porur, Chennai</div>
@@ -1733,8 +134,8 @@
           patient-first environment. From routine check-ups to advanced implants — we're here for every smile.
         </p>
         <div class="hero-actions">
-          <a href="#booking" class="btn btn-primary">Book Consultation</a>
-          <a href="#treatments" class="btn btn-secondary">Our Treatments</a>
+          <a href="contact.html#booking" class="btn btn-primary">Book Consultation</a>
+          <a href="treatments.html" class="btn btn-secondary">Our Treatments</a>
         </div>
         <div class="hero-pills">
           <span class="hero-pill"><span class="hero-pill-dot"></span>Digital X-Ray</span>
@@ -1748,8 +149,7 @@
         </div>
         <div class="hero-float-card">
           <div class="hero-float-card-title">✔ Patient Comfort First</div>
-          <div class="hero-float-card-desc">Modern equipment, personalized care and complete transparency in every
-            treatment plan.</div>
+          <div class="hero-float-card-desc">Modern equipment, personalized care and complete transparency in every treatment plan.</div>
         </div>
       </div>
     </div>
@@ -1759,305 +159,58 @@
   <div class="marquee" aria-hidden="true">
     <div class="marquee-content">
       <div class="marquee-text">
-        <span class="dot">✦</span> Advanced Sterilization <span class="dot">✦</span> Painless Root Canals <span
-          class="dot">✦</span> Cosmetic Veneers <span class="dot">✦</span> Premium Implants <span class="dot">✦</span>
-        Digital X-Rays <span class="dot">✦</span> Orthodontics &amp; Braces <span class="dot">✦</span> Smile Makeovers
-        <span class="dot">✦</span> Oral Surgery
+        <span class="dot">✦</span> Advanced Sterilization <span class="dot">✦</span> Painless Root Canals <span class="dot">✦</span> Cosmetic Veneers <span class="dot">✦</span> Premium Implants <span class="dot">✦</span> Digital X-Rays <span class="dot">✦</span> Orthodontics &amp; Braces <span class="dot">✦</span> Smile Makeovers <span class="dot">✦</span> Oral Surgery
       </div>
       <div class="marquee-text">
-        <span class="dot">✦</span> Advanced Sterilization <span class="dot">✦</span> Painless Root Canals <span
-          class="dot">✦</span> Cosmetic Veneers <span class="dot">✦</span> Premium Implants <span class="dot">✦</span>
-        Digital X-Rays <span class="dot">✦</span> Orthodontics &amp; Braces <span class="dot">✦</span> Smile Makeovers
-        <span class="dot">✦</span> Oral Surgery
+        <span class="dot">✦</span> Advanced Sterilization <span class="dot">✦</span> Painless Root Canals <span class="dot">✦</span> Cosmetic Veneers <span class="dot">✦</span> Premium Implants <span class="dot">✦</span> Digital X-Rays <span class="dot">✦</span> Orthodontics &amp; Braces <span class="dot">✦</span> Smile Makeovers <span class="dot">✦</span> Oral Surgery
       </div>
     </div>
   </div>
 
-  <!-- ─── DR. MAHESWARI SECTION ─── -->
-  <section class="doctor-section section-padding" id="doctor">
-    <div class="container">
-      <div class="doctor-layout">
-
-        <div class="doctor-img-wrap">
-          <div class="doctor-img-frame">
-            <img src="assets/dr.mahe.png"
-              alt="Dr. Maheswari BDS — General Dentist at Dr. Mahe's Dentistry, Porur Chennai" loading="lazy">
-          </div>
-
-          <div class="doctor-badge">
-            <div class="doctor-badge-label">Specialization</div>
-            <div class="doctor-badge-value">General & Family Dentistry</div>
-          </div>
-        </div>
-
-        <div class="doctor-info">
-
-          <div class="hero-badge" style="display:inline-flex; margin-bottom:16px;">
-            Meet Your Doctor
-          </div>
-
-          <h2 class="doctor-name">Dr. Maheswari</h2>
-
-          <div class="doctor-quals">
-            BDS — General Dentist
-          </div>
-
-          <p class="doctor-bio">
-            At Dr. Mahe's Dentistry, we provide expert general dentistry
-            with a gentle, patient-first approach. From precise root canal treatments
-            and aesthetic smile enhancements to comfortable and stress-free dental care
-            for children, Dr.Maheswari is dedicated to creating a positive experience for patients
-            of all ages. Her focus is on delivering quality dental care with compassion,
-            transparency, educating patients about oral hygiene and achieving long-lasting results.
-          </p>
-
-          <div class="doctor-specs">
-            <div class="spec-row">
-              <div class="spec-dot"></div>
-              Teeth Cleaning & Preventive Care
-            </div>
-
-            <div class="spec-row">
-              <div class="spec-dot"></div>
-              Root Canal Treatment (RCT)
-            </div>
-
-
-
-            <div class="spec-row">
-              <div class="spec-dot"></div>
-              Cosmetic & Aesthetic Dentistry
-            </div>
-
-            <div class="spec-row">
-              <div class="spec-dot"></div>
-              Kids & Family Dental Care
-            </div>
-
-            <div class="spec-row">
-              <div class="spec-dot"></div>
-              Tooth Fillings, Crowns & Smile Restoration
-            </div>
-
-          </div>
-
-          <a href="#booking" class="btn btn-primary">
-            Book a Consultation with Dr. Maheswari
-          </a>
-
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── TREATMENTS ─── -->
+  <!-- ─── TREATMENTS PREVIEW ─── -->
   <section class="treatments-section section-padding" id="treatments">
     <div class="container">
       <div class="section-header">
         <span class="section-badge">What We Offer</span>
         <h2 class="section-title">Our Core Treatments</h2>
-        <p class="section-desc">Expert dental care across all specialities — performed with precision, modern equipment,
-          and genuine care for your comfort.</p>
+        <p class="section-desc">Expert dental care across all specialities — performed with precision, modern equipment, and genuine care for your comfort.</p>
       </div>
-      <div class="treatments-grid" id="treatmentsGrid">
-        <!-- Rendered by JavaScript -->
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── BOOKING ─── -->
-  <section class="booking-section section-padding" id="booking">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-badge">Appointments</span>
-        <h2 class="section-title">Book a Consultation</h2>
-        <p class="section-desc">Select your treatment, pick a date and time and share your details. Our coordinator
-          will confirm your slot via call or WhatsApp.</p>
-      </div>
-
-      <div class="booking-layout">
-        <!-- Info panel -->
-        <div class="booking-info">
-          <div>
-            <h3 class="booking-info-title">Schedule Your Visit</h3>
-            <p class="booking-info-desc">Fill the form on the right. We'll contact you within a few hours to confirm
-              your appointment.</p>
-          </div>
-          <div class="contact-list">
-            <div class="contact-row">
-              <span class="contact-icon">📞</span>
-              <div>
-                <div class="contact-label">Call or WhatsApp</div>
-                <div class="contact-value"><a href="tel:+919342803217">+91 93428 03217</a></div>
-              </div>
-            </div>
-            <div class="contact-row">
-              <span class="contact-icon">✉️</span>
-              <div>
-                <div class="contact-label">Email Us</div>
-                <div class="contact-value"><a href="mailto:smile@drmahesdentistry.in">smile@drmahesdentistry.in</a>
-                </div>
-              </div>
-            </div>
-            <div class="contact-row">
-              <span class="contact-icon">📍</span>
-              <div>
-                <div class="contact-label">Location</div>
-                <div class="contact-value">1st floor, Kundrathur Main Rd,<br>Jaya Nagar, Porur, Chennai – 600116</div>
-              </div>
-            </div>
-            <div class="contact-row">
-              <span class="contact-icon">🕐</span>
-              <div>
-                <div class="contact-label">Clinic Hours</div>
-                <div class="contact-value">Mon – Sat: 10:00 AM – 10:00 PM<br>(Sunday: On Appointment)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Wizard -->
-        <div class="booking-wizard-panel">
-          <!-- Step indicators -->
-          <div class="wizard-steps" role="tablist" aria-label="Booking steps">
-            <div class="step-dot active" id="dot1" role="tab" aria-label="Step 1: Treatment">1</div>
-            <div class="step-line"></div>
-            <div class="step-dot" id="dot2" role="tab" aria-label="Step 2: Date & Time">2</div>
-            <div class="step-line"></div>
-            <div class="step-dot" id="dot3" role="tab" aria-label="Step 3: Your Details">3</div>
-          </div>
-
-          <!-- Step 1 -->
-          <div class="wizard-panel active" id="step1">
-            <h3 class="wizard-title">Select Treatment</h3>
-            <div class="svc-grid" id="svcGrid">
-              <!-- Rendered by JS -->
-            </div>
-            <div class="wizard-footer">
-              <span></span>
-              <button class="btn btn-primary" onclick="goNext(1)">Next Step →</button>
-            </div>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="wizard-panel" id="step2">
-            <h3 class="wizard-title">Select Date &amp; Time</h3>
-            <div class="dt-wrap">
-              <div>
-                <div class="dt-label">Preferred Date</div>
-                <input type="date" class="date-picker" id="apptDate" onchange="onDateChange()">
-              </div>
-              <div>
-                <div class="dt-label">Available Time Slots</div>
-                <div class="time-grid" id="timeGrid">
-                  <div
-                    style="grid-column: span 3; text-align: center; padding: 18px 0; font-size: 0.86rem; color: var(--text-secondary);">
-                    📅 Please select a date above to see available slots
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="wizard-footer">
-              <button class="btn btn-secondary" onclick="goBack(2)">← Back</button>
-              <button class="btn btn-primary" onclick="goNext(2)">Next Step →</button>
-            </div>
-          </div>
-
-          <!-- Step 3 -->
-          <div class="wizard-panel" id="step3">
-            <h3 class="wizard-title">Your Details</h3>
-            <div style="display:flex; flex-direction:column; gap:16px;">
-              <div class="fg">
-                <label for="pName">Full Name *</label>
-                <input type="text" class="form-in" id="pName" placeholder="Your full name" required>
-              </div>
-              <div class="fg-grid">
-                <div class="fg">
-                  <label for="pPhone">Phone Number *</label>
-                  <input type="tel" class="form-in" id="pPhone" placeholder="+91 XXXXX XXXXX" required>
-                </div>
-                <div class="fg">
-                  <label for="pEmail">Email (optional)</label>
-                  <input type="email" class="form-in" id="pEmail" placeholder="name@email.com">
-                </div>
-              </div>
-            </div>
-            <div class="wizard-footer">
-              <button class="btn btn-secondary" onclick="goBack(3)">← Back</button>
-              <button class="btn btn-primary" id="confirmBtn" onclick="submitBooking()">Confirm Booking</button>
-            </div>
-          </div>
-
-          <!-- Success -->
-          <div class="booking-success" id="bookingSuccess">
-            <div class="success-check">✓</div>
-            <h3 style="font-size:1.7rem; margin-bottom:8px;">Appointment Requested!</h3>
-            <p style="font-size:0.87rem; color:var(--text-secondary); max-width:360px; line-height:1.65;">Your request
-              is registered. Our coordinator will call or WhatsApp you shortly to confirm your slot.</p>
-            <div class="success-receipt">
-              <div class="receipt-row">
-                <span class="receipt-label">Treatment</span>
-                <span class="receipt-val" id="rService">—</span>
-              </div>
-              <div class="receipt-row">
-                <span class="receipt-label">Date &amp; Time</span>
-                <span class="receipt-val" id="rDateTime">—</span>
-              </div>
-              <div class="receipt-row" style="border-bottom:none; padding-bottom:0;">
-                <span class="receipt-label">Doctor</span>
-                <span class="receipt-val">Dr. Maheswari</span>
-              </div>
-            </div>
-            <button class="btn btn-primary" onclick="resetBooking()">Book Another Slot</button>
-          </div>
-        </div>
+      <div class="treatments-grid" id="treatmentsGrid"></div>
+      <div style="text-align:center; margin-top: 44px;">
+        <a href="treatments.html" class="btn btn-secondary">View All Treatments →</a>
       </div>
     </div>
   </section>
 
-  <!-- ─── LOCATE US ─── -->
-  <section class="location-section section-padding" id="location">
+  <!-- ─── ABOUT STRIP ─── -->
+  <section class="doctor-section section-padding">
     <div class="container">
-      <div class="section-header">
-        <span class="section-badge">Find Us</span>
-        <h2 class="section-title">Locate Our Clinic</h2>
-        <p class="section-desc">Conveniently located on Porur High Road, Chennai — easy to reach by bus, auto, cab, or
-          private vehicle.</p>
-      </div>
-      <div class="location-layout">
-        <div class="location-cards">
-          <div class="loc-card">
-            <div class="loc-label">📍 Address</div>
-            <div class="loc-main">Dr. Mahe's Dentistry</div>
-            <div class="loc-sub">1st floor, Kundrathur Main Rd,<br>Jaya Nagar, Porur, Chennai – 600116</div>
+      <div class="doctor-layout">
+        <div class="doctor-img-wrap">
+          <div class="doctor-img-frame">
+            <img src="assets/dr.mahe.png" alt="Dr. Maheswari BDS — General Dentist at Dr. Mahe's Dentistry, Porur Chennai" loading="lazy">
           </div>
-          <div class="loc-card">
-            <div class="loc-label">📞 Phone &amp; WhatsApp</div>
-            <div class="loc-main"><a href="tel:+919342803217" style="color:var(--text-primary);">+91 93428 03217</a>
-            </div>
-            <div class="loc-sub"><a href="https://wa.me/919342803217" target="_blank" rel="noopener noreferrer">💬 Chat
-                on WhatsApp →</a></div>
+          <div class="doctor-badge">
+            <div class="doctor-badge-label">Specialization</div>
+            <div class="doctor-badge-value">General &amp; Family Dentistry</div>
           </div>
-          <div class="loc-card">
-            <div class="loc-label">🕐 Clinic Hours</div>
-            <div class="loc-main">Monday – Saturday</div>
-            <div class="loc-sub">10:00 AM – 10:00 PM<br><span class="loc-closed" style="color: var(--accent);">Sunday:
-                Based on appointments</span></div>
-          </div>
-          <a href="https://www.google.com/maps/search/?api=1&query=Dr.+Mahe%27s+Dentistry,+Jaya+Nagar,+Porur"
-            target="_blank" rel="noopener noreferrer" class="directions-btn">
-            ↗ &nbsp;Get Directions on Google Maps
-          </a>
         </div>
-
-        <div>
-          <div class="map-frame">
-            <iframe
-              src="https://maps.google.com/maps?q=1st+floor,+Kundrathur+Main+Rd,+Jaya+Nagar,+Porur,+Chennai,+Tamil+Nadu+600116&output=embed&z=15"
-              allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-              title="Dr. Mahe's Dentistry location — Porur Chennai">
-            </iframe>
+        <div class="doctor-info">
+          <div class="hero-badge" style="display:inline-flex; margin-bottom:16px;">Meet Your Doctor</div>
+          <h2 class="doctor-name">Dr. Maheswari</h2>
+          <div class="doctor-quals">BDS — General Dentist</div>
+          <p class="doctor-bio">
+            At Dr. Mahe's Dentistry, we provide expert general dentistry with a gentle, patient-first approach.
+            From precise root canal treatments and aesthetic smile enhancements to comfortable dental care for children,
+            Dr. Maheswari is dedicated to creating a positive experience for patients of all ages.
+          </p>
+          <div class="doctor-specs">
+            <div class="spec-row"><div class="spec-dot"></div>Teeth Cleaning &amp; Preventive Care</div>
+            <div class="spec-row"><div class="spec-dot"></div>Root Canal Treatment (RCT)</div>
+            <div class="spec-row"><div class="spec-dot"></div>Cosmetic &amp; Aesthetic Dentistry</div>
+            <div class="spec-row"><div class="spec-dot"></div>Kids &amp; Family Dental Care</div>
           </div>
+          <a href="about.html" class="btn btn-primary">Learn More About Dr. Maheswari</a>
         </div>
       </div>
     </div>
@@ -2074,55 +227,27 @@
       <div class="faqs-list">
         <div class="faq-item">
           <button class="faq-btn" onclick="toggleFaq(this)">
-            <span>How do I book an appointment?</span>
-            <span class="faq-icon">+</span>
+            <span>How do I book an appointment?</span><span class="faq-icon">+</span>
           </button>
-          <div class="faq-answer">
-            <p>Use the booking form on this page — select your treatment, a preferred date and time and enter your
-              contact details. Our clinic coordinator will reach out via phone or WhatsApp within a few hours to confirm
-              your slot.</p>
-          </div>
+          <div class="faq-answer"><p>Use the booking form on our <a href="contact.html#booking" style="color:var(--accent);">Contact page</a> — select your treatment, a preferred date and time and enter your contact details. Our clinic coordinator will reach out via phone or WhatsApp within a few hours to confirm your slot.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-btn" onclick="toggleFaq(this)">
-            <span>How do I prepare for a scaling or root canal session?</span>
-            <span class="faq-icon">+</span>
+            <span>What sterilization protocols does the clinic follow?</span><span class="faq-icon">+</span>
           </button>
-          <div class="faq-answer">
-            <p>Have a light meal before your appointment unless anesthesia is planned. Bring a list of any medications
-              or health conditions (diabetes, hypertension, blood thinners) so we can plan your treatment safely.</p>
-          </div>
+          <div class="faq-answer"><p>We follow strict international Class-B autoclave sterilization standards. All instruments are vacuum-packed and sterilized. They are opened fresh in front of the patient for every procedure. Disposable barriers are replaced after each patient — no exceptions.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-btn" onclick="toggleFaq(this)">
-            <span>What sterilization protocols does the clinic follow?</span>
-            <span class="faq-icon">+</span>
+            <span>What payment methods are accepted?</span><span class="faq-icon">+</span>
           </button>
-          <div class="faq-answer">
-            <p>We follow strict international Class-B autoclave sterilization standards. All instruments are
-              vacuum-packed and sterilized. They are opened fresh in front of the patient for every procedure.
-              Disposable barriers are replaced after each patient — no exceptions.</p>
-          </div>
+          <div class="faq-answer"><p>We accept Cash, Debit/Credit Cards and all major UPI apps — GPay, PhonePe and Paytm. Digital receipts are generated for all payments.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-btn" onclick="toggleFaq(this)">
-            <span>What payment methods are accepted?</span>
-            <span class="faq-icon">+</span>
+            <span>Is the clinic easily reachable by public transport?</span><span class="faq-icon">+</span>
           </button>
-          <div class="faq-answer">
-            <p>We accept Cash, Debit/Credit Cards and all major UPI apps — GPay, PhonePe and Paytm. Digital receipts
-              are generated for all payments.</p>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)">
-            <span>Is the clinic easily reachable by public transport?</span>
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-answer">
-            <p>Yes. The clinic is on Porur High Road, which is well served by MTC bus routes and easily accessible by
-              auto-rickshaw or cab. On-street parking is available for two-wheelers and cars.</p>
-          </div>
+          <div class="faq-answer"><p>Yes. The clinic is on Porur High Road, which is well served by MTC bus routes and easily accessible by auto-rickshaw or cab. On-street parking is available for two-wheelers and cars.</p></div>
         </div>
       </div>
     </div>
@@ -2135,26 +260,23 @@
         <div class="logo">
           <img src="assets/logo_black.png" alt="Dr. Mahe's Dentistry" class="logo-img">
         </div>
-        <p class="footer-desc">Modern dental care centred on precision, patient comfort and full transparency.
-          Implants, endodontics, orthodontics and cosmetic dentistry — by Dr. Maheswari in Porur, Chennai.</p>
+        <p class="footer-desc">Modern dental care centred on precision, patient comfort and full transparency. Implants, endodontics, orthodontics and cosmetic dentistry — by Dr. Maheswari in Porur, Chennai.</p>
       </div>
       <div class="footer-col">
         <h4>Quick Links</h4>
         <ul class="footer-list">
-          <li><a href="#about" class="footer-item">About Our Clinic</a></li>
-          <li><a href="#doctor" class="footer-item">Dr. Maheswari</a></li>
-          <li><a href="#treatments" class="footer-item">Treatments</a></li>
-          <li><a href="#booking" class="footer-item">Book Appointment</a></li>
-          <li><a href="#location" class="footer-item">Locate Us</a></li>
-          <li><a href="#faqs" class="footer-item">FAQs</a></li>
+          <li><a href="index.html" class="footer-item">Home</a></li>
+          <li><a href="about.html" class="footer-item">About Dr. Maheswari</a></li>
+          <li><a href="treatments.html" class="footer-item">All Treatments</a></li>
+          <li><a href="contact.html#booking" class="footer-item">Book Appointment</a></li>
+          <li><a href="contact.html" class="footer-item">Contact &amp; Location</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Contact Us</h4>
         <ul class="footer-list">
           <li class="footer-item"><a href="tel:+919342803217">+91 93428 03217</a></li>
-          <li class="footer-item"><a href="https://wa.me/919342803217" target="_blank" rel="noopener">WhatsApp Us</a>
-          </li>
+          <li class="footer-item"><a href="https://wa.me/919342803217" target="_blank" rel="noopener">WhatsApp Us</a></li>
           <li class="footer-item"><a href="mailto:smile@drmahesdentistry.in">smile@drmahesdentistry.in</a></li>
           <li class="footer-item" style="margin-top:6px;">1st floor, Kundrathur Main Rd,</li>
           <li class="footer-item">Jaya Nagar, Porur, Chennai — 600116</li>
@@ -2169,282 +291,23 @@
     </div>
   </footer>
 
-  <!-- ─── JAVASCRIPT ─── -->
   <script>
-    /* ── TREATMENTS DATA (major categories, no pricing) ── */
     const treatmentsData = [
-      {
-        name: 'Dental Implants',
-        icon: '🦷',
-        desc: 'Permanent, natural-looking tooth replacements using biocompatible titanium fixtures — restoring full function and aesthetics.',
-        img: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=700&h=420&fit=crop&q=82',
-      },
-      {
-        name: 'Root Canal Treatment',
-        icon: '🔬',
-        desc: 'Painless, single-sitting endodontic therapy to save infected teeth, eliminate pain and preserve your natural smile.',
-        img: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=700&h=420&fit=crop&q=82',
-      },
-      {
-        name: 'Orthodontics & Braces',
-        icon: '⛓',
-        desc: 'Metal, ceramic and self-ligating braces — precisely customized alignment for children, teens and adults.',
-        img: 'https://images.unsplash.com/photo-1588776814546-1ffbb29d6390?w=700&h=420&fit=crop&q=82',
-      },
-      {
-        name: 'Cosmetic Dentistry',
-        icon: '✨',
-        desc: 'Porcelain veneers, composite bonding and whitening treatments to craft a confident, radiant smile.',
-        img: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=700&h=420&fit=crop&q=82',
-      },
-      {
-        name: 'Oral Surgery',
-        icon: '💉',
-        desc: 'Expert removal of wisdom teeth, impacted molars and complex extractions with precision and minimal discomfort.',
-        img: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=700&h=420&fit=crop&q=82',
-      },
-      {
-        name: 'Crowns & Veneers',
-        icon: '👑',
-        desc: 'Premium zirconia, e.max and metal-ceramic restorations — precision-crafted to protect and beautifully restore your teeth.',
-        img: 'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=700&h=420&fit=crop&q=82',
-      },
+      { name: 'Dental Implants', icon: '🦷', desc: 'Permanent, natural-looking tooth replacements using biocompatible titanium fixtures — restoring full function and aesthetics.', img: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=700&h=420&fit=crop&q=82', page: 'dental-implants.html' },
+      { name: 'Root Canal Treatment', icon: '🔬', desc: 'Painless, single-sitting endodontic therapy to save infected teeth, eliminate pain and preserve your natural smile.', img: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=700&h=420&fit=crop&q=82', page: 'root-canal.html' },
+      { name: 'Orthodontics & Braces', icon: '⛓', desc: 'Metal, ceramic and self-ligating braces — precisely customized alignment for children, teens and adults.', img: 'https://images.unsplash.com/photo-1588776814546-1ffbb29d6390?w=700&h=420&fit=crop&q=82', page: 'orthodontics.html' },
+      { name: 'Cosmetic Dentistry', icon: '✨', desc: 'Porcelain veneers, composite bonding and whitening treatments to craft a confident, radiant smile.', img: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=700&h=420&fit=crop&q=82', page: 'cosmetic-dentistry.html' },
+      { name: 'Oral Surgery', icon: '💉', desc: 'Expert removal of wisdom teeth, impacted molars and complex extractions with precision and minimal discomfort.', img: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=700&h=420&fit=crop&q=82', page: 'oral-surgery.html' },
+      { name: 'Crowns & Veneers', icon: '👑', desc: 'Premium zirconia, e.max and metal-ceramic restorations — precision-crafted to protect and beautifully restore your teeth.', img: 'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=700&h=420&fit=crop&q=82', page: 'crowns-veneers.html' },
     ];
-
-    /* Render treatment cards */
-    const treatmentsGrid = document.getElementById('treatmentsGrid');
+    const grid = document.getElementById('treatmentsGrid');
     treatmentsData.forEach(tx => {
       const card = document.createElement('div');
       card.className = 'tx-card';
-      card.innerHTML = `
-        <div class="tx-img-wrap">
-          <img src="${tx.img}" alt="${tx.name} — Dr. Mahe's Dentistry" loading="lazy"
-            onerror="this.parentElement.style.background='var(--bg-secondary)'; this.style.display='none';">
-          <div class="tx-img-overlay"></div>
-        </div>
-        <div class="tx-body">
-          <div class="tx-icon">${tx.icon}</div>
-          <div class="tx-name">${tx.name}</div>
-          <div class="tx-desc">${tx.desc}</div>
-          <a href="#booking" class="tx-link">Book This Treatment ➔</a>
-        </div>
-      `;
-      treatmentsGrid.appendChild(card);
-    });
-
-    /* ── BOOKING WIZARD ── */
-    const bookingServices = [
-      { name: 'Consultation & Check-up', icon: '🔍' },
-      { name: 'Dental Implants', icon: '🦷' },
-      { name: 'Root Canal Treatment', icon: '🔬' },
-      { name: 'Orthodontics (Braces)', icon: '⛓' },
-      { name: 'Cosmetic Dentistry', icon: '✨' },
-      { name: 'Oral Surgery', icon: '💉' },
-      { name: 'Crowns & Veneers', icon: '👑' },
-      { name: 'Teeth Cleaning', icon: '🪥' },
-    ];
-
-    let bState = { service: '', date: '', time: '' };
-
-    /* Render service cards */
-    const svcGrid = document.getElementById('svcGrid');
-    bookingServices.forEach(svc => {
-      const card = document.createElement('div');
-      card.className = 'svc-card';
-      card.setAttribute('data-name', svc.name);
-      card.innerHTML = `<span class="svc-icon">${svc.icon}</span><span class="svc-name">${svc.name}</span>`;
-      card.addEventListener('click', () => {
-        svcGrid.querySelectorAll('.svc-card').forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
-        bState.service = svc.name;
-      });
-      svcGrid.appendChild(card);
-    });
-
-    function setDots(step) {
-      ['dot1', 'dot2', 'dot3'].forEach((id, i) => {
-        const el = document.getElementById(id);
-        const n = i + 1;
-        el.className = 'step-dot' + (n < step ? ' done' : n === step ? ' active' : '');
-      });
-    }
-
-    function goNext(current) {
-      if (current === 1) {
-        if (!bState.service) { alert('Please select a treatment to continue.'); return; }
-        document.getElementById('step1').classList.remove('active');
-        document.getElementById('step2').classList.add('active');
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('apptDate').min = today;
-        setDots(2);
-      } else if (current === 2) {
-        if (!bState.date) { alert('Please select a date.'); return; }
-        if (!bState.time) { alert('Please select a time slot.'); return; }
-        document.getElementById('step2').classList.remove('active');
-        document.getElementById('step3').classList.add('active');
-        setDots(3);
-      }
-    }
-
-    function goBack(current) {
-      document.getElementById(`step${current}`).classList.remove('active');
-      document.getElementById(`step${current - 1}`).classList.add('active');
-      setDots(current - 1);
-    }
-
-    function onDateChange() {
-      const selectedDate = document.getElementById('apptDate').value;
-      bState.date = selectedDate;
-      if (!selectedDate) return;
-
-      const timeGrid = document.getElementById('timeGrid');
-      timeGrid.innerHTML = '<div style="grid-column: span 3; text-align: center; font-size: 0.86rem; color: var(--text-secondary);">Loading available slots...</div>';
-
-      const apiOrigin = (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
-        ? 'http://localhost:5000'
-        : 'https://portal.drmahesdentistry.in';
-
-      fetch(`${apiOrigin}/api/appointments/available-slots?date=${selectedDate}`)
-        .then(r => { if (!r.ok) throw new Error('Failed to load slots'); return r.json(); })
-        .then(data => {
-          timeGrid.innerHTML = '';
-          bState.time = ''; // Reset selected slot
-
-          if (!data.availableSlots || data.availableSlots.length === 0) {
-            timeGrid.innerHTML = '<div style="grid-column: span 3; text-align: center; font-size: 0.86rem; color: #C0392B; font-weight: 600;">No slots available for this day.</div>';
-            return;
-          }
-
-          data.availableSlots.forEach(slot => {
-            const btn = document.createElement('button');
-            btn.className = 'time-btn';
-            btn.type = 'button';
-            btn.textContent = slot;
-            btn.onclick = () => pickTime(slot, btn);
-            timeGrid.appendChild(btn);
-          });
-        })
-        .catch(err => {
-          console.error(err);
-          timeGrid.innerHTML = '<div style="grid-column: span 3; text-align: center; font-size: 0.86rem; color: #C0392B;">Error loading slots.</div>';
-        });
-    }
-
-    function pickTime(slot, btn) {
-      bState.time = slot;
-      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
-
-    function submitBooking() {
-      const name = document.getElementById('pName').value.trim();
-      const phone = document.getElementById('pPhone').value.trim();
-      const email = document.getElementById('pEmail').value.trim();
-      if (!name || !phone) { alert('Please enter your name and phone number.'); return; }
-
-      const btn = document.getElementById('confirmBtn');
-      btn.textContent = 'Processing…';
-      btn.disabled = true;
-
-      const apiOrigin = (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
-        ? 'http://localhost:5000'
-        : 'https://portal.drmahesdentistry.in';
-
-      fetch(`${apiOrigin}/api/appointments/website-book`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patientName: name,
-          patientPhone: phone,
-          patientEmail: email,
-          service: bState.service,
-          date: bState.date,
-          timeSlot: bState.time,
-        }),
-      })
-        .then(r => { if (!r.ok) throw new Error('Server error'); return r.json(); })
-        .then(() => {
-          document.getElementById('step3').classList.remove('active');
-          document.getElementById('rService').textContent = bState.service;
-          const fmt = new Date(bState.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-          document.getElementById('rDateTime').textContent = `${fmt} @ ${bState.time}`;
-          const success = document.getElementById('bookingSuccess');
-          success.style.display = 'flex';
-          setDots(4); // All done
-        })
-        .catch(err => {
-          console.error('Booking error:', err);
-          alert('Unable to submit booking. Please call us at +91 93428 03217.');
-          btn.textContent = 'Confirm Booking';
-          btn.disabled = false;
-        });
-    }
-
-    function resetBooking() {
-      bState = { service: '', date: '', time: '' };
-      svcGrid.querySelectorAll('.svc-card').forEach(c => c.classList.remove('active'));
-      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('apptDate').value = '';
-      document.getElementById('pName').value = '';
-      document.getElementById('pPhone').value = '';
-      document.getElementById('pEmail').value = '';
-      document.getElementById('bookingSuccess').style.display = 'none';
-      document.getElementById('step1').classList.add('active');
-      const btn = document.getElementById('confirmBtn');
-      btn.textContent = 'Confirm Booking';
-      btn.disabled = false;
-      setDots(1);
-    }
-
-    /* ── FAQs ── */
-    function toggleFaq(btn) {
-      const item = btn.closest('.faq-item');
-      const isOpen = item.classList.contains('open');
-      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-      if (!isOpen) item.classList.add('open');
-    }
-
-    /* ── THEME ── */
-    const themeBtn = document.getElementById('themeToggleBtn');
-    const root = document.documentElement;
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    root.setAttribute('data-theme', savedTheme);
-    themeBtn.textContent = savedTheme === 'dark' ? '☀' : '◑';
-    themeBtn.addEventListener('click', () => {
-      const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      root.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-      themeBtn.textContent = next === 'dark' ? '☀' : '◑';
-    });
-
-    /* ── HEADER SCROLL ── */
-    window.addEventListener('scroll', () => {
-      document.getElementById('header').classList.toggle('scrolled', window.scrollY > 48);
-    }, { passive: true });
-
-    /* ── HAMBURGER ── */
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const mobileNav = document.getElementById('mobileNav');
-
-    hamburgerBtn.addEventListener('click', () => {
-      const open = hamburgerBtn.classList.toggle('open');
-      mobileNav.classList.toggle('open', open);
-      hamburgerBtn.setAttribute('aria-expanded', open);
-      document.body.style.overflow = open ? 'hidden' : '';
-    });
-
-    function closeMobileNav() {
-      hamburgerBtn.classList.remove('open');
-      mobileNav.classList.remove('open');
-      hamburgerBtn.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
-    }
-
-    /* Close mobile nav when clicking outside */
-    mobileNav.addEventListener('click', e => {
-      if (e.target === mobileNav) closeMobileNav();
+      card.innerHTML = `<div class="tx-img-wrap"><img src="${tx.img}" alt="${tx.name} — Dr. Mahe's Dentistry" loading="lazy" onerror="this.parentElement.style.background='var(--bg-secondary)'; this.style.display='none';"><div class="tx-img-overlay"></div></div><div class="tx-body"><div class="tx-icon">${tx.icon}</div><div class="tx-name">${tx.name}</div><div class="tx-desc">${tx.desc}</div><a href="${tx.page}" class="tx-link">Learn More ➔</a></div>`;
+      grid.appendChild(card);
     });
   </script>
+  <script src="assets/main.js"></script>
 </body>
-
 </html>
