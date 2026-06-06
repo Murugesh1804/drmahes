@@ -21,7 +21,7 @@ const app = express()
 const PORT = process.env.PORT || 5000
 
 // ── ALLOWED ORIGINS ─────────────────────────────────────────────────────────
-const ALLOWED_ORIGINS = [
+let ALLOWED_ORIGINS = [
   'https://portal.drmahesdentistry.in',
   'https://kiosk.drmahesdentistry.in',
   'https://drmahesdentistry.in',
@@ -32,6 +32,10 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:5500',
   'http://127.0.0.1:5000',
 ]
+
+if (process.env.NODE_ENV === 'production') {
+  ALLOWED_ORIGINS = ALLOWED_ORIGINS.filter(origin => !origin.includes('localhost') && !origin.includes('127.0.0.1'))
+}
 
 // ── SECURITY HEADERS (helmet) ────────────────────────────────────────────────
 app.use(helmet({
@@ -78,6 +82,15 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 })
 
+// Public Forms: 5 submissions per 60 minutes per IP (spam protection)
+const publicFormLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many submissions. Please try again later.' },
+})
+
 app.use('/api', globalLimiter)
 
 // ── INITIALIZE DB ────────────────────────────────────────────────────────────
@@ -117,7 +130,7 @@ app.post('/api/auth/login', authLimiter, handleLogin)
 
 // ── PUBLIC ROUTES (no auth required) ─────────────────────────────────────────
 // Website online booking — called from drmahesdentistry.in public website
-app.post('/api/appointments/website-book', async (req, res) => {
+app.post('/api/appointments/website-book', publicFormLimiter, async (req, res) => {
   try {
     const { patientName, patientPhone, patientEmail, service, date, timeSlot } = req.body
 
@@ -205,7 +218,7 @@ app.get('/api/appointments/available-slots', async (req, res) => {
 })
 
 // Kiosk consent form submission — called from kiosk page (no CMS login required)
-app.post('/api/consent', async (req, res) => {
+app.post('/api/consent', publicFormLimiter, async (req, res) => {
   try {
     const { name, phone, age, gender, complaint, notes, signature } = req.body
 
