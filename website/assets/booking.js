@@ -1,14 +1,15 @@
 /* ── BOOKING WIZARD ── */
 const bookingServices = [
-  { name: 'Consultation & Check-up', icon: '🔍' },
-  { name: 'Dental Implants', icon: '🦷' },
-  { name: 'Root Canal Treatment', icon: '🔬' },
-  { name: 'Orthodontics (Braces)', icon: '⛓' },
-  { name: 'Cosmetic Dentistry', icon: '✨' },
-  { name: 'Oral Surgery', icon: '💉' },
-  { name: 'Crowns & Veneers', icon: '👑' },
-  { name: 'Teeth Cleaning', icon: '🪥' },
+  { name: 'Consultation & Check-up', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+  { name: 'Dental Implants', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2C8.5 2 7 5 7 7c0 2.5 1.5 4 3 5v3H9a1 1 0 0 0 0 2h1v2a1 1 0 0 0 2 0v-2h1a1 1 0 0 0 0-2h-1v-3c1.5-1 3-2.5 3-5 0-2-1.5-5-5-5z"/><path d="M10 7c0-1.7 1-3 2-3s2 1.3 2 3"/></svg>' },
+  { name: 'Root Canal Treatment', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>' },
+  { name: 'Orthodontics (Braces)', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="8" width="18" height="8" rx="2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/><line x1="3" y1="12" x2="21" y2="12"/></svg>' },
+  { name: 'Cosmetic Dentistry', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 3.93 2.52 7.27 6.02 8.5C9.7 20.83 10.82 21 12 21s2.3-.17 2.98-.5C18.48 19.27 21 15.93 21 12c0-4.97-4.03-9-9-9z"/><path d="M8 12c0-2.21 1.79-4 4-4s4 1.79 4 4"/></svg>' },
+  { name: 'Oral Surgery', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>' },
+  { name: 'Crowns & Veneers', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 20h20M5 20V8l3.5 4L12 3l3.5 9L19 8v12"/></svg>' },
+  { name: 'Teeth Cleaning', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' },
 ];
+
 
 let bState = { service: '', date: '', time: '' };
 

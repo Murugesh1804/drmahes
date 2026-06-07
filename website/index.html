@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
@@ -106,7 +106,7 @@
         <a href="contact.html#booking" class="btn btn-secondary nav-book-btn">Book Now</a>
       </nav>
       <div class="nav-controls">
-        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle dark/light mode">◑</button>
+
         <button class="hamburger" id="hamburgerBtn" aria-label="Open navigation" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
@@ -148,7 +148,7 @@
             class="hero-img" loading="eager">
         </div>
         <div class="hero-float-card">
-          <div class="hero-float-card-title">✔ Patient Comfort First</div>
+          <div class="hero-float-card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:16px;height:16px;stroke-width:2.5;color:var(--accent);display:inline-block;vertical-align:middle;margin-right:6px;"><polyline points="20 6 9 17 4 12"></polyline></svg> Patient Comfort First</div>
           <div class="hero-float-card-desc">Modern equipment, personalized care and complete transparency in every treatment plan.</div>
         </div>
       </div>
@@ -293,12 +293,12 @@
 
   <script>
     const treatmentsData = [
-      { name: 'Dental Implants', icon: '🦷', desc: 'Permanent, natural-looking tooth replacements using biocompatible titanium fixtures — restoring full function and aesthetics.', img: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=700&h=420&fit=crop&q=82', page: 'dental-implants.html' },
-      { name: 'Root Canal Treatment', icon: '🔬', desc: 'Painless, single-sitting endodontic therapy to save infected teeth, eliminate pain and preserve your natural smile.', img: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=700&h=420&fit=crop&q=82', page: 'root-canal.html' },
-      { name: 'Orthodontics & Braces', icon: '⛓', desc: 'Metal, ceramic and self-ligating braces — precisely customized alignment for children, teens and adults.', img: 'https://images.unsplash.com/photo-1588776814546-1ffbb29d6390?w=700&h=420&fit=crop&q=82', page: 'orthodontics.html' },
-      { name: 'Cosmetic Dentistry', icon: '✨', desc: 'Porcelain veneers, composite bonding and whitening treatments to craft a confident, radiant smile.', img: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=700&h=420&fit=crop&q=82', page: 'cosmetic-dentistry.html' },
-      { name: 'Oral Surgery', icon: '💉', desc: 'Expert removal of wisdom teeth, impacted molars and complex extractions with precision and minimal discomfort.', img: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=700&h=420&fit=crop&q=82', page: 'oral-surgery.html' },
-      { name: 'Crowns & Veneers', icon: '👑', desc: 'Premium zirconia, e.max and metal-ceramic restorations — precision-crafted to protect and beautifully restore your teeth.', img: 'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=700&h=420&fit=crop&q=82', page: 'crowns-veneers.html' },
+      { name: 'Dental Implants', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2C8.5 2 7 5 7 7c0 2.5 1.5 4 3 5v3H9a1 1 0 0 0 0 2h1v2a1 1 0 0 0 2 0v-2h1a1 1 0 0 0 0-2h-1v-3c1.5-1 3-2.5 3-5 0-2-1.5-5-5-5z"/><path d="M10 7c0-1.7 1-3 2-3s2 1.3 2 3"/></svg>', desc: 'Permanent, natural-looking tooth replacements using biocompatible titanium fixtures — restoring full function and aesthetics.', img: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=700&h=420&fit=crop&q=82', page: 'dental-implants.html' },
+      { name: 'Root Canal Treatment', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>', desc: 'Painless, single-sitting endodontic therapy to save infected teeth, eliminate pain and preserve your natural smile.', img: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=700&h=420&fit=crop&q=82', page: 'root-canal.html' },
+      { name: 'Orthodontics & Braces', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="8" width="18" height="8" rx="2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/><line x1="3" y1="12" x2="21" y2="12"/></svg>', desc: 'Metal, ceramic and self-ligating braces — precisely customized alignment for children, teens and adults.', img: 'https://images.unsplash.com/photo-1588776814546-1ffbb29d6390?w=700&h=420&fit=crop&q=82', page: 'orthodontics.html' },
+      { name: 'Cosmetic Dentistry', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 3.93 2.52 7.27 6.02 8.5C9.7 20.83 10.82 21 12 21s2.3-.17 2.98-.5C18.48 19.27 21 15.93 21 12c0-4.97-4.03-9-9-9z"/><path d="M8 12c0-2.21 1.79-4 4-4s4 1.79 4 4"/></svg>', desc: 'Porcelain veneers, composite bonding and whitening treatments to craft a confident, radiant smile.', img: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=700&h=420&fit=crop&q=82', page: 'cosmetic-dentistry.html' },
+      { name: 'Oral Surgery', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>', desc: 'Expert removal of wisdom teeth, impacted molars and complex extractions with precision and minimal discomfort.', img: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=700&h=420&fit=crop&q=82', page: 'oral-surgery.html' },
+      { name: 'Crowns & Veneers', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 20h20M5 20V8l3.5 4L12 3l3.5 9L19 8v12"/></svg>', desc: 'Premium zirconia, e.max and metal-ceramic restorations — precision-crafted to protect and beautifully restore your teeth.', img: 'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=700&h=420&fit=crop&q=82', page: 'crowns-veneers.html' },
     ];
     const grid = document.getElementById('treatmentsGrid');
     treatmentsData.forEach(tx => {

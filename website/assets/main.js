@@ -1,17 +1,3 @@
-/* ── THEME ── */
-const themeBtn = document.getElementById('themeToggleBtn');
-const root = document.documentElement;
-const savedTheme = localStorage.getItem('theme') || 'light';
-root.setAttribute('data-theme', savedTheme);
-if (themeBtn) {
-  themeBtn.textContent = savedTheme === 'dark' ? '☀' : '◑';
-  themeBtn.addEventListener('click', () => {
-    const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    root.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
-    themeBtn.textContent = next === 'dark' ? '☀' : '◑';
-  });
-}
 
 /* ── HEADER SCROLL ── */
 window.addEventListener('scroll', () => {
