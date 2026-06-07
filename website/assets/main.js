@@ -37,3 +37,9 @@ function toggleFaq(btn) {
   document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
   if (!isOpen) item.classList.add('open');
 }
+
+/* ── REDIRECTS (www to non-www) ── */
+if (window.location.hostname.startsWith('www.')) {
+  window.location.replace(window.location.href.replace('www.', ''));
+}
+

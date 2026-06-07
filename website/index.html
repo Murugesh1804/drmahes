@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dr. Mahe's Dentistry — Advanced Dental Care, Porur, Chennai</title>
-  <meta name="description" content="Dr. Maheswari's modern dental clinic in Porur, Chennai. Expert dental implants, root canal, orthodontics, cosmetic dentistry and oral surgery in a comfortable, fully sterilized environment.">
+  <meta name="description" content="Visit Dr. Mahe's Dentistry in Porur, Chennai. Dr. Maheswari offers expert dental implants, painless root canals, braces, cosmetic dentistry, and oral surgery with advanced dental care. Book today!">
   <meta name="keywords" content="dentist porur chennai, dental clinic porur, dr maheswari dentist, dental implants chennai, root canal porur, orthodontics braces chennai">
 
   <link rel="canonical" href="https://drmahesdentistry.in/" />
@@ -14,6 +14,12 @@
   <meta name="geo.placename" content="Porur, Chennai">
   <meta name="geo.position" content="13.0356;80.1594">
   <meta name="ICBM" content="13.0356, 80.1594">
+
+  <!-- Prefetch and Preload for faster response times -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://images.unsplash.com">
+  <link rel="dns-prefetch" href="https://maps.googleapis.com">
+  <link rel="preload" href="assets/style.css" as="style">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
@@ -200,7 +206,7 @@
           <h2 class="doctor-name">Dr. Maheswari</h2>
           <div class="doctor-quals">BDS — General Dentist</div>
           <p class="doctor-bio">
-            At Dr. Mahe's Dentistry, we provide expert general dentistry with a gentle, patient-first approach.
+            At Dr. Mahe's Dentistry, we provide advanced dental care with a gentle touch and a patient-first approach.
             From precise root canal treatments and aesthetic smile enhancements to comfortable dental care for children,
             Dr. Maheswari is dedicated to creating a positive experience for patients of all ages.
           </p>
@@ -304,7 +310,7 @@
     treatmentsData.forEach(tx => {
       const card = document.createElement('div');
       card.className = 'tx-card';
-      card.innerHTML = `<div class="tx-img-wrap"><img src="${tx.img}" alt="${tx.name} — Dr. Mahe's Dentistry" loading="lazy" onerror="this.parentElement.style.background='var(--bg-secondary)'; this.style.display='none';"><div class="tx-img-overlay"></div></div><div class="tx-body"><div class="tx-icon">${tx.icon}</div><div class="tx-name">${tx.name}</div><div class="tx-desc">${tx.desc}</div><a href="${tx.page}" class="tx-link">Learn More ➔</a></div>`;
+      card.innerHTML = `<div class="tx-img-wrap"><img src="${tx.img}" alt="${tx.name} — Dr. Mahe's Dentistry" loading="lazy" onerror="this.parentElement.style.background='var(--bg-secondary)'; this.style.display='none';"><div class="tx-img-overlay"></div></div><div class="tx-body"><div class="tx-icon">${tx.icon}</div><h3 class="tx-name">${tx.name}</h3><div class="tx-desc">${tx.desc}</div><a href="${tx.page}" class="tx-link">Learn More ➔</a></div>`;
       grid.appendChild(card);
     });
   </script>
