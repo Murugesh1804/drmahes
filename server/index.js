@@ -18,6 +18,7 @@ const { handleLogin, verifyToken } = require('./auth')
 const { sendAppointmentConfirmation } = require('./email')
 
 const app = express()
+app.set('trust proxy', 1)
 const PORT = process.env.PORT || 5000
 
 // ── ALLOWED ORIGINS ─────────────────────────────────────────────────────────
