@@ -34,7 +34,7 @@ async function sendAppointmentConfirmation(toEmail, patientName, date, timeSlot,
 
 
   const mailOptions = {
-    from: '"Dr. Mahe\'s Dentistry" <smile@drmahesdentistry.in>',
+    from: process.env.MAIL_FROM,
     to: toEmail.trim(),
     subject: "Thank You for Choosing Dr. Mahe's Dentistry!",
     html: `<html>
@@ -316,8 +316,8 @@ async function sendAppointmentConfirmation(toEmail, patientName, date, timeSlot,
 </html>`,
     attachments: [
       {
-        filename: 'logo_black.webp',
-        path: path.join(__dirname, '../website/assets/logo_black.webp'),
+        filename: 'logo_black.png',
+        path: path.join(__dirname, '../website/assets/logo_black.png'),
         cid: 'logo_black'
       }
     ]
