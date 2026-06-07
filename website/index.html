@@ -19,7 +19,7 @@
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://images.unsplash.com">
   <link rel="dns-prefetch" href="https://maps.googleapis.com">
-  <link rel="preload" href="assets/style.css" as="style">
+  <link rel="preload" href="assets/style.min.css" as="style">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
@@ -38,7 +38,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.min.css">
 
   <!-- Schema: Dentist (Local Business) -->
   <script type="application/ld+json">
@@ -102,7 +102,7 @@
   <header class="header" id="header">
     <div class="container nav-container">
       <a href="index.html" class="logo">
-        <img src="assets/logo_white.webp" alt="Dr. Mahe's Dentistry" class="logo-img">
+        <img src="assets/logo_white.webp" width="927" height="269" alt="Dr. Mahe's Dentistry" class="logo-img">
       </a>
       <nav class="nav-links" aria-label="Main navigation">
         <a href="index.html" class="nav-link active">Home</a>
@@ -150,7 +150,7 @@
       </div>
       <div class="hero-visual">
         <div class="hero-img-mask">
-          <img src="assets/reception_area.webp" alt="Dr. Mahe's Dentistry — modern reception area, Porur Chennai"
+          <img src="assets/reception_area.webp" width="1024" height="1024" alt="Dr. Mahe's Dentistry — modern reception area, Porur Chennai"
             class="hero-img" loading="eager">
         </div>
         <div class="hero-float-card">
@@ -194,7 +194,7 @@
       <div class="doctor-layout">
         <div class="doctor-img-wrap">
           <div class="doctor-img-frame">
-            <img src="assets/dr.mahe.webp" alt="Dr. Maheswari BDS — General Dentist at Dr. Mahe's Dentistry, Porur Chennai" loading="lazy">
+            <img src="assets/dr.mahe.webp" width="1684" height="2528" alt="Dr. Maheswari BDS — General Dentist at Dr. Mahe's Dentistry, Porur Chennai" loading="lazy">
           </div>
           <div class="doctor-badge">
             <div class="doctor-badge-label">Specialization</div>
@@ -264,7 +264,7 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <div class="logo">
-          <img src="assets/logo_black.webp" alt="Dr. Mahe's Dentistry" class="logo-img">
+          <img src="assets/logo_black.webp" width="848" height="294" alt="Dr. Mahe's Dentistry" class="logo-img">
         </div>
         <p class="footer-desc">Modern dental care centred on precision, patient comfort and full transparency. Implants, endodontics, orthodontics and cosmetic dentistry — by Dr. Maheswari in Porur, Chennai.</p>
       </div>
@@ -310,7 +310,7 @@
     treatmentsData.forEach(tx => {
       const card = document.createElement('div');
       card.className = 'tx-card';
-      card.innerHTML = `<div class="tx-img-wrap"><img src="${tx.img}" alt="${tx.name} — Dr. Mahe's Dentistry" loading="lazy" onerror="this.parentElement.style.background='var(--bg-secondary)'; this.style.display='none';"><div class="tx-img-overlay"></div></div><div class="tx-body"><div class="tx-icon">${tx.icon}</div><h3 class="tx-name">${tx.name}</h3><div class="tx-desc">${tx.desc}</div><a href="${tx.page}" class="tx-link">Learn More ➔</a></div>`;
+      card.innerHTML = `<div class="tx-img-wrap"><img src="${tx.img}" alt="${tx.name} — Dr. Mahe's Dentistry" loading="lazy" width="700" height="420" onerror="this.parentElement.style.background='var(--bg-secondary)'; this.style.display='none';"><div class="tx-img-overlay"></div></div><div class="tx-body"><div class="tx-icon">${tx.icon}</div><h3 class="tx-name">${tx.name}</h3><div class="tx-desc">${tx.desc}</div><a href="${tx.page}" class="tx-link">Learn More ➔</a></div>`;
       grid.appendChild(card);
     });
   </script>

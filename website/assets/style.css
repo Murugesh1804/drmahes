@@ -229,15 +229,6 @@ img { max-width: 100%; display: block; }
 .section-title { font-size: 2.4rem; margin-bottom: 14px; letter-spacing: -0.02em; }
 .section-desc { font-size: 0.93rem; color: var(--text-secondary); line-height: 1.75; }
 
-/* ─── STATS ROW ──────────────────────────────────────────────── */
-.stats-row {
-  display: flex; gap: 40px; align-items: center;
-  padding: 40px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-.stat-item { text-align: center; flex: 1; min-width: 100px; }
-.stat-num { font-size: 2.4rem; font-weight: 800; color: var(--accent); font-family: var(--font-heading); line-height: 1; margin-bottom: 6px; }
-.stat-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 600; }
 
 /* ─── DOCTOR / ABOUT ─────────────────────────────────────────── */
 .doctor-section { background-color: var(--bg-primary); }
@@ -324,7 +315,6 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 
-.step-content {}
 .step-title { font-weight: 700; font-size: 1.02rem; margin-bottom: 6px; }
 .step-desc { font-size: 0.87rem; color: var(--text-secondary); line-height: 1.65; }
 
