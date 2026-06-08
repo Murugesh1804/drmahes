@@ -317,7 +317,7 @@ async function sendAppointmentConfirmation(toEmail, patientName, date, timeSlot,
     attachments: [
       {
         filename: 'logo_black.png',
-        path: path.join(__dirname, '../website/assets/logo_black.png'),
+        path: path.join(__dirname, '../website/public/assets/logo_black.png'),
         cid: 'logo_black'
       }
     ]
