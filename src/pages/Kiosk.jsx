@@ -54,11 +54,11 @@ export default function Kiosk() {
     if (step === 'consent' && canvasRef.current) {
       const canvas = canvasRef.current
       const ctx = canvas.getContext('2d')
-      
+
       const rect = canvas.getBoundingClientRect()
       canvas.width = rect.width
       canvas.height = rect.height
-      
+
       ctx.fillStyle = '#ffffff'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       ctx.strokeStyle = '#0f766e' // Premium teal stroke
@@ -72,11 +72,11 @@ export default function Kiosk() {
   const getCoordinates = (e) => {
     const canvas = canvasRef.current
     if (!canvas) return { x: 0, y: 0 }
-    
+
     const rect = canvas.getBoundingClientRect()
     const clientX = e.touches ? e.touches[0].clientX : e.clientX
     const clientY = e.touches ? e.touches[0].clientY : e.clientY
-    
+
     return {
       x: clientX - rect.left,
       y: clientY - rect.top
@@ -93,16 +93,16 @@ export default function Kiosk() {
   const draw = (e) => {
     if (!drawing) return
     e.preventDefault()
-    
+
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const pos = getCoordinates(e)
-    
+
     ctx.beginPath()
     ctx.moveTo(lastPos.current.x, lastPos.current.y)
     ctx.lineTo(pos.x, pos.y)
     ctx.stroke()
-    
+
     lastPos.current = pos
     setHasSigned(true)
   }
@@ -125,7 +125,7 @@ export default function Kiosk() {
   const getCompressedSignature = () => {
     const canvas = canvasRef.current
     if (!canvas) return null
-    
+
     const smallCanvas = document.createElement('canvas')
     smallCanvas.width = 400
     smallCanvas.height = 200
@@ -417,7 +417,7 @@ export default function Kiosk() {
             <div className="bg-[#060a12]/80 rounded-2xl p-6 border border-slate-800/80 text-slate-300 text-sm leading-relaxed mb-6 select-none relative overflow-hidden">
               <div className="absolute right-0 top-0 w-24 h-24 bg-primary-500/5 rounded-full blur-2xl" />
               <p className="font-semibold text-white mb-2 uppercase text-xs tracking-wider text-primary-400">Treatment Authorization</p>
-              I, <strong className="text-white">{form.name}</strong>, hereby consent to undergo clinical diagnostic scans, dental cleanings, and treatments deemed necessary by the specialist team of <strong className="text-white">{settings?.clinic_name || "Dr. Mahe's Dentistry"}</strong>. I confirm the treatment options, procedural risks, and associated budgets have been outlined to my satisfaction.
+              I, <strong className="text-white">{form.name}</strong>, hereby consent to undergo clinical diagnostic scans, dental cleanings and treatments deemed necessary by the specialist team of <strong className="text-white">{settings?.clinic_name || "Dr. Mahe's Dentistry"}</strong>. I confirm the treatment options, procedural risks and associated budgets have been outlined to my satisfaction.
             </div>
 
             {/* Signature Area */}

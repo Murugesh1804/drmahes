@@ -30,8 +30,10 @@ let ALLOWED_ORIGINS = [
   'http://localhost:5173',   // Vite dev server
   'http://localhost:5500',
   'http://localhost:5000',
+  'http://localhost:3000',   // Next.js dev server
   'http://127.0.0.1:5500',
   'http://127.0.0.1:5000',
+  'http://127.0.0.1:3000',
 ]
 
 if (process.env.NODE_ENV === 'production') {
@@ -224,7 +226,7 @@ app.post('/api/consent', publicFormLimiter, async (req, res) => {
     const { name, phone, age, gender, complaint, notes, signature } = req.body
 
     if (!name || !phone || !signature) {
-      return res.status(400).json({ error: 'Name, Phone, and Signature are required' })
+      return res.status(400).json({ error: 'Name, Phone and Signature are required' })
     }
 
     const cleanPhone = phone.trim()
@@ -297,7 +299,7 @@ app.post('/api/consent', publicFormLimiter, async (req, res) => {
     <div class="field" style="grid-column: span 2;"><span class="label">Chief Complaint</span><span class="value">${complaint || 'General check-up'}</span></div>
   </div>
   <div class="text-block">
-    I hereby authorize the clinical team of Dr. Mahe's Dentistry to perform dental procedures, diagnostic scans, and treatments as necessary to address my condition. I understand that the clinical options, costs, and risks have been discussed, and I consent to proceed with the treatment plan.
+    I hereby authorize the clinical team of Dr. Mahe's Dentistry to perform dental procedures, diagnostic scans and treatments as necessary to address my condition. I understand that the clinical options, costs and risks have been discussed and I consent to proceed with the treatment plan.
   </div>
   <div class="signature-section">
     <div class="signature-wrap">

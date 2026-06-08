@@ -13,7 +13,7 @@ try {
   const minified = css
     .replace(/\/\*[\s\S]*?\*\//g, '')    // Remove comments
     .replace(/\s+/g, ' ')                // Collapse whitespace
-    .replace(/\s*([{\}:;,])\s*/g, '$1')  // Remove spaces around brackets, colons, semi-colons, and commas
+    .replace(/\s*([{\}:;,])\s*/g, '$1')  // Remove spaces around brackets, colons, semi-colons and commas
     .replace(/;\}/g, '}')                // Remove redundant semi-colons before closing bracket
     .trim();
 

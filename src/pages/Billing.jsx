@@ -70,14 +70,14 @@ export default function Billing() {
   const [selAppt, setSelAppt] = useState(null)
   const [patAppts, setPatAppts] = useState([])
   const [patTreatments, setPatTreatments] = useState([])
-  
+
   // Cart-based billing state
   const [billItems, setBillItems] = useState([])
   const [cartSelect, setCartSelect] = useState('')
   const [cartCost, setCartCost] = useState('')
   const [cartTooth, setCartTooth] = useState('')
   const [cartDesc, setCartDesc] = useState('')
-  
+
   const [billForm, setBillForm] = useState({
     paid_amount: '', payment_method: 'cash', notes: '',
   })
@@ -152,7 +152,7 @@ export default function Billing() {
     }
 
     setBillItems([...billItems, newItem])
-    
+
     // Reset inputs
     setCartSelect('')
     setCartCost('')
@@ -179,7 +179,7 @@ export default function Billing() {
   async function handleCreate() {
     if (!selPatient) { notify('Select a patient', 'error'); return }
     if (billItems.length === 0) { notify('Add at least one treatment item', 'error'); return }
-    
+
     setSaving(true)
     try {
       await createBill({
@@ -237,7 +237,7 @@ export default function Billing() {
     }
 
     const html = generateReceiptHTML(bill, txs, settings)
-    
+
     // In Electron context, use the native silent print frame or standard print window
     if (typeof window !== 'undefined' && window.electronAPI !== undefined) {
       window.electronAPI.printReceipt(html)
@@ -259,7 +259,7 @@ export default function Billing() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Billing &amp; Invoices</h1>
-          <p className="page-sub">Create bills, collect payments, and generate invoices</p>
+          <p className="page-sub">Create bills, collect payments and generate invoices</p>
         </div>
         <button id="btn-create-bill" onClick={openCreate} className="btn-primary flex-shrink-0 cursor-pointer shadow-lg shadow-teal-900/10">
           <Plus size={16} /> Create New Bill
@@ -459,7 +459,7 @@ export default function Billing() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div className="sm:col-span-2">
                   <label className="text-[11px] font-bold uppercase text-slate-500 block mb-1">Charges (₹)</label>
                   <input
@@ -680,9 +680,9 @@ function generateReceiptHTML(bill, treatments = [], settings) {
   const date = new Date(bill.created_at).toLocaleDateString('en-IN', {
     day: 'numeric', month: 'long', year: 'numeric'
   })
-  
+
   // Map receipt rows for treatment items
-  const rowsHtml = treatments.length > 0 
+  const rowsHtml = treatments.length > 0
     ? treatments.map((t, idx) => `
       <tr>
         <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #475569; font-weight: 600;">${t.treatment_type} ${t.tooth_number ? `(Tooth #${t.tooth_number})` : ''}</td>
