@@ -49,7 +49,7 @@ export default function OralSurgery() {
           </div>
           <div data-animate="slide-left">
             <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-              <img src="https://images.unsplash.com/photo-1559757175-5700dde675bc?w=700&h=500&fit=crop&q=82" alt="Oral Surgery and Extractions" style={{ width: '100%', display: 'block' }} />
+              <img src="https://images.unsplash.com/photo-1559757175-5700dde675bc?w=700&h=500&fit=crop&q=82" alt="Oral Surgery and Extractions" width={700} height={500} style={{ width: '100%', display: 'block' }} />
             </div>
           </div>
         </div>

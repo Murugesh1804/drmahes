@@ -49,7 +49,7 @@ export default function CrownsVeneers() {
           </div>
           <div data-animate="slide-left">
             <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-              <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=700&h=500&fit=crop&q=82" alt="Dental Crowns and Veneers" style={{ width: '100%', display: 'block' }} />
+              <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=700&h=500&fit=crop&q=82" alt="Dental Crowns and Veneers" width={700} height={500} style={{ width: '100%', display: 'block' }} />
             </div>
           </div>
         </div>

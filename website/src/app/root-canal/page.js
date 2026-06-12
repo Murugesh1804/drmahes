@@ -49,7 +49,7 @@ export default function RootCanal() {
           </div>
           <div data-animate="slide-left">
             <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-              <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=700&h=500&fit=crop&q=82" alt="Root Canal Treatment" style={{ width: '100%', display: 'block' }} />
+              <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=700&h=500&fit=crop&q=82" alt="Root Canal Treatment" width={700} height={500} style={{ width: '100%', display: 'block' }} />
             </div>
           </div>
         </div>

@@ -62,6 +62,8 @@ const appointmentSchema = new mongoose.Schema({
   timestamps: { createdAt: 'created_at', updatedAt: false } // Only track created_at
 })
 
+appointmentSchema.index({ scheduled_date: 1, status: 1 })
+
 // ── TREATMENT SCHEMA ────────────────────────────────────────────────────────
 const treatmentSchema = new mongoose.Schema({
   patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
@@ -95,6 +97,9 @@ const billSchema = new mongoose.Schema({
   },
   notes: { type: String, default: '' }
 }, schemaOptions)
+
+billSchema.index({ status: 1 })
+billSchema.index({ created_at: 1 })
 
 // ── SETTING SCHEMA ─────────────────────────────────────────────────────────
 const settingSchema = new mongoose.Schema({
@@ -157,7 +162,7 @@ async function initDatabase() {
 
 async function seedSettings() {
   const bcrypt = require('bcryptjs')
-  const hashedPassword = await bcrypt.hash('admin123', 10)
+  const hashedPassword = await bcrypt.hash(process.env.DEFAULT_ADMIN_PASSWORD || 'change-me-now', 10)
 
   const defaults = [
     { key: 'clinic_name',    value: "Dr. Mahe's Dentistry" },

@@ -49,7 +49,7 @@ export default function CosmeticDentistry() {
           </div>
           <div data-animate="slide-left">
             <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-              <img src="https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=700&h=500&fit=crop&q=82" alt="Cosmetic Dentistry" style={{ width: '100%', display: 'block' }} />
+              <img src="https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=700&h=500&fit=crop&q=82" alt="Cosmetic Dentistry" width={700} height={500} style={{ width: '100%', display: 'block' }} />
             </div>
           </div>
         </div>

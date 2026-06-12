@@ -179,27 +179,32 @@ async function getAppointmentsByDate(date) {
 
 async function getPatientAppointments(patientId) {
   if (!isValidObjectId(patientId)) return []
-  const appts = await Appointment.find({ patient_id: patientId }).lean()
+  
+  const result = await Appointment.aggregate([
+    { $match: { patient_id: new mongoose.Types.ObjectId(patientId) } },
+    {
+      $lookup: {
+        from: 'treatments',
+        localField: '_id',
+        foreignField: 'appointment_id',
+        as: 'treatments'
+      }
+    },
+    {
+      $addFields: {
+        id: { $toString: '$_id' },
+        patient_id: { $toString: '$patient_id' },
+        treatment_count: { $size: '$treatments' },
+        treatment_total: { $sum: '$treatments.cost' }
+      }
+    },
+    { $sort: { scheduled_date: -1 } }
+  ])
 
-  const result = []
-  for (const a of appts) {
-    const txs = await Treatment.find({ appointment_id: a._id }).select('cost').lean()
-    const count = txs.length
-    const total = txs.reduce((sum, t) => sum + (t.cost || 0), 0)
-
-    result.push({
-      ...a,
-      id: a._id.toString(),
-      patient_id: a.patient_id.toString(),
-      call_status: a.call_status || 'not_required',
-      treatment_count: count,
-      treatment_total: total
-    })
-  }
-
-  // Sort by date desc
-  result.sort((x, y) => y.scheduled_date.localeCompare(x.scheduled_date))
-  return result
+  return result.map(a => ({
+    ...a,
+    call_status: a.call_status || 'not_required'
+  }))
 }
 
 async function addAppointment(data) {
@@ -442,17 +447,17 @@ async function createBill(data) {
 
   // Save nested treatments if provided
   if (data.treatments && Array.isArray(data.treatments)) {
-    for (const t of data.treatments) {
-      const tx = new Treatment({
-        patient_id: data.patient_id,
-        appointment_id: data.appointment_id || null,
-        treatment_type: t.treatment_type,
-        tooth_number: t.tooth_number || '',
-        description: t.description || '',
-        cost: t.cost || 0,
-        doctor_notes: t.doctor_notes || ''
-      })
-      await tx.save()
+    const treatmentsToInsert = data.treatments.map(t => ({
+      patient_id: data.patient_id,
+      appointment_id: data.appointment_id || null,
+      treatment_type: t.treatment_type,
+      tooth_number: t.tooth_number || '',
+      description: t.description || '',
+      cost: t.cost || 0,
+      doctor_notes: t.doctor_notes || ''
+    }))
+    if (treatmentsToInsert.length > 0) {
+      await Treatment.insertMany(treatmentsToInsert)
     }
   }
 
@@ -547,25 +552,28 @@ async function setSetting(key, value) {
 // ═══════════════════════════════════════════════════════════
 async function getDashboardStats() {
   const today = new Date().toISOString().split('T')[0]
-
-  const totalPatients = await Patient.countDocuments()
-  const todayTotal = await Appointment.countDocuments({ scheduled_date: today })
-  const todayWaiting = await Appointment.countDocuments({ scheduled_date: today, status: 'waiting' })
-  const todayInProgress = await Appointment.countDocuments({ scheduled_date: today, status: 'in-progress' })
-  const todayDone = await Appointment.countDocuments({ scheduled_date: today, status: 'done' })
-
-  // Revenue for today
   const startOfDay = new Date(today + 'T00:00:00.000Z')
   const endOfDay = new Date(today + 'T23:59:59.999Z')
-  const billsToday = await Bill.find({ created_at: { $gte: startOfDay, $lte: endOfDay } })
-    .select('paid_amount')
-    .lean()
-  const todayRevenue = billsToday.reduce((sum, b) => sum + (b.paid_amount || 0), 0)
 
-  // Pending balance
-  const pendingBills = await Bill.find({ status: { $ne: 'paid' } })
-    .select('balance')
-    .lean()
+  const [
+    totalPatients,
+    todayTotal,
+    todayWaiting,
+    todayInProgress,
+    todayDone,
+    billsToday,
+    pendingBills
+  ] = await Promise.all([
+    Patient.countDocuments(),
+    Appointment.countDocuments({ scheduled_date: today }),
+    Appointment.countDocuments({ scheduled_date: today, status: 'waiting' }),
+    Appointment.countDocuments({ scheduled_date: today, status: 'in-progress' }),
+    Appointment.countDocuments({ scheduled_date: today, status: 'done' }),
+    Bill.find({ created_at: { $gte: startOfDay, $lte: endOfDay } }).select('paid_amount').lean(),
+    Bill.find({ status: { $ne: 'paid' } }).select('balance').lean()
+  ])
+
+  const todayRevenue = billsToday.reduce((sum, b) => sum + (b.paid_amount || 0), 0)
   const pendingBalance = pendingBills.reduce((sum, b) => sum + (b.balance || 0), 0)
 
   return {

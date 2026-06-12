@@ -49,7 +49,7 @@ export default function DentalImplants() {
           </div>
           <div data-animate="slide-left">
             <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-              <img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=700&h=500&fit=crop&q=82" alt="Dental Implants" style={{ width: '100%', display: 'block' }} />
+              <img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=700&h=500&fit=crop&q=82" alt="Dental Implants" width={700} height={500} style={{ width: '100%', display: 'block' }} />
             </div>
           </div>
         </div>

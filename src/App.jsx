@@ -1,18 +1,19 @@
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { AppProvider, useApp } from './context/AppContext'
 import Sidebar from './components/Sidebar'
 import Header from './components/Header'
-import Dashboard from './pages/Dashboard'
-import Patients from './pages/Patients'
-import PatientDetail from './pages/PatientDetail'
-import Appointments from './pages/Appointments'
-import Treatments from './pages/Treatments'
-import Billing from './pages/Billing'
-import Queue from './pages/Queue'
-import Kiosk from './pages/Kiosk'
-import Settings from './pages/Settings'
-import Login from './pages/Login'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Patients = lazy(() => import('./pages/Patients'))
+const PatientDetail = lazy(() => import('./pages/PatientDetail'))
+const Appointments = lazy(() => import('./pages/Appointments'))
+const Treatments = lazy(() => import('./pages/Treatments'))
+const Billing = lazy(() => import('./pages/Billing'))
+const Queue = lazy(() => import('./pages/Queue'))
+const Kiosk = lazy(() => import('./pages/Kiosk'))
+const Settings = lazy(() => import('./pages/Settings'))
+const Login = lazy(() => import('./pages/Login'))
 
 function AppLayout() {
   const { loadSettings, isAuthenticated, onTokenExpired } = useApp()
@@ -51,18 +52,20 @@ function AppLayout() {
       <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50">
-          <Routes>
-            <Route path="/"              element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard"     element={<Dashboard />} />
-            <Route path="/patients"      element={<Patients />} />
-            <Route path="/patients/:id"  element={<PatientDetail />} />
-            <Route path="/appointments"  element={<Appointments />} />
-            <Route path="/treatments"    element={<Treatments />} />
-            <Route path="/billing"       element={<Billing />} />
-            <Route path="/queue"         element={<Queue />} />
-            <Route path="/kiosk"         element={<Kiosk />} />
-            <Route path="/settings"      element={<Settings />} />
-          </Routes>
+          <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading...</div>}>
+            <Routes>
+              <Route path="/"              element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard"     element={<Dashboard />} />
+              <Route path="/patients"      element={<Patients />} />
+              <Route path="/patients/:id"  element={<PatientDetail />} />
+              <Route path="/appointments"  element={<Appointments />} />
+              <Route path="/treatments"    element={<Treatments />} />
+              <Route path="/billing"       element={<Billing />} />
+              <Route path="/queue"         element={<Queue />} />
+              <Route path="/kiosk"         element={<Kiosk />} />
+              <Route path="/settings"      element={<Settings />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </div>

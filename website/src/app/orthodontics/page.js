@@ -49,7 +49,7 @@ export default function Orthodontics() {
           </div>
           <div data-animate="slide-left">
             <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-              <img src="https://images.unsplash.com/photo-1588776814546-1ffbb29d6390?w=700&h=500&fit=crop&q=82" alt="Orthodontics and Braces" style={{ width: '100%', display: 'block' }} />
+              <img src="https://images.unsplash.com/photo-1588776814546-1ffbb29d6390?w=700&h=500&fit=crop&q=82" alt="Orthodontics and Braces" width={700} height={500} style={{ width: '100%', display: 'block' }} />
             </div>
           </div>
         </div>

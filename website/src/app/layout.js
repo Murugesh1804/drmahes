@@ -32,9 +32,6 @@ export const metadata = {
     address: false,
     telephone: false,
   },
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     title: "Dr. Mahe's Dentistry — Advanced Dental Care, Porur, Chennai",
     description: "Visit Dr. Mahe's Dentistry in Porur, Chennai. Dr. Maheswari offers expert dental implants, painless root canals, braces, cosmetic dentistry and oral surgery.",
