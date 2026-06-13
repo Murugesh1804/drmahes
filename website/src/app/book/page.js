@@ -11,28 +11,16 @@ export const metadata = {
 
 export default function BookPage() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#111111', padding: '120px 24px 60px' }}>
-      
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', padding: '120px 24px 60px' }}>
+
       {/* Background Glow */}
-      <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translate(-50%, -50%)', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(196,176,151,0.15) 0%, rgba(17,17,17,0) 70%)', borderRadius: '50%', pointerEvents: 'none', zIndex: 0 }}></div>
+      <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translate(-50%, -50%)', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(196,176,151,0.3) 0%, rgba(255,255,255,0) 70%)', borderRadius: '50%', pointerEvents: 'none', zIndex: 0 }}></div>
 
       <div style={{ width: '100%', maxWidth: '420px', position: 'relative', zIndex: 1, textAlign: 'center' }} data-animate="fade">
-        
-        {/* Brand / Logo */}
-        <div style={{ marginBottom: '40px' }}>
-          <img 
-            src="/assets/logo_white.webp" 
-            alt="Dr. Mahe's Dentistry" 
-            style={{ width: '220px', height: 'auto', margin: '0 auto', display: 'block' }} 
-          />
-          <p style={{ color: '#888888', fontSize: '0.9rem', marginTop: '16px', letterSpacing: '0.05em' }}>
-            Advanced Dental Care • Porur, Chennai
-          </p>
-        </div>
 
         {/* Links Container */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          
+
           {/* Action: Book Appointment */}
           <Link href="/contact#booking" className="qr-btn qr-btn-primary">
             <span className="qr-icon">
@@ -87,7 +75,8 @@ export default function BookPage() {
 
       </div>
 
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .qr-btn {
           display: flex;
           align-items: center;
@@ -95,8 +84,8 @@ export default function BookPage() {
           border-radius: 16px;
           text-decoration: none;
           transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background-color: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(17, 17, 17, 0.08);
+          background-color: #FFFFFF;
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
           text-align: left;
@@ -106,7 +95,7 @@ export default function BookPage() {
           transform: translateY(-4px);
           border-color: rgba(196, 176, 151, 0.4);
           background-color: rgba(196, 176, 151, 0.08);
-          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
         }
 
         .qr-btn-primary {
@@ -160,7 +149,7 @@ export default function BookPage() {
         }
 
         .qr-btn-secondary .qr-title {
-          color: #FFFFFF;
+          color: #111111;
         }
 
         .qr-desc {
@@ -169,7 +158,7 @@ export default function BookPage() {
         }
 
         .qr-btn-secondary .qr-desc {
-          color: #AAAAAA;
+          color: #555555;
         }
 
         @keyframes pulse-glow {
