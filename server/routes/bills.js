@@ -7,7 +7,13 @@ const email = require('../email')
 router.get('/', asyncHandler(async (req, res) => {
   const page  = Math.max(1, parseInt(req.query.page)  || 1)
   const limit = Math.min(100, parseInt(req.query.limit) || 50)
-  res.json(await queries.getAllBills(page, limit))
+  const search = req.query.search?.trim()
+
+  if (search) {
+    res.json(await queries.searchBills(search, page, limit))
+  } else {
+    res.json(await queries.getAllBills(page, limit))
+  }
 }))
 
 router.get('/patient/:pid', asyncHandler(async (req, res) => {
@@ -31,13 +37,6 @@ router.put('/:id/payment', asyncHandler(async (req, res) => {
 // ── Payment history for a bill ──────────────────────────────
 router.get('/:id/payments', asyncHandler(async (req, res) => {
   res.json(await queries.getPaymentsByBill(req.params.id))
-}))
-
-// ── Refund a bill ───────────────────────────────────────────
-router.post('/:id/refund', asyncHandler(async (req, res) => {
-  const { amount } = req.body
-  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid refund amount' })
-  res.json(await queries.refundBillPayment(req.params.id, amount))
 }))
 
 // ── Email invoice ───────────────────────────────────────────

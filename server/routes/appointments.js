@@ -35,6 +35,15 @@ router.put('/:id/call-status', asyncHandler(async (req, res) => {
   res.json(await queries.updateAppointmentCallStatus(req.params.id, req.body.status))
 }))
 
+// FIX #3.2: Appointment cancellation with reason tracking
+router.post('/:id/cancel', asyncHandler(async (req, res) => {
+  res.json(await queries.cancelAppointment(
+    req.params.id,
+    req.body.reason || 'other',
+    req.body.cancelled_by || 'staff'
+  ))
+}))
+
 router.delete('/:id', asyncHandler(async (req, res) => {
   res.json(await queries.deleteAppointment(req.params.id))
 }))

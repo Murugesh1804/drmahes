@@ -89,8 +89,8 @@ export const createBill = (data) => request('/bills', { method: 'POST', body: JS
 export const updateBillPayment = (id, data) => request(`/bills/${id}/payment`, { method: 'PUT', body: JSON.stringify(data) })
 
 export const getAllBills = (qs = '') => request(`/bills${qs}`)
+export const searchBills = (q, page = 1) => request(`/bills?search=${encodeURIComponent(q)}&page=${page}`)
 export const getPaymentsByBill = (id) => request(`/bills/${id}/payments`)
-export const refundBill = (id, amount) => request(`/bills/${id}/refund`, { method: 'POST', body: JSON.stringify({ amount }) })
 export const emailBillInvoice = (id, email) => request(`/bills/${id}/email`, { method: 'POST', body: JSON.stringify({ email }) })
 
 // ── Dashboard ──────────────────────────────────────────────

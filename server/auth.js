@@ -3,7 +3,31 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const { Setting } = require('./db')
 
-const JWT_SECRET = process.env.JWT_SECRET || 'drmahes-cms-secret-change-in-prod-2024'
+/**
+ * Initialize JWT_SECRET with strict validation for production
+ * In production, require JWT_SECRET to be explicitly set in .env
+ * In development, use a warning-flagged default
+ */
+function initializeJwtSecret() {
+  let secret = process.env.JWT_SECRET
+  
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        '[auth] FATAL: JWT_SECRET must be explicitly set in .env for production. ' +
+        'Please set JWT_SECRET to a strong, random string (minimum 32 characters).'
+      )
+    }
+    // Development: use default but warn loudly
+    secret = 'drmahes-cms-secret-change-in-prod-2024'
+    console.warn('\n⚠️ WARNING: JWT_SECRET not set. Using default development secret.')
+    console.warn('⚠️ This is INSECURE for production. Set JWT_SECRET in .env immediately.\n')
+  }
+  
+  return secret
+}
+
+const JWT_SECRET = initializeJwtSecret()
 const JWT_EXPIRES = process.env.JWT_EXPIRES || '24h'
 
 /**

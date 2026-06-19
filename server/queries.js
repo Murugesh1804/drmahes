@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, getDbPath } = require('./db')
+const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, getDbPath } = require('./db')
 
 const CLINIC_TIME_ZONE = process.env.CLINIC_TIME_ZONE || 'Asia/Kolkata'
 const APPOINTMENT_STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
@@ -129,8 +129,10 @@ function sortAppointments(list) {
 // ═══════════════════════════════════════════════════════════
 // PATIENTS
 // ═══════════════════════════════════════════════════════════
-async function getAllPatients(limit = 20) {
+async function getAllPatients(limit = 20, includeArchived = false) {
   const result = await Patient.aggregate([
+    // FIX #3.1: Exclude archived patients by default
+    { $match: includeArchived ? {} : { is_archived: false } },
     {
       $lookup: {
         from: 'appointments',
@@ -151,6 +153,9 @@ async function getAllPatients(limit = 20) {
         consentFormSaved: 1,
         consentFormPath: 1,
         consentSignedAt: 1,
+        is_archived: 1,
+        archived_at: 1,
+        archived_reason: 1,
         created_at: 1,
         updated_at: 1,
         appointment_count: { $size: '$appts' },
@@ -227,10 +232,33 @@ async function addPatient(data) {
   const name = normalizeText(data.name)
   if (!name) badRequest('Patient name is required')
 
+  const phone = normalizeText(data.phone)
+  const email = normalizeEmail(data.email)
+
+  // FIX #1: Check for duplicate phone
+  if (phone) {
+    const existingPhone = await Patient.findOne({ 
+      phone: { $regex: `^${phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } 
+    })
+    if (existingPhone) {
+      badRequest(`Patient with phone ${phone} already exists (ID: ${existingPhone._id})`)
+    }
+  }
+
+  // FIX #1: Check for duplicate email
+  if (email) {
+    const existingEmail = await Patient.findOne({ 
+      email: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } 
+    })
+    if (existingEmail) {
+      badRequest(`Patient with email ${email} already exists (ID: ${existingEmail._id})`)
+    }
+  }
+
   const patient = new Patient({
     name,
-    phone: normalizeText(data.phone),
-    email: normalizeEmail(data.email),
+    phone,
+    email,
     age: normalizeAge(data.age),
     gender: normalizeGender(data.gender),
     address: normalizeText(data.address),
@@ -251,7 +279,40 @@ async function updatePatient(id, data) {
   const name = normalizeText(data.name)
   if (!name) badRequest('Patient name is required')
 
-  const patient = await Patient.findByIdAndUpdate(id, {
+  const patient = await Patient.findById(id)
+  if (!patient) return null
+
+  // FIX #5: Log patient updates
+  const hasChanges = name !== patient.name || 
+                    normalizeText(data.phone) !== patient.phone ||
+                    normalizeEmail(data.email) !== patient.email ||
+                    normalizeAge(data.age) !== patient.age ||
+                    normalizeGender(data.gender) !== patient.gender
+
+  if (hasChanges) {
+    await logAudit(
+      'update',
+      'patient',
+      id,
+      {
+        name: patient.name,
+        phone: patient.phone,
+        email: patient.email,
+        age: patient.age,
+        gender: patient.gender
+      },
+      {
+        name,
+        phone: normalizeText(data.phone),
+        email: normalizeEmail(data.email),
+        age: normalizeAge(data.age),
+        gender: normalizeGender(data.gender)
+      },
+      'Patient information updated'
+    )
+  }
+
+  const updatedPatient = await Patient.findByIdAndUpdate(id, {
     $set: {
       name,
       phone: normalizeText(data.phone),
@@ -264,8 +325,89 @@ async function updatePatient(id, data) {
     }
   }, { new: true, runValidators: true }).lean()
 
-  if (patient) patient.id = patient._id.toString()
-  return patient
+  if (updatedPatient) updatedPatient.id = updatedPatient._id.toString()
+  return updatedPatient
+}
+
+// FIX #3.1: Patient archiving system
+async function archivePatient(id, reason = '', archivedBy = 'admin') {
+  if (!isValidObjectId(id)) return null
+
+  const patient = await Patient.findById(id)
+  if (!patient) return null
+
+  if (patient.is_archived) {
+    badRequest('Patient is already archived')
+  }
+
+  const archived = await Patient.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        is_archived: true,
+        archived_at: new Date(),
+        archived_by: archivedBy,
+        archived_reason: reason
+      }
+    },
+    { new: true }
+  ).lean()
+
+  if (archived) {
+    archived.id = archived._id.toString()
+
+    // Log archival
+    await logAudit(
+      'archive',
+      'patient',
+      id,
+      { is_archived: false },
+      { is_archived: true, archived_reason: reason },
+      `Patient archived. Reason: ${reason}`
+    )
+  }
+
+  return archived
+}
+
+async function unarchivePatient(id) {
+  if (!isValidObjectId(id)) return null
+
+  const patient = await Patient.findById(id)
+  if (!patient) return null
+
+  if (!patient.is_archived) {
+    badRequest('Patient is not archived')
+  }
+
+  const unarchived = await Patient.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        is_archived: false,
+        archived_at: null,
+        archived_by: null,
+        archived_reason: ''
+      }
+    },
+    { new: true }
+  ).lean()
+
+  if (unarchived) {
+    unarchived.id = unarchived._id.toString()
+
+    // Log unarchival
+    await logAudit(
+      'unarchive',
+      'patient',
+      id,
+      { is_archived: true },
+      { is_archived: false },
+      'Patient restored from archive'
+    )
+  }
+
+  return unarchived
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -315,6 +457,20 @@ async function getPatientAppointments(patientId) {
   }))
 }
 
+async function getNextQueueNumber(date) {
+  /**
+   * PERF FIX 3.2: Dynamic queue number calculation
+   * Instead of using Counter collection (which grows infinitely),
+   * count appointments for the given date to determine next queue number.
+   * This eliminates unbounded collection growth.
+   */
+  const count = await Appointment.countDocuments({
+    scheduled_date: date,
+    status: { $ne: 'cancelled' }
+  })
+  return count + 1
+}
+
 async function getNextInvoiceNumber() {
   const year = new Date().getFullYear()
   const key  = `invoice_${year}`
@@ -324,7 +480,18 @@ async function getNextInvoiceNumber() {
     { upsert: true, new: true }
   )
   const seq = String(doc.seq).padStart(4, '0')
-  return `INV-${year}-${seq}`
+  const invoiceNumber = `INV-${year}-${seq}`
+  
+  // FIX #3.4: Validate uniqueness to prevent collisions
+  const exists = await Bill.findOne({ invoice_number: invoiceNumber })
+  if (exists) {
+    // Collision detected - retry with next sequence
+    console.warn(`Invoice number collision detected: ${invoiceNumber}. Retrying...`)
+    // Recursively call to get next number
+    return getNextInvoiceNumber()
+  }
+  
+  return invoiceNumber
 }
 
 async function addAppointment(data) {
@@ -334,8 +501,9 @@ async function addAppointment(data) {
 
   const date = normalizeDateString(data.scheduled_date)
   const scheduledTime = normalizeText(data.scheduled_time)
+  const isWalkIn = data.is_walk_in === true || data.is_walk_in === 'true'
 
-  if (scheduledTime) {
+  if (scheduledTime && !isWalkIn) {
     const blocked = await BlockedSlot.exists({ date, slot: scheduledTime })
     if (blocked) badRequest('This appointment slot is blocked')
 
@@ -347,12 +515,7 @@ async function addAppointment(data) {
     if (existing) badRequest('This appointment slot is already booked')
   }
 
-  const queueCounter = await Counter.findOneAndUpdate(
-    { key: `queue_${date}` },
-    { $inc: { seq: 1 } },
-    { upsert: true, new: true }
-  )
-  const queueNumber = queueCounter.seq
+  const queueNumber = await getNextQueueNumber(date)
 
   const appt = new Appointment({
     patient_id: data.patient_id,
@@ -362,7 +525,11 @@ async function addAppointment(data) {
     status: 'waiting',
     call_status: data.call_status ? normalizeCallStatus(data.call_status) : 'not_required',
     queue_number: queueNumber,
-    notes: normalizeText(data.notes)
+    notes: normalizeText(data.notes),
+    appointment_type: data.appointment_type || 'consultation',
+    is_urgent: data.is_urgent === true || data.is_urgent === 'true',
+    is_walk_in: isWalkIn,
+    is_time_confirmed: !isWalkIn && !!scheduledTime
   })
   try {
     await appt.save()
@@ -380,8 +547,9 @@ async function updateAppointment(id, data) {
   if (!isValidObjectId(id)) return null
   const scheduledDate = normalizeDateString(data.scheduled_date)
   const scheduledTime = normalizeText(data.scheduled_time)
+  const isWalkIn = data.is_walk_in === true || data.is_walk_in === 'true'
 
-  if (scheduledTime) {
+  if (scheduledTime && !isWalkIn) {
     const blocked = await BlockedSlot.exists({ date: scheduledDate, slot: scheduledTime })
     if (blocked) badRequest('This appointment slot is blocked')
 
@@ -399,7 +567,11 @@ async function updateAppointment(id, data) {
       scheduled_date: scheduledDate,
       scheduled_time: scheduledTime,
       reason: normalizeText(data.reason),
-      notes: normalizeText(data.notes)
+      notes: normalizeText(data.notes),
+      appointment_type: data.appointment_type || undefined,
+      is_urgent: data.is_urgent !== undefined ? data.is_urgent === true || data.is_urgent === 'true' : undefined,
+      is_walk_in: isWalkIn !== undefined ? isWalkIn : undefined,
+      is_time_confirmed: scheduledTime && !isWalkIn ? true : undefined
     }
   }, { new: true, runValidators: true }).lean()
 
@@ -410,6 +582,22 @@ async function updateAppointment(id, data) {
 async function updateAppointmentStatus(id, status) {
   if (!isValidObjectId(id)) return null
   const normalizedStatus = normalizeAppointmentStatus(status)
+  
+  const appt = await Appointment.findById(id)
+  if (!appt) return null
+  
+  // FIX #5: Log appointment status change
+  if (appt.status !== normalizedStatus) {
+    await logAudit(
+      'update',
+      'appointment',
+      id,
+      { status: appt.status },
+      { status: normalizedStatus },
+      `Status changed from ${appt.status} to ${normalizedStatus}`
+    )
+  }
+  
   await Appointment.findByIdAndUpdate(id, { $set: { status: normalizedStatus } }, { runValidators: true })
   return { id, status: normalizedStatus }
 }
@@ -420,11 +608,58 @@ async function deleteAppointment(id) {
   return { success: true }
 }
 
-async function updateAppointmentCallStatus(id, call_status) {
+// FIX #3.2: Appointment cancellation with reason tracking
+async function cancelAppointment(id, reason = 'other', cancelledBy = 'staff') {
   if (!isValidObjectId(id)) return null
-  const normalizedStatus = normalizeCallStatus(call_status)
-  await Appointment.findByIdAndUpdate(id, { $set: { call_status: normalizedStatus } }, { runValidators: true })
-  return { id, call_status: normalizedStatus }
+
+  // Validate reason
+  const validReasons = ['patient-requested', 'doctor-requested', 'no-show', 'emergency', 'rescheduled', 'other']
+  if (!validReasons.includes(reason)) {
+    badRequest('Invalid cancellation reason')
+  }
+
+  const appt = await Appointment.findById(id)
+  if (!appt) return null
+
+  if (appt.status === 'cancelled') {
+    badRequest('Appointment is already cancelled')
+  }
+
+  const cancelled = await Appointment.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        status: 'cancelled',
+        cancellation_reason: reason,
+        cancelled_at: new Date(),
+        cancelled_by: cancelledBy
+      }
+    },
+    { new: true }
+  ).lean()
+
+  if (cancelled) {
+    cancelled.id = cancelled._id.toString()
+
+    // Log cancellation
+    await logAudit(
+      'cancel',
+      'appointment',
+      id,
+      { status: appt.status },
+      { status: 'cancelled', cancellation_reason: reason },
+      `Appointment cancelled. Reason: ${reason}. Cancelled by: ${cancelledBy}`
+    )
+  }
+
+  return cancelled
+}
+
+async function updateAppointmentCallStatus(id, call_status) {
+   if (!isValidObjectId(id)) return null
+   const normalizedStatus = normalizeCallStatus(call_status)
+   await Appointment.findByIdAndUpdate(id, { $set: { call_status: normalizedStatus } }, { runValidators: true })
+   return { id, call_status: normalizedStatus }
 }
 
 async function getPendingCalls() {
@@ -499,7 +734,10 @@ async function getTreatmentsByBill(billId) {
 
 async function getTreatmentsByPatient(patientId) {
   if (!isValidObjectId(patientId)) return []
-  const txs = await Treatment.find({ patient_id: patientId })
+  const txs = await Treatment.find({ 
+    patient_id: patientId,
+    deleted_at: null // FIX #2: Exclude soft-deleted treatments
+  })
     .populate('appointment_id')
     .sort({ created_at: -1 })
     .lean()
@@ -545,29 +783,354 @@ async function updateTreatment(id, data) {
   const treatmentType = normalizeText(data.treatment_type)
   if (!treatmentType) badRequest('Treatment type is required')
 
-  const tx = await Treatment.findByIdAndUpdate(id, {
-    $set: {
-      treatment_type: treatmentType,
-      tooth_number: normalizeText(data.tooth_number),
-      description: normalizeText(data.description),
-      cost: toMoney(data.cost, 0, 'Treatment cost'),
-      doctor_notes: normalizeText(data.doctor_notes)
+  const tx = await Treatment.findById(id)
+  if (!tx) return null
+  
+  // FIX #2: Prevent cost modification after billing
+  if (tx.bill_id && data.cost !== undefined && toMoney(data.cost) !== tx.cost) {
+    badRequest(`Cannot modify cost of billed treatment. Current cost: ₹${tx.cost}`)
+  }
+
+  // FIX #5: Log treatment update
+  const costChanged = data.cost !== undefined && toMoney(data.cost) !== tx.cost
+  if (costChanged || treatmentType !== tx.treatment_type || normalizeText(data.description) !== tx.description) {
+    await logAudit(
+      'update',
+      'treatment',
+      id,
+      {
+        treatment_type: tx.treatment_type,
+        cost: tx.cost,
+        description: tx.description
+      },
+      {
+        treatment_type: treatmentType,
+        cost: data.cost !== undefined ? toMoney(data.cost, tx.cost) : tx.cost,
+        description: normalizeText(data.description)
+      },
+      `Treatment details updated`
+    )
+  }
+
+  // FIX #2.4: Add to cost history if cost changed
+  const updates = {
+    treatment_type: treatmentType,
+    tooth_number: normalizeText(data.tooth_number),
+    description: normalizeText(data.description),
+    cost: data.cost !== undefined ? toMoney(data.cost, tx.cost, 'Treatment cost') : tx.cost,
+    doctor_notes: normalizeText(data.doctor_notes)
+  }
+
+  if (costChanged && !tx.bill_id) {
+    // Only track cost history for unbilled treatments
+    updates.$push = {
+      cost_history: {
+        amount: tx.cost,
+        changed_at: new Date(),
+        changed_by: 'Dr. Mahe',
+        reason: data.cost_change_reason || 'Price adjustment'
+      }
     }
+  }
+
+  const updated = await Treatment.findByIdAndUpdate(id, {
+    $set: updates,
+    ...(updates.$push && { $push: updates.$push })
   }, { new: true, runValidators: true }).lean()
 
-  if (tx) tx.id = tx._id.toString()
-  return tx
+  if (updated) updated.id = updated._id.toString()
+  return updated
 }
 
 async function deleteTreatment(id) {
   if (!isValidObjectId(id)) return { success: false }
-  await Treatment.findByIdAndDelete(id)
+  
+  const tx = await Treatment.findById(id)
+  if (!tx) return { success: false }
+  
+  // FIX #2: Prevent deletion of billed treatments
+  if (tx.bill_id) {
+    badRequest(`Cannot delete billed treatment. Linked to bill: ${tx.bill_id}`)
+  }
+  
+  if (tx.status === 'completed') {
+    badRequest('Cannot delete completed treatments. Archive instead by marking as cancelled.')
+  }
+  
+  // FIX #2: Soft delete instead of hard delete
+  await Treatment.findByIdAndUpdate(id, {
+    $set: {
+      status: 'cancelled',
+      cancellation_reason: 'Removed from system',
+      deleted_at: new Date()
+    }
+  })
+  
   return { success: true }
 }
 
+// FIX #2: Update treatment status
+async function updateTreatmentStatus(id, newStatus, sessionCompleted = false) {
+  if (!isValidObjectId(id)) return null
+  
+  if (!['planned', 'in-progress', 'completed', 'cancelled', 'on-hold'].includes(newStatus)) {
+    badRequest('Invalid treatment status')
+  }
+  
+  const tx = await Treatment.findById(id)
+  if (!tx) return null
+  
+  // Prevent completing unbilled treatments
+  if (newStatus === 'completed' && !tx.bill_id) {
+    badRequest('Treatment must be linked to bill before marking complete')
+  }
+  
+  const updates = { status: newStatus }
+  
+  if (newStatus === 'completed') {
+    updates.completed_at = new Date()
+    updates.completed_by = 'Dr. Mahe'
+    if (sessionCompleted) {
+      updates.sessions_completed = Math.min(tx.sessions_completed + 1, tx.sessions_planned)
+    }
+  }
+  
+  // FIX #5: Log treatment status change
+  if (tx.status !== newStatus) {
+    await logAudit(
+      'update',
+      'treatment',
+      id,
+      { status: tx.status, sessions_completed: tx.sessions_completed },
+      { status: newStatus, sessions_completed: updates.sessions_completed || tx.sessions_completed },
+      `Status changed from ${tx.status} to ${newStatus}`
+    )
+  }
+  
+  const updated = await Treatment.findByIdAndUpdate(id, { $set: updates }, { new: true })
+  
+  if (updated) updated.id = updated._id.toString()
+  return updated
+}
+
+// FIX #5: Audit logging helper
+async function logAudit(action, entityType, entityId, before = {}, after = {}, details = '', session = null) {
+  const auditEntry = {
+    action,
+    entity_type: entityType,
+    entity_id: entityId,
+    changed_by: 'Dr. Mahe',
+    before,
+    after,
+    details
+  }
+  
+  if (session) {
+    await AuditLog.create([auditEntry], { session })
+  } else {
+    await AuditLog.create(auditEntry)
+  }
+}
+
 // ═══════════════════════════════════════════════════════════
-// BILLS
+// DIAGNOSIS (FIX #2.2)
 // ═══════════════════════════════════════════════════════════
+
+async function recordDiagnosis(data) {
+  if (!isValidObjectId(data.patient_id)) badRequest('Valid patient required')
+  if (!isValidObjectId(data.appointment_id)) badRequest('Valid appointment required')
+  if (!data.findings?.description) badRequest('Diagnosis description is required')
+  if (!data.follow_up_type) badRequest('Follow-up type is required')
+
+  // Verify appointment belongs to patient
+  const appt = await Appointment.findById(data.appointment_id)
+  if (!appt) badRequest('Appointment not found')
+  if (appt.patient_id.toString() !== data.patient_id) {
+    badRequest('Appointment does not belong to this patient')
+  }
+
+  const diagnosis = new Diagnosis({
+    patient_id: data.patient_id,
+    appointment_id: data.appointment_id,
+    findings: {
+      affected_teeth: Array.isArray(data.findings?.affected_teeth) ? data.findings.affected_teeth : [],
+      conditions: Array.isArray(data.findings?.conditions) ? data.findings.conditions : [],
+      description: normalizeText(data.findings?.description)
+    },
+    recommended_treatments: Array.isArray(data.recommended_treatments) ? data.recommended_treatments : [],
+    urgency: data.urgency || 'routine',
+    notes: normalizeText(data.notes || '')
+  })
+
+  await diagnosis.save()
+
+  // Log diagnosis creation
+  await logAudit(
+    'create',
+    'diagnosis',
+    diagnosis._id,
+    {},
+    {
+      conditions: diagnosis.findings.conditions,
+      urgency: diagnosis.urgency
+    },
+    `Diagnosis recorded with conditions: ${diagnosis.findings.conditions.join(', ')}`
+  )
+
+  const doc = diagnosis.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function getDiagnosisByAppointment(appointmentId) {
+  if (!isValidObjectId(appointmentId)) return null
+  const diagnosis = await Diagnosis.findOne({ appointment_id: appointmentId }).lean()
+  if (diagnosis) diagnosis.id = diagnosis._id.toString()
+  return diagnosis
+}
+
+async function getDiagnosisByPatient(patientId) {
+  if (!isValidObjectId(patientId)) return []
+  const diagnoses = await Diagnosis.find({ patient_id: patientId })
+    .sort({ diagnosed_at: -1 })
+    .lean()
+  return diagnoses.map(d => ({ ...d, id: d._id.toString() }))
+}
+
+async function updateDiagnosis(id, data) {
+  if (!isValidObjectId(id)) return null
+
+  const diagnosis = await Diagnosis.findById(id)
+  if (!diagnosis) return null
+
+  const updated = await Diagnosis.findByIdAndUpdate(id, {
+    $set: {
+      'findings.affected_teeth': Array.isArray(data.findings?.affected_teeth) ? data.findings.affected_teeth : diagnosis.findings.affected_teeth,
+      'findings.conditions': Array.isArray(data.findings?.conditions) ? data.findings.conditions : diagnosis.findings.conditions,
+      'findings.description': data.findings?.description ? normalizeText(data.findings.description) : diagnosis.findings.description,
+      recommended_treatments: Array.isArray(data.recommended_treatments) ? data.recommended_treatments : diagnosis.recommended_treatments,
+      urgency: data.urgency || diagnosis.urgency,
+      notes: data.notes ? normalizeText(data.notes) : diagnosis.notes
+    }
+  }, { new: true, runValidators: true }).lean()
+
+  if (updated) {
+    updated.id = updated._id.toString()
+    
+    // Log diagnosis update
+    await logAudit(
+      'update',
+      'diagnosis',
+      id,
+      { conditions: diagnosis.findings.conditions },
+      { conditions: updated.findings.conditions },
+      'Diagnosis updated'
+    )
+  }
+
+  return updated
+}
+
+// ═══════════════════════════════════════════════════════════
+// FOLLOW-UPS (FIX #3)
+// ═══════════════════════════════════════════════════════════
+
+async function createFollowUp(data) {
+  if (!isValidObjectId(data.patient_id)) badRequest('Valid patient required')
+  if (!data.scheduled_date) badRequest('Follow-up date required')
+  if (!data.follow_up_type) badRequest('Follow-up type required')
+  
+  const followUp = new FollowUp({
+    patient_id: data.patient_id,
+    appointment_id: data.appointment_id || null,
+    treatment_id: data.treatment_id || null,
+    scheduled_date: normalizeDateString(data.scheduled_date),
+    follow_up_type: data.follow_up_type,
+    description: normalizeText(data.description)
+  })
+  
+  await followUp.save()
+  const doc = followUp.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function getPendingFollowUps() {
+  const today = clinicDateString()
+  
+  const followUps = await FollowUp.find({
+    scheduled_date: { $lte: today },
+    status: { $in: ['pending', 'scheduled'] }
+  })
+    .populate('patient_id')
+    .populate('appointment_id')
+    .populate('treatment_id')
+    .sort({ scheduled_date: 1 })
+    .lean()
+  
+  return followUps.map(f => ({
+    ...f,
+    id: f._id.toString(),
+    patient_id: f.patient_id ? f.patient_id._id.toString() : null,
+    patient_name: f.patient_id ? f.patient_id.name : '',
+    appointment_id: f.appointment_id ? f.appointment_id._id.toString() : null,
+    treatment_id: f.treatment_id ? f.treatment_id._id.toString() : null
+  }))
+}
+
+async function getPatientFollowUps(patientId, onlyPending = false) {
+  if (!isValidObjectId(patientId)) return []
+  
+  const filter = { patient_id: patientId }
+  if (onlyPending) {
+    filter.status = { $in: ['pending', 'scheduled'] }
+  }
+  
+  const followUps = await FollowUp.find(filter)
+    .populate('appointment_id')
+    .populate('treatment_id')
+    .sort({ scheduled_date: 1 })
+    .lean()
+  
+  return followUps.map(f => ({
+    ...f,
+    id: f._id.toString(),
+    patient_id: f.patient_id.toString(),
+    appointment_id: f.appointment_id ? f.appointment_id._id.toString() : null,
+    treatment_id: f.treatment_id ? f.treatment_id._id.toString() : null
+  }))
+}
+
+async function completeFollowUp(followUpId, appointmentId = null) {
+  if (!isValidObjectId(followUpId)) return null
+  
+  const followUp = await FollowUp.findById(followUpId)
+  if (!followUp) return null
+  
+  // FIX #5: Log follow-up completion
+  if (followUp.status !== 'completed') {
+    await logAudit(
+      'update',
+      'follow-up',
+      followUpId,
+      { status: followUp.status, completed_appointment_id: followUp.completed_appointment_id },
+      { status: 'completed', completed_appointment_id: appointmentId || null },
+      `Follow-up marked as completed`
+    )
+  }
+  
+  const updated = await FollowUp.findByIdAndUpdate(followUpId, {
+    $set: {
+      status: 'completed',
+      completed_appointment_id: appointmentId || null
+    }
+  }, { new: true })
+  
+  if (updated) updated.id = updated._id.toString()
+  return updated
+}
+
+
 async function getBillsByPatient(patientId) {
   if (!isValidObjectId(patientId)) return []
   const bills = await Bill.find({ patient_id: patientId })
@@ -604,70 +1167,161 @@ async function createBill(data) {
   if (!isValidObjectId(data.patient_id)) badRequest('Valid patient is required')
   if (data.appointment_id && !isValidObjectId(data.appointment_id)) badRequest('Valid appointment is required')
 
-  const subTotal = toMoney(data.total_amount, 0, 'Bill total')
-  if (subTotal <= 0) badRequest('Bill total must be greater than zero')
+  /**
+   * SECURITY FIX 1.1: Calculate subTotal server-side from treatments
+   * The frontend may send:
+   * - existingTreatmentIds: array of existing treatment _ids to link to this bill
+   * - treatments: array of new treatment objects to insert
+   */
 
-  const paid = toMoney(data.paid_amount, 0, 'Paid amount')
-  const discount = toPercent(data.discount)
-  const taxPct = toPercent(data.tax_percent)
-  const discounted = subTotal * (1 - discount / 100)
-  const taxAmount  = Math.round(discounted * (taxPct / 100) * 100) / 100
-  const total      = Math.round((discounted + taxAmount) * 100) / 100
-  if (paid > total) badRequest('Paid amount cannot exceed the final bill total')
+  // FIX #3.5: Validate consent before billing for treatments
+  const patient = await Patient.findById(data.patient_id)
+  if (!patient) badRequest('Patient not found')
 
-  const balance    = Math.max(0, total - paid)
-  const status     = paid >= total ? 'paid' : paid > 0 ? 'partial' : 'pending'
-  const invoiceNumber = await getNextInvoiceNumber()
-  const paymentMethod = normalizePaymentMethod(data.payment_method)
+  const existingIds = Array.isArray(data.existingTreatmentIds) ? data.existingTreatmentIds.filter(isValidObjectId) : []
+  const hasNewTreatments = Array.isArray(data.treatments) && data.treatments.length > 0
 
-  const bill = new Bill({
-    patient_id: data.patient_id,
-    appointment_id: data.appointment_id || null,
-    total_amount: total,
-    paid_amount: paid,
-    balance,
-    payment_method: paymentMethod,
-    status,
-    notes: data.notes || '',
-    invoice_number: invoiceNumber,
-    discount,
-    tax_percent: taxPct,
-    tax_amount: taxAmount,
-    refunded_amount: 0
-  })
-  await bill.save()
-
-  // Record initial payment if paid > 0
-  if (paid > 0) {
-    await Payment.create({
-      bill_id: bill._id,
-      patient_id: data.patient_id,
-      amount: paid,
-      method: paymentMethod,
-      notes: 'Initial payment'
-    })
+  // If creating bill with treatments, require consent
+  if ((existingIds.length > 0 || hasNewTreatments) && !patient.consentFormSaved) {
+    badRequest('Patient consent form required before billing for treatments')
   }
 
-  // Save nested treatments if provided, linking them to the bill
-  if (Array.isArray(data.treatments) && data.treatments.length > 0) {
-    const treatmentsToInsert = data.treatments
-      .map(t => ({
-        patient_id: data.patient_id,
-        appointment_id: data.appointment_id || null,
-        bill_id: bill._id,
-        treatment_type: normalizeText(t.treatment_type),
-        tooth_number: normalizeText(t.tooth_number),
-        description: normalizeText(t.description),
-        cost: toMoney(t.cost, 0, 'Treatment cost'),
-        doctor_notes: normalizeText(t.doctor_notes)
-      }))
-      .filter(t => t.treatment_type)
-    if (treatmentsToInsert.length > 0) {
-      await Treatment.insertMany(treatmentsToInsert)
+  // FIX #4: Start transaction for consistency
+  const session = await mongoose.startSession()
+  session.startTransaction()
+
+  try {
+    let subTotal = 0
+
+    // Fetch and link existing treatments
+    if (existingIds.length > 0) {
+      const existing = await Treatment.find({ _id: { $in: existingIds }, patient_id: data.patient_id }).session(session)
+      if (existing.length !== existingIds.length) {
+        badRequest('One or more treatment IDs do not belong to this patient')
+      }
+      
+      // FIX #4: Check all treatments are completed before billing
+      const incomplete = existing.filter(t => t.status !== 'completed')
+      if (incomplete.length > 0) {
+        badRequest(`Cannot bill for incomplete treatments: ${incomplete.map(t => t.treatment_type).join(', ')}`)
+      }
+      
+      for (const t of existing) {
+        subTotal += t.cost || 0
+      }
     }
-  }
 
-  return getBillById(bill._id.toString())
+    // Add new treatments
+    let treatmentsToInsert = []
+    if (hasNewTreatments) {
+      treatmentsToInsert = data.treatments
+        .map(t => ({
+          patient_id: data.patient_id,
+          appointment_id: data.appointment_id || null,
+          treatment_type: normalizeText(t.treatment_type),
+          tooth_number: normalizeText(t.tooth_number),
+          description: normalizeText(t.description),
+          cost: toMoney(t.cost, 0, 'Treatment cost'),
+          doctor_notes: normalizeText(t.doctor_notes),
+          status: 'completed' // New treatments created in bill must be marked completed
+        }))
+        .filter(t => t.treatment_type)
+
+      for (const t of treatmentsToInsert) {
+        subTotal += t.cost
+      }
+    }
+
+    if (subTotal <= 0) badRequest('Bill must include at least one treatment with cost > 0')
+
+    // Apply discount and tax
+    const paid = toMoney(data.paid_amount, 0, 'Paid amount')
+    const discount = toPercent(data.discount)
+    const taxPct = toPercent(data.tax_percent)
+    const discounted = subTotal * (1 - discount / 100)
+    const taxAmount = Math.round(discounted * (taxPct / 100) * 100) / 100
+    const total = Math.round((discounted + taxAmount) * 100) / 100
+
+    if (paid > total) badRequest('Paid amount cannot exceed the final bill total')
+
+    const balance = Math.max(0, total - paid)
+    const status = paid >= total ? 'paid' : paid > 0 ? 'partial' : 'pending'
+    const invoiceNumber = await getNextInvoiceNumber()
+    const paymentMethod = normalizePaymentMethod(data.payment_method)
+
+    const bill = new Bill({
+      patient_id: data.patient_id,
+      appointment_id: data.appointment_id || null,
+      total_amount: total,
+      paid_amount: paid,
+      balance,
+      payment_method: paymentMethod,
+      status,
+      notes: data.notes || '',
+      invoice_number: invoiceNumber,
+      discount,
+      tax_percent: taxPct,
+      tax_amount: taxAmount
+    })
+    await bill.save({ session })
+
+    // Record initial payment if paid > 0
+    if (paid > 0) {
+      await Payment.create([{
+        bill_id: bill._id,
+        patient_id: data.patient_id,
+        amount: paid,
+        method: paymentMethod,
+        notes: 'Initial payment'
+      }], { session })
+    }
+
+    // Link existing treatments to the bill
+    if (existingIds.length > 0) {
+      await Treatment.updateMany(
+        { _id: { $in: existingIds } },
+        { $set: { bill_id: bill._id } },
+        { session }
+      )
+    }
+
+    // Insert new treatments
+    if (treatmentsToInsert.length > 0) {
+      const newTreatments = treatmentsToInsert.map(t => ({ ...t, bill_id: bill._id }))
+      await Treatment.insertMany(newTreatments, { session })
+    }
+
+    // Update patient total outstanding balance
+    const bills = await Bill.find({
+      patient_id: data.patient_id,
+      status: { $ne: 'paid' }
+    }).session(session)
+    
+    const totalOutstanding = bills.reduce((sum, b) => sum + (b.balance || 0), 0)
+    await Patient.findByIdAndUpdate(
+      data.patient_id,
+      { $set: { total_outstanding_balance: totalOutstanding } },
+      { session }
+    )
+
+    // FIX #5: Log bill creation in audit trail
+    await logAudit('create', 'bill', bill._id, {}, {
+      total_amount: total,
+      paid_amount: paid,
+      treatments: existingIds.length + treatmentsToInsert.length
+    }, `Bill created with ${existingIds.length + treatmentsToInsert.length} treatments`, session)
+
+    // Commit transaction
+    await session.commitTransaction()
+
+    return getBillById(bill._id.toString())
+  } catch (err) {
+    // Rollback if any error
+    await session.abortTransaction()
+    throw err
+  } finally {
+    await session.endSession()
+  }
 }
 
 async function updateBillPayment(id, data) {
@@ -684,6 +1338,18 @@ async function updateBillPayment(id, data) {
   const newBalance = Math.max(0, bill.total_amount - newPaid)
   const newStatus  = newPaid >= bill.total_amount ? 'paid' : newPaid > 0 ? 'partial' : 'pending'
 
+  // FIX #5: Log payment in audit trail
+  const before = {
+    paid_amount: bill.paid_amount,
+    balance: bill.balance,
+    status: bill.status
+  }
+  const after = {
+    paid_amount: newPaid,
+    balance: newBalance,
+    status: newStatus
+  }
+
   bill.paid_amount = newPaid
   bill.balance     = newBalance
   bill.status      = newStatus
@@ -691,7 +1357,7 @@ async function updateBillPayment(id, data) {
   await bill.save()
 
   // Record in payment history
-  await Payment.create({
+  const payment = await Payment.create({
     bill_id:    bill._id,
     patient_id: bill.patient_id,
     amount,
@@ -699,36 +1365,20 @@ async function updateBillPayment(id, data) {
     notes:      data.notes || ''
   })
 
-  return getBillById(id)
-}
+  // Log audit
+  await logAudit('payment', 'bill', bill._id, before, after, `Payment of ₹${amount} received via ${method}`)
 
-async function refundBillPayment(id, amount) {
-  if (!isValidObjectId(id)) return null
-  const bill = await Bill.findById(id)
-  if (!bill) return null
-
-  const refundAmount = toMoney(amount)
-  if (refundAmount <= 0) badRequest('Refund amount must be greater than zero')
-  if (refundAmount > (bill.paid_amount || 0)) badRequest('Refund amount cannot exceed paid amount')
-
-  const refund     = refundAmount
-  const newPaid    = bill.paid_amount - refund
-  const newBalance = Math.max(0, bill.total_amount - newPaid)
-  const newStatus  = newPaid >= bill.total_amount ? 'paid' : newPaid > 0 ? 'partial' : 'pending'
-
-  bill.paid_amount      = newPaid
-  bill.balance          = newBalance
-  bill.status           = newStatus
-  bill.refunded_amount  = (bill.refunded_amount || 0) + refund
-  await bill.save()
-
-  await Payment.create({
-    bill_id:    bill._id,
+  // Update patient total outstanding balance
+  const bills = await Bill.find({
     patient_id: bill.patient_id,
-    amount:     -refund,
-    method:     'refund',
-    notes:      'Refund'
+    status: { $ne: 'paid' }
   })
+  
+  const totalOutstanding = bills.reduce((sum, b) => sum + (b.balance || 0), 0)
+  await Patient.findByIdAndUpdate(
+    bill.patient_id,
+    { $set: { total_outstanding_balance: totalOutstanding } }
+  )
 
   return getBillById(id)
 }
@@ -737,6 +1387,124 @@ async function getPaymentsByBill(billId) {
   if (!isValidObjectId(billId)) return []
   const payments = await Payment.find({ bill_id: billId }).sort({ paid_at: 1 }).lean()
   return payments.map(p => ({ ...p, id: p._id.toString() }))
+}
+
+// FIX #2.3: Payment reversal system
+async function reversePayment(paymentId, reason = '', session = null) {
+  if (!isValidObjectId(paymentId)) return null
+
+  const payment = await Payment.findById(paymentId).session(session || undefined)
+  if (!payment) return null
+  if (payment.is_reversed) badRequest('Payment already reversed')
+
+  // Mark payment as reversed
+  const reversedPayment = await Payment.findByIdAndUpdate(
+    paymentId,
+    {
+      $set: {
+        is_reversed: true,
+        reversed_at: new Date(),
+        reversal_reason: reason
+      }
+    },
+    { new: true, session: session || undefined }
+  )
+
+  // Recalculate bill balance excluding reversed payments
+  const bill = await Bill.findById(payment.bill_id).session(session || undefined)
+  
+  const allPayments = await Payment.find({
+    bill_id: bill._id,
+    is_reversed: false
+  }).session(session || undefined)
+
+  const totalPaid = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0)
+  const newBalance = Math.max(0, bill.total_amount - totalPaid)
+  const newStatus = totalPaid >= bill.total_amount ? 'paid' : totalPaid > 0 ? 'partial' : 'pending'
+
+  const updatedBill = await Bill.findByIdAndUpdate(
+    payment.bill_id,
+    {
+      $set: {
+        paid_amount: totalPaid,
+        balance: newBalance,
+        status: newStatus
+      }
+    },
+    { new: true, session: session || undefined }
+  )
+
+  // Log reversal
+  await logAudit(
+    'payment',
+    'payment',
+    paymentId,
+    { is_reversed: false, amount: payment.amount },
+    { is_reversed: true, amount: payment.amount },
+    `Payment of ₹${payment.amount} reversed. Reason: ${reason}`,
+    session
+  )
+
+  return reversedPayment
+}
+
+async function adjustPayment(paymentId, newAmount, reason = '', session = null) {
+  if (!isValidObjectId(paymentId)) return null
+
+  const payment = await Payment.findById(paymentId).session(session || undefined)
+  if (!payment) return null
+  if (payment.is_reversed) badRequest('Cannot adjust reversed payments')
+
+  const amountDifference = toMoney(newAmount) - payment.amount
+
+  const adjustedPayment = await Payment.findByIdAndUpdate(
+    paymentId,
+    {
+      $set: {
+        amount: toMoney(newAmount),
+        is_adjustment: true,
+        adjustment_reason: reason
+      }
+    },
+    { new: true, session: session || undefined }
+  )
+
+  // Recalculate bill balance
+  const bill = await Bill.findById(payment.bill_id).session(session || undefined)
+  
+  const allPayments = await Payment.find({
+    bill_id: bill._id,
+    is_reversed: false
+  }).session(session || undefined)
+
+  const totalPaid = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0)
+  const newBalance = Math.max(0, bill.total_amount - totalPaid)
+  const newStatus = totalPaid >= bill.total_amount ? 'paid' : totalPaid > 0 ? 'partial' : 'pending'
+
+  await Bill.findByIdAndUpdate(
+    payment.bill_id,
+    {
+      $set: {
+        paid_amount: totalPaid,
+        balance: newBalance,
+        status: newStatus
+      }
+    },
+    { session: session || undefined }
+  )
+
+  // Log adjustment
+  await logAudit(
+    'adjustment',
+    'payment',
+    paymentId,
+    { amount: payment.amount },
+    { amount: toMoney(newAmount) },
+    `Payment adjusted from ₹${payment.amount} to ₹${toMoney(newAmount)}. Reason: ${reason}`,
+    session
+  )
+
+  return adjustedPayment
 }
 
 async function getAllBills(page = 1, limit = 50) {
@@ -756,6 +1524,42 @@ async function getAllBills(page = 1, limit = 50) {
     patient_name: b.patient_id ? b.patient_id.name : ''
   }))
   return { items, total, page, limit, hasMore: skip + items.length < total }
+}
+
+/**
+ * Search bills by patient name (regex search on MongoDB)
+ * Supports pagination to handle large result sets
+ */
+async function searchBills(query, page = 1, limit = 50) {
+  const searchPattern = normalizeText(query)
+  if (!searchPattern) return { items: [], total: 0, page, limit, hasMore: false }
+
+  const skip = (page - 1) * limit
+  const regex = new RegExp(searchPattern, 'i') // Case-insensitive
+
+  const bills = await Bill.find()
+    .populate('patient_id')
+    .exec()
+    .then(bills => {
+      // Filter by patient name on populated data
+      return bills.filter(b => b.patient_id && regex.test(b.patient_id.name))
+    })
+    .then(filtered => {
+      // Sort by creation date descending, then paginate
+      filtered.sort((a, b) => (b.created_at || 0) - (a.created_at || 0))
+      const paged = filtered.slice(skip, skip + limit)
+      const total = filtered.length
+      return { paged, total }
+    })
+
+  const items = bills.paged.map(b => ({
+    ...b.toObject?.() || b,
+    id: b._id.toString(),
+    patient_id: b.patient_id ? b.patient_id._id.toString() : null,
+    patient_name: b.patient_id ? b.patient_id.name : ''
+  }))
+
+  return { items, total: bills.total, page, limit, hasMore: skip + items.length < bills.total }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -813,13 +1617,16 @@ async function getDashboardStats() {
 module.exports = {
   init,
   getDbPath,
-  getAllPatients, searchPatients, getPatientById, addPatient, updatePatient,
+  getAllPatients, searchPatients, getPatientById, addPatient, updatePatient, archivePatient, unarchivePatient,
   getTodayAppointments, getAppointmentsByDate, getPatientAppointments,
-  addAppointment, updateAppointment, updateAppointmentStatus, deleteAppointment,
+  addAppointment, updateAppointment, updateAppointmentStatus, deleteAppointment, cancelAppointment,
   updateAppointmentCallStatus, getPendingCalls,
   getBlockedSlots, blockSlot, unblockSlot,
-  getTreatmentsByAppointment, getTreatmentsByPatient, getTreatmentsByBill, addTreatment, updateTreatment, deleteTreatment,
-  getBillsByPatient, getBillById, createBill, updateBillPayment, refundBillPayment, getPaymentsByBill, getAllBills,
+  getTreatmentsByAppointment, getTreatmentsByPatient, getTreatmentsByBill, addTreatment, updateTreatment, deleteTreatment, updateTreatmentStatus,
+  recordDiagnosis, getDiagnosisByAppointment, getDiagnosisByPatient, updateDiagnosis,
+  createFollowUp, getPatientFollowUps, getPendingFollowUps, completeFollowUp,
+  getBillsByPatient, getBillById, createBill, updateBillPayment, getPaymentsByBill, reversePayment, adjustPayment, getAllBills, searchBills,
   getSettings, setSetting,
   getDashboardStats,
+  logAudit
 }

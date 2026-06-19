@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, X, Printer, CreditCard, ShoppingBag, Trash2, Mail, RefreshCw, RotateCcw, ChevronDown } from 'lucide-react'
 import {
   getAllBills, getBillsByPatient, createBill, updateBillPayment,
   getAllPatients, searchPatients,
   getTreatmentsByPatient, getTreatmentsByAppointment, getTreatmentsByBill, getPatientAppointments,
-  getPaymentsByBill, refundBill, emailBillInvoice
+  getPaymentsByBill, searchBills, emailBillInvoice
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
@@ -94,18 +94,15 @@ export default function Billing() {
   const [historyBill, setHistoryBill] = useState(null)
   const [historyItems, setHistoryItems] = useState([])
 
-  // Refund
-  const [showRefund, setShowRefund] = useState(false)
-  const [refundBillData, setRefundBillData] = useState(null)
-  const [refundAmount, setRefundAmount] = useState('')
-
   // Email invoice
   const [showEmail, setShowEmail] = useState(false)
   const [emailBillData, setEmailBillData] = useState(null)
   const [emailAddr, setEmailAddr] = useState('')
 
   const load = useCallback(async (page = 1) => {
-    const data = await getAllBills(`?page=${page}&limit=50`)
+    const data = search.trim()
+      ? await searchBills(search, page)
+      : await getAllBills(`?page=${page}&limit=50`)
     if (page === 1) {
       setBills(data.items || [])
     } else {
@@ -113,7 +110,7 @@ export default function Billing() {
     }
     setBillPage(page)
     setBillsHasMore(data.hasMore || false)
-  }, [])
+  }, [search])
 
   useEffect(() => { load(1) }, [load])
 
@@ -144,6 +141,7 @@ export default function Billing() {
     if (!selAppt) { setBillItems([]); return }
     const txsForAppt = patTreatments.filter(t => t.appointment_id === selAppt.id)
     const items = txsForAppt.map(t => ({
+      id: t.id,  // Preserve treatment ID to avoid duplicates
       treatment_type: t.treatment_type,
       cost: t.cost || 0,
       tooth_number: t.tooth_number || '',
@@ -212,16 +210,30 @@ export default function Billing() {
 
     setSaving(true)
     try {
+      // Separate existing treatments (with IDs) from new treatments (without IDs)
+      const existingTreatmentIds = billItems
+        .filter(item => item.id)  // Has ID = existing treatment
+        .map(item => item.id)
+
+      const newTreatments = billItems
+        .filter(item => !item.id)  // No ID = new treatment
+        .map(item => ({
+          treatment_type: item.treatment_type,
+          cost: item.cost,
+          tooth_number: item.tooth_number || '',
+          description: item.description || ''
+        }))
+
       await createBill({
         patient_id: selPatient.id,
         appointment_id: selAppt?.id || null,
-        total_amount: calculatedTotal,
+        existingTreatmentIds,     // Pass IDs of existing treatments
+        treatments: newTreatments, // Pass only new treatments to insert
         paid_amount: paidNow,
         payment_method: billForm.payment_method,
         discount: discountPercent,
         tax_percent: taxPercent,
-        notes: billForm.notes,
-        treatments: billItems
+        notes: billForm.notes
       })
       notify('Bill and treatments saved successfully')
       setShowCreate(false)
@@ -266,27 +278,6 @@ export default function Billing() {
       notify('Failed to load payment history', 'error')
       setHistoryItems([])
     }
-  }
-
-  function openRefund(bill) {
-    setRefundBillData(bill)
-    setRefundAmount('')
-    setShowRefund(true)
-  }
-
-  async function handleRefund() {
-    const amt = parseFloat(refundAmount)
-    if (!amt || amt <= 0) { notify('Enter a valid amount', 'error'); return }
-    if (amt > refundBillData.paid_amount) { notify('Cannot refund more than paid amount', 'error'); return }
-    setSaving(true)
-    try {
-      await refundBill(refundBillData.id, amt)
-      notify('Refund processed successfully')
-      setShowRefund(false)
-      load(1)
-    } catch (e) {
-      notify(e.message || 'Failed to process refund', 'error')
-    } finally { setSaving(false) }
   }
 
   function openEmail(bill) {
@@ -431,15 +422,6 @@ export default function Billing() {
                           title="Payment History"
                         >
                           <CreditCard size={14} />
-                        </button>
-                      )}
-                      {b.paid_amount > 0 && (
-                        <button
-                          onClick={() => openRefund(b)}
-                          className="btn-icon bg-red-50 hover:bg-red-100 text-red-600 rounded-xl"
-                          title="Refund"
-                        >
-                          <RotateCcw size={14} />
                         </button>
                       )}
                       <button
@@ -829,40 +811,6 @@ export default function Billing() {
         )}
       </Modal>
 
-      {/* Refund Modal */}
-      <Modal
-        open={showRefund}
-        onClose={() => setShowRefund(false)}
-        title="Process Refund"
-        size="sm"
-        footer={
-          <div className="flex gap-2 w-full">
-            <button onClick={() => setShowRefund(false)} className="btn-secondary flex-1">Cancel</button>
-            <button onClick={handleRefund} disabled={saving} className="btn-primary flex-1 bg-red-600 hover:bg-red-700 focus:ring-red-500/20">
-              {saving ? 'Processing…' : 'Refund ✓'}
-            </button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600">
-            Total Paid: <strong className="text-slate-800">{fmt(refundBillData?.paid_amount || 0)}</strong>
-          </p>
-          <div>
-            <label className="label">Refund Amount</label>
-            <input
-              type="number"
-              className="input text-lg font-bold"
-              min="1"
-              max={refundBillData?.paid_amount || 0}
-              value={refundAmount}
-              onChange={e => setRefundAmount(e.target.value)}
-              autoFocus
-            />
-          </div>
-        </div>
-      </Modal>
-
       {/* Email Modal */}
       <Modal
         open={showEmail}
@@ -1213,12 +1161,6 @@ function generateReceiptHTML(bill, treatments = [], settings) {
           <span>Amount Paid</span>
           <span class="c-green">${cur}${Number(bill.paid_amount).toLocaleString('en-IN')}</span>
         </div>
-        ${bill.refunded_amount > 0 ? `
-          <div class="sum-row">
-            <span>Refunded</span>
-            <span style="color:#c53030;">${cur}${Number(bill.refunded_amount).toLocaleString('en-IN')}</span>
-          </div>
-        ` : ''}
         <div class="sum-row">
           <span>Balance Due</span>
           <span class="c-bal">${isPaid ? 'Nil' : cur + Number(bill.balance).toLocaleString('en-IN')}</span>

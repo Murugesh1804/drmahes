@@ -5,7 +5,8 @@ const asyncHandler = require('../middleware/asyncHandler')
 
 router.get('/', asyncHandler(async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit) : 20
-  res.json(await queries.getAllPatients(limit))
+  const includeArchived = req.query.includeArchived === 'true'
+  res.json(await queries.getAllPatients(limit, includeArchived))
 }))
 
 router.get('/search', asyncHandler(async (req, res) => {
@@ -24,6 +25,15 @@ router.post('/', asyncHandler(async (req, res) => {
 
 router.put('/:id', asyncHandler(async (req, res) => {
   res.json(await queries.updatePatient(req.params.id, req.body))
+}))
+
+// FIX #3.1: Patient archiving endpoints
+router.post('/:id/archive', asyncHandler(async (req, res) => {
+  res.json(await queries.archivePatient(req.params.id, req.body.reason || '', req.body.archived_by || 'admin'))
+}))
+
+router.post('/:id/unarchive', asyncHandler(async (req, res) => {
+  res.json(await queries.unarchivePatient(req.params.id))
 }))
 
 module.exports = router
