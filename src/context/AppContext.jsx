@@ -72,7 +72,8 @@ export function AppProvider({ children }) {
     sessionStorage.removeItem('cms_token')
     sessionStorage.removeItem('cms_auth')
     setIsAuthenticated(false)
-    notify('Session expired. Please log in again.', 'error')
+    setNotification({ message: 'Session expired. Please log in again.', type: 'error', id: Date.now() })
+    setTimeout(() => setNotification(null), 3500)
   }, [])
 
   const notify = useCallback((message, type = 'success') => {

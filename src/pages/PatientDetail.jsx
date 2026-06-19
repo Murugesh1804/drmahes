@@ -45,6 +45,7 @@ export default function PatientDetail() {
   const [showEdit, setShowEdit] = useState(false)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
+  const [notFound, setNotFound] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -54,22 +55,19 @@ export default function PatientDetail() {
         getTreatmentsByPatient(id),
         getBillsByPatient(id),
       ])
-      if (p) {
-        setPatient(p)
-        setForm({
-          name: p.name, phone: p.phone || '', age: p.age || '',
-          gender: p.gender || 'Male', address: p.address || '',
-          complaint: p.complaint || '', notes: p.notes || '',
-        })
-      }
+      if (!p) { setNotFound(true); return }
+      setPatient(p)
+      setForm({
+        name: p.name, phone: p.phone || '', age: p.age || '',
+        gender: p.gender || 'Male', address: p.address || '',
+        complaint: p.complaint || '', notes: p.notes || '',
+      })
       setAppointments(appts || [])
       setTreatments(txs || [])
       setBills(blls || [])
     } catch (e) {
       console.error(e)
-      setAppointments([])
-      setTreatments([])
-      setBills([])
+      setNotFound(true)
     }
   }, [id])
 
@@ -83,7 +81,18 @@ export default function PatientDetail() {
       notify('Patient updated')
       setShowEdit(false)
       load()
+    } catch (e) {
+      notify(e.message || 'Failed to update patient', 'error')
     } finally { setSaving(false) }
+  }
+
+  if (notFound) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-slate-400 gap-4">
+        <p className="font-semibold text-lg">Patient not found</p>
+        <button onClick={() => navigate('/patients')} className="btn-primary text-sm">← Back to Patients</button>
+      </div>
+    )
   }
 
   if (!patient) {

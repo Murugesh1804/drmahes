@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { AppProvider, useApp } from './context/AppContext'
 import Sidebar from './components/Sidebar'
@@ -32,6 +32,34 @@ function AppLayout() {
   useEffect(() => {
     setSidebarOpen(false)
   }, [location.pathname])
+
+  const navigate = useNavigate()
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return
+      if (e.altKey) {
+        switch (e.key.toLowerCase()) {
+          case 'n':
+            e.preventDefault()
+            navigate('/patients')
+            setTimeout(() => window.dispatchEvent(new Event('cms:open-add-patient')), 50)
+            break
+          case 'b':
+            e.preventDefault()
+            navigate('/billing')
+            break
+          case 'q':
+            e.preventDefault()
+            navigate('/queue')
+            break
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [navigate])
 
   if (!isAuthenticated && location.pathname !== '/kiosk') {
     return <Login />

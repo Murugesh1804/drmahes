@@ -23,13 +23,19 @@ export default function Patients() {
   const searchRef = useRef()
 
   const load = useCallback(async (q = '') => {
-    const data = q.trim().length >= 1
+    const data = q.trim().length >= 2
       ? await searchPatients(q)
       : await getAllPatients()
     setPatients(data || [])
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    const handleOpenAdd = () => setShowAdd(true)
+    window.addEventListener('cms:open-add-patient', handleOpenAdd)
+    return () => window.removeEventListener('cms:open-add-patient', handleOpenAdd)
+  }, [])
 
   // Debounced search
   useEffect(() => {
@@ -50,6 +56,8 @@ export default function Patients() {
       notify(`${p.name} added successfully`)
       setShowAdd(false)
       load(query)
+    } catch (e) {
+      notify(e.message || 'Failed to add patient', 'error')
     } finally {
       setSaving(false)
     }

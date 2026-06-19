@@ -53,10 +53,20 @@ export default function Dashboard() {
 
   useEffect(() => { load() }, [])
 
+  // Auto-refresh stats every 60 seconds
+  useEffect(() => {
+    const t = setInterval(load, 60000)
+    return () => clearInterval(t)
+  }, [])
+
   async function handleStatus(id, status) {
-    await updateAppointmentStatus(id, status)
-    notify(`Status updated to ${STATUS_LABELS[status]}`)
-    load()
+    try {
+      await updateAppointmentStatus(id, status)
+      notify(`Status updated to ${STATUS_LABELS[status]}`)
+      load()
+    } catch (e) {
+      notify('Failed to update status', 'error')
+    }
   }
 
   if (loading) {

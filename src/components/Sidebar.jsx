@@ -36,7 +36,7 @@ export default function Sidebar({ isOpen, onClose }) {
           transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
-        style={{ background: 'linear-gradient(180deg, #0c1525 0%, #0f1e35 100%)' }}
+        style={{ background: 'linear-gradient(180deg, #111111 0%, #1a1a1a 100%)' }}
       >
         {/* ── Logo & Clinic Name ─────────────────────────── */}
         <div className="px-4 py-5 border-b border-white/8 flex items-center justify-between gap-2">

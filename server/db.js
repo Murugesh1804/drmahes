@@ -95,11 +95,36 @@ const billSchema = new mongoose.Schema({
     enum: ['paid', 'partial', 'pending'],
     default: 'pending'
   },
-  notes: { type: String, default: '' }
+  notes: { type: String, default: '' },
+  invoice_number: { type: String, default: '' },
+  discount:       { type: Number, default: 0 },   // Discount %
+  tax_percent:    { type: Number, default: 0 },   // GST/Tax %
+  tax_amount:     { type: Number, default: 0 },
+  refunded_amount:{ type: Number, default: 0 }
 }, schemaOptions)
 
 billSchema.index({ status: 1 })
 billSchema.index({ created_at: 1 })
+
+// ── PAYMENT SCHEMA ─────────────────────────────────────────
+const paymentSchema = new mongoose.Schema({
+  bill_id:    { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', required: true, index: true },
+  patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
+  amount:     { type: Number, required: true },
+  method:     { type: String, enum: ['cash', 'upi', 'card', 'other'], default: 'cash' },
+  notes:      { type: String, default: '' }
+}, {
+  timestamps: { createdAt: 'paid_at', updatedAt: false },
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+})
+
+// ── COUNTER SCHEMA ─────────────────────────────────────────
+// For sequential invoice numbers (INV-YYYY-XXXX)
+const counterSchema = new mongoose.Schema({
+  key: { type: String, required: true, unique: true },
+  seq: { type: Number, default: 0 }
+})
 
 // ── SETTING SCHEMA ─────────────────────────────────────────────────────────
 const settingSchema = new mongoose.Schema({
@@ -129,6 +154,8 @@ const Patient = mongoose.model('Patient', patientSchema)
 const Appointment = mongoose.model('Appointment', appointmentSchema)
 const Treatment = mongoose.model('Treatment', treatmentSchema)
 const Bill = mongoose.model('Bill', billSchema)
+const Payment = mongoose.model('Payment', paymentSchema)
+const Counter = mongoose.model('Counter', counterSchema)
 const Setting = mongoose.model('Setting', settingSchema)
 const BlockedSlot = mongoose.model('BlockedSlot', blockedSlotSchema)
 
@@ -199,6 +226,8 @@ module.exports = {
   Appointment,
   Treatment,
   Bill,
+  Payment,
+  Counter,
   Setting,
   BlockedSlot
 }

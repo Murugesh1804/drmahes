@@ -32,10 +32,26 @@ export default function Queue() {
 
   useEffect(() => { load() }, [load])
 
-  // Auto-refresh every 30s
+  // SSE — real-time queue updates (falls back to 30s poll if SSE unsupported)
   useEffect(() => {
-    const t = setInterval(load, 30000)
-    return () => clearInterval(t)
+    let es = null
+    try {
+      es = new EventSource('/api/queue/stream')
+      es.onmessage = (e) => {
+        try { setQueue(JSON.parse(e.data) || []) } catch (_) {}
+        setLoading(false)
+      }
+      es.onerror = () => {
+        es?.close()
+        // Fallback: poll every 30s
+        const t = setInterval(load, 30000)
+        return () => clearInterval(t)
+      }
+    } catch (_) {
+      const t = setInterval(load, 30000)
+      return () => clearInterval(t)
+    }
+    return () => es?.close()
   }, [load])
 
   async function handleStatus(id, status) {

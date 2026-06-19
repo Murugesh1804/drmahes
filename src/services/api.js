@@ -37,7 +37,7 @@ async function request(path, options = {}) {
 }
 
 // ── Patients ───────────────────────────────────────────────
-export const getAllPatients = () => request('/patients')
+export const getAllPatients = (qs = '') => request(`/patients${qs}`)
 
 export const searchPatients = (q) => request(`/patients/search?q=${encodeURIComponent(q)}`)
 
@@ -86,7 +86,10 @@ export const createBill = (data) => request('/bills', { method: 'POST', body: JS
 
 export const updateBillPayment = (id, data) => request(`/bills/${id}/payment`, { method: 'PUT', body: JSON.stringify(data) })
 
-export const getAllBills = () => request('/bills')
+export const getAllBills = (qs = '') => request(`/bills${qs}`)
+export const getPaymentsByBill = (id) => request(`/bills/${id}/payments`)
+export const refundBill = (id, amount) => request(`/bills/${id}/refund`, { method: 'POST', body: JSON.stringify({ amount }) })
+export const emailBillInvoice = (id, email) => request(`/bills/${id}/email`, { method: 'POST', body: JSON.stringify({ email }) })
 
 // ── Queue ──────────────────────────────────────────────────
 export const getTodayQueue = () => request('/queue/today')

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { Patient, Appointment, Treatment, Bill, Setting, BlockedSlot, getDbPath } = require('./db')
+const { Patient, Appointment, Treatment, Bill, Payment, Counter, Setting, BlockedSlot, getDbPath } = require('./db')
 
 let db = null
 
@@ -54,8 +54,10 @@ async function getAllPatients(limit = 20) {
 async function searchPatients(query) {
   const matchFilter = query.trim() ? {
     $or: [
-      { name: { $regex: query, $options: 'i' } },
-      { phone: { $regex: query, $options: 'i' } }
+      { name:      { $regex: query, $options: 'i' } },
+      { phone:     { $regex: query, $options: 'i' } },
+      { complaint: { $regex: query, $options: 'i' } },
+      { notes:     { $regex: query, $options: 'i' } },
     ]
   } : {}
 
@@ -206,6 +208,18 @@ async function getPatientAppointments(patientId) {
     ...a,
     call_status: a.call_status || 'not_required'
   }))
+}
+
+async function getNextInvoiceNumber() {
+  const year = new Date().getFullYear()
+  const key  = `invoice_${year}`
+  const doc  = await Counter.findOneAndUpdate(
+    { key },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  )
+  const seq = String(doc.seq).padStart(4, '0')
+  return `INV-${year}-${seq}`
 }
 
 async function addAppointment(data) {
@@ -429,22 +443,44 @@ async function getBillById(id) {
 }
 
 async function createBill(data) {
-  const paid = data.paid_amount || 0
-  const total = data.total_amount || 0
-  const balance = total - paid
-  const status = paid >= total ? 'paid' : paid > 0 ? 'partial' : 'pending'
+  const paid    = data.paid_amount || 0
+  const subTotal = data.total_amount || 0
+  const discount = data.discount || 0
+  const taxPct   = data.tax_percent || 0
+  const discounted = subTotal * (1 - discount / 100)
+  const taxAmount  = discounted * (taxPct / 100)
+  const total      = Math.round((discounted + taxAmount) * 100) / 100
+  const balance    = Math.max(0, total - paid)
+  const status     = paid >= total ? 'paid' : paid > 0 ? 'partial' : 'pending'
+  const invoiceNumber = await getNextInvoiceNumber()
 
   const bill = new Bill({
     patient_id: data.patient_id,
     appointment_id: data.appointment_id || null,
     total_amount: total,
     paid_amount: paid,
-    balance: balance,
+    balance,
     payment_method: data.payment_method || 'cash',
-    status: status,
-    notes: data.notes || ''
+    status,
+    notes: data.notes || '',
+    invoice_number: invoiceNumber,
+    discount,
+    tax_percent: taxPct,
+    tax_amount: taxAmount,
+    refunded_amount: 0
   })
   await bill.save()
+
+  // Record initial payment if paid > 0
+  if (paid > 0) {
+    await Payment.create({
+      bill_id: bill._id,
+      patient_id: data.patient_id,
+      amount: paid,
+      method: data.payment_method || 'cash',
+      notes: 'Initial payment'
+    })
+  }
 
   // Save nested treatments if provided
   if (data.treatments && Array.isArray(data.treatments)) {
@@ -470,33 +506,78 @@ async function updateBillPayment(id, data) {
   const bill = await Bill.findById(id)
   if (!bill) return null
 
-  const newPaid = (bill.paid_amount || 0) + (data.amount || 0)
-  const newBalance = bill.total_amount - newPaid
-  const newStatus = newPaid >= bill.total_amount ? 'paid' : newPaid > 0 ? 'partial' : 'pending'
+  const newPaid    = (bill.paid_amount || 0) + (data.amount || 0)
+  const newBalance = Math.max(0, bill.total_amount - newPaid)
+  const newStatus  = newPaid >= bill.total_amount ? 'paid' : newPaid > 0 ? 'partial' : 'pending'
 
   bill.paid_amount = newPaid
-  bill.balance = newBalance
-  bill.status = newStatus
-  if (data.payment_method) {
-    bill.payment_method = data.payment_method
-  }
+  bill.balance     = newBalance
+  bill.status      = newStatus
+  if (data.payment_method) bill.payment_method = data.payment_method
   await bill.save()
+
+  // Record in payment history
+  await Payment.create({
+    bill_id:    bill._id,
+    patient_id: bill.patient_id,
+    amount:     data.amount,
+    method:     data.payment_method || bill.payment_method,
+    notes:      data.notes || ''
+  })
+
   return getBillById(id)
 }
 
-async function getAllBills() {
+async function refundBillPayment(id, amount) {
+  if (!isValidObjectId(id)) return null
+  const bill = await Bill.findById(id)
+  if (!bill) return null
+
+  const refund     = Math.min(amount, bill.paid_amount)
+  const newPaid    = bill.paid_amount - refund
+  const newBalance = bill.total_amount - newPaid
+  const newStatus  = newPaid >= bill.total_amount ? 'paid' : newPaid > 0 ? 'partial' : 'pending'
+
+  bill.paid_amount      = newPaid
+  bill.balance          = newBalance
+  bill.status           = newStatus
+  bill.refunded_amount  = (bill.refunded_amount || 0) + refund
+  await bill.save()
+
+  await Payment.create({
+    bill_id:    bill._id,
+    patient_id: bill.patient_id,
+    amount:     -refund,
+    method:     'refund',
+    notes:      'Refund'
+  })
+
+  return getBillById(id)
+}
+
+async function getPaymentsByBill(billId) {
+  if (!isValidObjectId(billId)) return []
+  const payments = await Payment.find({ bill_id: billId }).sort({ paid_at: 1 }).lean()
+  return payments.map(p => ({ ...p, id: p._id.toString() }))
+}
+
+async function getAllBills(page = 1, limit = 50) {
+  const skip = (page - 1) * limit
   const bills = await Bill.find()
     .populate('patient_id')
     .sort({ created_at: -1 })
-    .limit(200)
+    .skip(skip)
+    .limit(limit)
     .lean()
 
-  return bills.map(b => ({
+  const total = await Bill.countDocuments()
+  const items = bills.map(b => ({
     ...b,
     id: b._id.toString(),
     patient_id: b.patient_id ? b.patient_id._id.toString() : null,
     patient_name: b.patient_id ? b.patient_id.name : ''
   }))
+  return { items, total, page, limit, hasMore: skip + items.length < total }
 }
 
 // ═══════════════════════════════════════════════════════════

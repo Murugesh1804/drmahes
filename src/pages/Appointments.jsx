@@ -10,6 +10,7 @@ import {
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
+import ConfirmModal from '../components/ConfirmModal'
 
 const STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
 const STATUS_LABELS = { waiting: 'Waiting', 'in-progress': 'In Progress', done: 'Done', cancelled: 'Cancelled' }
@@ -182,6 +183,8 @@ export default function Appointments() {
   const [selectedPatient, setSelectedPatient] = useState(null)
   const [form, setForm] = useState({ scheduled_time: '', reason: '', notes: '' })
   const [saving, setSaving] = useState(false)
+  
+  const [deleteId, setDeleteId] = useState(null)
 
   const load = useCallback(async () => {
     const data = await getAppointmentsByDate(date)
@@ -253,15 +256,14 @@ export default function Appointments() {
     }
   }
 
-  async function handleDelete(id) {
-    if (!confirm('Delete this appointment?')) return
+  async function handleDeleteConfirm() {
     try {
-      await deleteAppointment(id)
+      await deleteAppointment(deleteId)
       notify('Appointment deleted')
       load()
     } catch (e) {
       notify('Failed to delete appointment', 'error')
-    }
+    } finally { setDeleteId(null) }
   }
 
   async function handleMarkCalled(id) {
@@ -303,7 +305,7 @@ export default function Appointments() {
           <p className="font-bold text-slate-800">{fmtDate(date)}</p>
           {isToday && <span className="text-xs text-primary-600 font-semibold">Today</span>}
         </div>
-        <button onClick={nextDay} className="btn-icon"><ChevronRight size={18} /></button>
+        <button onClick={nextDay} className="btn-right"><ChevronRight size={18} /></button>
         {!isToday && (
           <button onClick={today} className="btn-secondary text-xs">Today</button>
         )}
@@ -415,12 +417,11 @@ export default function Appointments() {
                       Cancel
                     </button>
                   )}
-                  <button
-                    id={`btn-del-appt-${a.id}`}
-                    onClick={() => handleDelete(a.id)}
-                    className="btn-icon text-slate-300 hover:text-red-500 p-2"
-                  >
-                    <Trash2 size={14} />
+                  <button 
+                      onClick={() => setDeleteId(a.id)} 
+                      className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={16} />
                   </button>
                 </div>
               </div>
@@ -583,6 +584,15 @@ export default function Appointments() {
           </div>
         </div>
       </Modal>
+
+      <ConfirmModal
+        open={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Appointment"
+        message="Are you sure you want to delete this appointment? This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   )
 }

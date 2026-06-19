@@ -334,6 +334,112 @@ async function sendAppointmentConfirmation(toEmail, patientName, date, timeSlot,
   }
 }
 
+/**
+ * Sends an invoice email to the patient.
+ * @param {string} toEmail
+ * @param {object} bill
+ * @param {Array}  treatments
+ */
+async function sendInvoiceEmail(toEmail, bill, treatments = []) {
+  if (!toEmail) return { success: false, error: 'No email provided' }
+
+  const cur = '₹'
+  const date = new Date(bill.created_at).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  })
+
+  const rowsHtml = treatments.length > 0
+    ? treatments.map((t, i) => `
+      <tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #f0ece4;font-size:13px;color:#1a1209;">
+          ${i + 1}. ${t.treatment_type}${t.tooth_number ? ` <span style="color:#9a7c50;font-size:11px;">(Tooth #${t.tooth_number})</span>` : ''}
+        </td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f0ece4;font-size:13px;text-align:right;color:#1a1209;font-weight:600;">
+          ${cur}${Number(t.cost).toLocaleString('en-IN')}
+        </td>
+      </tr>`).join('')
+    : `<tr><td style="padding:8px 12px;font-size:13px;color:#1a1209;" colspan="2">Dental Treatment Services</td></tr>`
+
+  const subtotal = treatments.reduce((s, t) => s + (t.cost || 0), 0) || bill.total_amount
+  const discountLine = bill.discount > 0
+    ? `<tr><td style="padding:4px 12px;font-size:12px;color:#9a7c50;">Discount (${bill.discount}%)</td><td style="padding:4px 12px;font-size:12px;text-align:right;color:#c53030;">- ${cur}${Math.round(subtotal * bill.discount / 100).toLocaleString('en-IN')}</td></tr>`
+    : ''
+  const taxLine = bill.tax_percent > 0
+    ? `<tr><td style="padding:4px 12px;font-size:12px;color:#9a7c50;">GST (${bill.tax_percent}%)</td><td style="padding:4px 12px;font-size:12px;text-align:right;color:#1a1209;">+ ${cur}${Number(bill.tax_amount || 0).toLocaleString('en-IN')}</td></tr>`
+    : ''
+
+  const mailOptions = {
+    from: process.env.MAIL_FROM,
+    to: toEmail.trim(),
+    subject: `Invoice ${bill.invoice_number || ''} — Dr. Mahe's Dentistry`,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:'Segoe UI',Arial,sans-serif;background:#f5f0e8;margin:0;padding:40px 20px;">
+  <div style="max-width:560px;margin:0 auto;background:#fffdf9;border-radius:20px;overflow:hidden;border:1px solid #e8dfc8;">
+    <div style="background:#1a1209;padding:28px 36px;">
+      <img src="cid:logo_black" alt="Dr. Mahe's Dentistry" style="height:52px;">
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,#c9a96e,#e8d5a3,#c9a96e);"></div>
+    <div style="padding:32px 36px;">
+      <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#9a7c50;margin:0 0 16px;">Invoice Receipt</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
+        <tr>
+          <td style="font-size:13px;color:#6b5c45;">Invoice No.</td>
+          <td style="font-size:13px;font-weight:700;color:#1a1209;text-align:right;">${bill.invoice_number || '—'}</td>
+        </tr>
+        <tr>
+          <td style="font-size:13px;color:#6b5c45;">Patient</td>
+          <td style="font-size:13px;font-weight:700;color:#1a1209;text-align:right;">${bill.patient_name || ''}</td>
+        </tr>
+        <tr>
+          <td style="font-size:13px;color:#6b5c45;">Date</td>
+          <td style="font-size:13px;color:#1a1209;text-align:right;">${date}</td>
+        </tr>
+      </table>
+      <hr style="border:none;border-top:1px solid #e8dfc8;margin:20px 0;">
+      <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#9a7c50;margin:0 0 8px;">Treatment Details</p>
+      <table style="width:100%;border-collapse:collapse;background:#f9f4eb;border-radius:12px;overflow:hidden;">
+        ${rowsHtml}
+        ${discountLine}
+        ${taxLine}
+        <tr style="background:#1a1209;">
+          <td style="padding:12px;font-size:14px;font-weight:700;color:#e8d5a3;">Total</td>
+          <td style="padding:12px;font-size:14px;font-weight:700;color:#e8d5a3;text-align:right;">${cur}${Number(bill.total_amount).toLocaleString('en-IN')}</td>
+        </tr>
+      </table>
+      <div style="margin-top:16px;padding:12px 16px;background:${bill.balance > 0 ? '#fff5f5' : '#f0fdf4'};border-radius:10px;border:1px solid ${bill.balance > 0 ? '#fecaca' : '#bbf7d0'};">
+        <span style="font-size:13px;font-weight:600;color:${bill.balance > 0 ? '#c53030' : '#276749'};">
+          ${bill.balance > 0 ? `Balance Due: ${cur}${Number(bill.balance).toLocaleString('en-IN')}` : '✓ Fully Paid'}
+        </span>
+      </div>
+    </div>
+    <div style="background:#f2ebe0;padding:24px 36px;border-top:1px solid #e0d0b0;text-align:center;">
+      <p style="margin:0;font-size:13px;font-weight:600;color:#1a1209;">Dr. Mahe's Dentistry</p>
+      <p style="margin:6px 0 0;font-size:12px;color:#6b5c45;">Porur, Chennai — 📞 +91 93428 03217</p>
+    </div>
+  </div>
+</body>
+</html>`,
+    attachments: [
+      {
+        filename: 'logo_black.png',
+        path: path.join(__dirname, '../website/public/assets/logo_black.png'),
+        cid: 'logo_black'
+      }
+    ]
+  }
+
+  try {
+    const info = await transporter.sendMail(mailOptions)
+    return { success: true, messageId: info.messageId }
+  } catch (err) {
+    console.error('[email] Failed to send invoice:', err.message)
+    return { success: false, error: err.message }
+  }
+}
+
 module.exports = {
-  sendAppointmentConfirmation
+  sendAppointmentConfirmation,
+  sendInvoiceEmail
 }

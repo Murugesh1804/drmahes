@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, X, Printer, CreditCard, ShoppingBag, Trash2 } from 'lucide-react'
+import { Plus, Search, X, Printer, CreditCard, ShoppingBag, Trash2, Mail, RefreshCw, RotateCcw, ChevronDown } from 'lucide-react'
 import {
   getAllBills, getBillsByPatient, createBill, updateBillPayment,
   getAllPatients, searchPatients,
   getTreatmentsByPatient, getTreatmentsByAppointment, getPatientAppointments,
+  getPaymentsByBill, refundBill, emailBillInvoice
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
@@ -57,6 +58,8 @@ export default function Billing() {
   const { notify, fmt, settings } = useApp()
   const navigate = useNavigate()
   const [bills, setBills] = useState([])
+  const [billPage, setBillPage] = useState(1)
+  const [billsHasMore, setBillsHasMore] = useState(false)
   const [search, setSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
@@ -79,25 +82,46 @@ export default function Billing() {
   const [cartDesc, setCartDesc] = useState('')
 
   const [billForm, setBillForm] = useState({
-    paid_amount: '', payment_method: 'cash', notes: '',
+    paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: ''
   })
 
   // Payment modal state
   const [payAmount, setPayAmount] = useState('')
   const [payMethod, setPayMethod] = useState('cash')
 
-  const load = useCallback(async () => {
-    const data = await getAllBills()
-    setBills(data || [])
+  // Payment history
+  const [showHistory, setShowHistory] = useState(false)
+  const [historyBill, setHistoryBill] = useState(null)
+  const [historyItems, setHistoryItems] = useState([])
+
+  // Refund
+  const [showRefund, setShowRefund] = useState(false)
+  const [refundBillData, setRefundBillData] = useState(null)
+  const [refundAmount, setRefundAmount] = useState('')
+
+  // Email invoice
+  const [showEmail, setShowEmail] = useState(false)
+  const [emailBillData, setEmailBillData] = useState(null)
+  const [emailAddr, setEmailAddr] = useState('')
+
+  const load = useCallback(async (page = 1) => {
+    const data = await getAllBills(`?page=${page}&limit=50`)
+    if (page === 1) {
+      setBills(data.items || [])
+    } else {
+      setBills(prev => [...prev, ...(data.items || [])])
+    }
+    setBillPage(page)
+    setBillsHasMore(data.hasMore || false)
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(1) }, [load])
 
   // Patient search in create modal
   useEffect(() => {
     if (!showCreate) return
     const t = setTimeout(async () => {
-      const data = patSearch.trim() ? await searchPatients(patSearch) : await getAllPatients()
+      const data = patSearch.trim() ? await searchPatients(patSearch) : await getAllPatients('?limit=20')
       setPatients((data || []).slice(0, 20))
     }, 250)
     return () => clearTimeout(t)
@@ -189,25 +213,31 @@ export default function Billing() {
         paid_amount: parseFloat(billForm.paid_amount) || 0,
         payment_method: billForm.payment_method,
         notes: billForm.notes,
-        treatments: billItems // Array sent to queries.js batch handler
+        treatments: billItems
       })
       notify('Bill and treatments saved successfully')
       setShowCreate(false)
-      load()
+      load(1)
+    } catch (e) {
+      notify(e.message || 'Failed to create bill', 'error')
     } finally { setSaving(false) }
   }
 
   async function handlePayment() {
-    if (!payAmount || parseFloat(payAmount) <= 0) { notify('Enter payment amount', 'error'); return }
+    const amount = parseFloat(payAmount)
+    if (!amount || amount <= 0) { notify('Enter payment amount', 'error'); return }
+    if (amount > activeBill.balance) { notify(`Amount cannot exceed balance of ${fmt(activeBill.balance)}`, 'error'); return }
     setSaving(true)
     try {
       await updateBillPayment(activeBill.id, {
-        amount: parseFloat(payAmount),
+        amount,
         payment_method: payMethod,
       })
       notify('Payment recorded')
       setShowPayment(false)
-      load()
+      load(1)
+    } catch (e) {
+      notify(e.message || 'Failed to record payment', 'error')
     } finally { setSaving(false) }
   }
 
@@ -218,22 +248,71 @@ export default function Billing() {
     setShowPayment(true)
   }
 
+  async function handleViewHistory(bill) {
+    setHistoryBill(bill)
+    setShowHistory(true)
+    try {
+      const data = await getPaymentsByBill(bill.id)
+      setHistoryItems(data || [])
+    } catch (e) {
+      notify('Failed to load payment history', 'error')
+      setHistoryItems([])
+    }
+  }
+
+  function openRefund(bill) {
+    setRefundBillData(bill)
+    setRefundAmount('')
+    setShowRefund(true)
+  }
+
+  async function handleRefund() {
+    const amt = parseFloat(refundAmount)
+    if (!amt || amt <= 0) { notify('Enter a valid amount', 'error'); return }
+    if (amt > refundBillData.paid_amount) { notify('Cannot refund more than paid amount', 'error'); return }
+    setSaving(true)
+    try {
+      await refundBill(refundBillData.id, amt)
+      notify('Refund processed successfully')
+      setShowRefund(false)
+      load(1)
+    } catch (e) {
+      notify(e.message || 'Failed to process refund', 'error')
+    } finally { setSaving(false) }
+  }
+
+  function openEmail(bill) {
+    setEmailBillData(bill)
+    setEmailAddr('') // Ideally fetch from patient details if available
+    setShowEmail(true)
+  }
+
+  async function handleEmail() {
+    if (!emailAddr || !emailAddr.includes('@')) { notify('Enter a valid email address', 'error'); return }
+    setSaving(true)
+    try {
+      await emailBillInvoice(emailBillData.id, emailAddr)
+      notify('Invoice sent successfully to ' + emailAddr)
+      setShowEmail(false)
+    } catch (e) {
+      notify(e.message || 'Failed to send email', 'error')
+    } finally { setSaving(false) }
+  }
+
   // Modified receipt printer to fetch live treatments details for the bill items printout
   async function printBill(bill) {
     let txs = []
     try {
-      // If linked to appointment, grab treatments
       if (bill.appointment_id) {
         txs = await getTreatmentsByAppointment(bill.appointment_id)
       } else {
-        // Fallback: fetch patient treatments and filter
         const allTxs = await getTreatmentsByPatient(bill.patient_id)
-        // Match treatments created around same date of bill
-        const billDate = new Date(bill.created_at).toDateString()
-        txs = allTxs.filter(t => new Date(t.created_at).toDateString() === billDate)
+        // Match within ±5 minutes of bill creation to avoid same-day collisions
+        const billMs = new Date(bill.created_at).getTime()
+        txs = allTxs.filter(t => Math.abs(new Date(t.created_at).getTime() - billMs) < 5 * 60 * 1000)
       }
     } catch (e) {
-      console.warn("Failed fetching treatments for receipt:", e)
+      console.warn('Failed fetching treatments for receipt:', e)
     }
 
     const html = generateReceiptHTML(bill, txs, settings)
@@ -309,8 +388,8 @@ export default function Billing() {
             <tbody>
               {filtered.filter(Boolean).map(b => (
                 <tr key={b.id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="text-slate-400 text-xs font-mono pl-6 truncate max-w-[80px]">
-                    ...{b.id.slice(-6)}
+                  <td className="text-slate-500 font-mono text-xs pl-6">
+                    {b.invoice_number || `...${b.id.slice(-6)}`}
                   </td>
                   <td>
                     <button
@@ -336,16 +415,41 @@ export default function Billing() {
                         <button
                           id={`btn-pay-${b.id}`}
                           onClick={() => openPayment(b)}
-                          className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer"
+                          className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 px-2.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap"
                         >
-                          + Record Payment
+                          + Payment
                         </button>
                       )}
+                      {b.paid_amount > 0 && (
+                        <button
+                          onClick={() => handleViewHistory(b)}
+                          className="btn-icon bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl"
+                          title="Payment History"
+                        >
+                          <CreditCard size={14} />
+                        </button>
+                      )}
+                      {b.paid_amount > 0 && (
+                        <button
+                          onClick={() => openRefund(b)}
+                          className="btn-icon bg-red-50 hover:bg-red-100 text-red-600 rounded-xl"
+                          title="Refund"
+                        >
+                          <RotateCcw size={14} />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => openEmail(b)}
+                        className="btn-icon bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl"
+                        title="Email Invoice"
+                      >
+                        <Mail size={14} />
+                      </button>
                       <button
                         id={`btn-print-${b.id}`}
                         onClick={() => printBill(b)}
                         className="btn-icon bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl"
-                        title="Print Invoice"
+                        title="Print / Save PDF"
                       >
                         <Printer size={14} />
                       </button>
@@ -355,6 +459,18 @@ export default function Billing() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Load More */}
+      {billsHasMore && (
+        <div className="text-center mt-4">
+          <button
+            onClick={() => load(billPage + 1)}
+            className="btn-secondary text-sm"
+          >
+            Load More Bills
+          </button>
         </div>
       )}
 
@@ -541,40 +657,60 @@ export default function Billing() {
           {/* Form details for payment */}
           {selPatient && billItems.length > 0 && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-4">
                 <div>
-                  <label className="label">Amount Paid Now (₹)</label>
+                  <label className="label">Discount (%)</label>
                   <input
-                    className="input text-lg font-bold text-slate-800"
-                    type="number"
-                    min="0"
-                    max={calculatedTotal}
-                    step="50"
-                    placeholder="0"
+                    className="input"
+                    type="number" min="0" max="100" placeholder="0"
+                    value={billForm.discount}
+                    onChange={e => setBillForm(f => ({ ...f, discount: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="label">GST (%)</label>
+                  <input
+                    className="input"
+                    type="number" min="0" max="100" placeholder="0"
+                    value={billForm.tax_percent}
+                    onChange={e => setBillForm(f => ({ ...f, tax_percent: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="label flex justify-between">
+                    Final Total
+                    <span className="text-primary-700 font-bold">
+                      {fmt(
+                        Math.round(
+                          (calculatedTotal * (1 - (parseFloat(billForm.discount) || 0) / 100)) *
+                          (1 + (parseFloat(billForm.tax_percent) || 0) / 100)
+                        )
+                      )}
+                    </span>
+                  </label>
+                  <input
+                    className="input font-bold text-slate-800"
+                    type="number" min="0" step="10" placeholder="0"
                     value={billForm.paid_amount}
                     onChange={e => setBillForm(f => ({ ...f, paid_amount: e.target.value }))}
                   />
+                  <span className="text-[10px] text-slate-400 mt-1 block">Amount Paid Now (₹)</span>
                 </div>
-
-                <div>
-                  <label className="label">Payment Method</label>
-                  <div className="grid grid-cols-4 gap-2 h-12">
-                    {METHODS.map(m => (
-                      <button
-                        type="button"
-                        key={m.key}
-                        onClick={() => setBillForm(f => ({ ...f, payment_method: m.key }))}
-                        className={`rounded-xl border font-bold text-xs flex flex-col items-center justify-center transition-all cursor-pointer h-full
-                          ${billForm.payment_method === m.key
-                            ? 'bg-primary-950 border-primary-500 text-primary-300 shadow-sm ring-1 ring-primary-500/20'
-                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                          }`}
-                      >
-                        <span className="text-base mb-0.5">{m.icon}</span>
-                        <span>{m.label}</span>
-                      </button>
-                    ))}
-                  </div>
+              </div>
+              <div>
+                <label className="label">Payment Method</label>
+                <div className="grid grid-cols-4 gap-2 h-12">
+                  {METHODS.map(m => (
+                    <button
+                      type="button"
+                      key={m.key}
+                      onClick={() => setBillForm(f => ({ ...f, payment_method: m.key }))}
+                      className={`rounded-xl border font-bold text-xs flex flex-col items-center justify-center transition-all cursor-pointer h-full ${billForm.payment_method === m.key ? 'bg-primary-950 border-primary-500 text-primary-300 shadow-sm ring-1 ring-primary-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                    >
+                      <span className="text-base mb-0.5">{m.icon}</span>
+                      <span>{m.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -583,16 +719,13 @@ export default function Billing() {
                 <input
                   className="input"
                   placeholder="Optional billing remarks (e.g. discount applied, outstanding details...)"
-                  value={billForm.notes}
+                  value={billForm.notes || ''}
                   onChange={e => setBillForm(f => ({ ...f, notes: e.target.value }))}
                 />
               </div>
 
               {/* Balance preview */}
-              <div className={`rounded-xl px-5 py-4 font-bold flex justify-between items-center text-sm shadow-inner
-                ${calculatedTotal - parseFloat(billForm.paid_amount || 0) > 0
-                  ? 'bg-orange-50/80 text-orange-700 border border-orange-100'
-                  : 'bg-emerald-50/80 text-emerald-700 border border-emerald-100'}`}>
+              <div className={`rounded-xl px-5 py-4 font-bold flex justify-between items-center text-sm shadow-inner ${(calculatedTotal - parseFloat(billForm.paid_amount || 0)) > 0 ? 'bg-orange-50/80 text-orange-700 border border-orange-100' : 'bg-emerald-50/80 text-emerald-700 border border-emerald-100'}`}>
                 <span>Remaining Balance Due:</span>
                 <span className="text-lg">{fmt(calculatedTotal - parseFloat(billForm.paid_amount || 0))}</span>
               </div>
@@ -672,6 +805,95 @@ export default function Billing() {
           </div>
         )}
       </Modal>
+        {/* History Modal */}
+      <Modal
+        open={showHistory}
+        onClose={() => setShowHistory(false)}
+        title={`Payment History: ${historyBill?.patient_name}`}
+        size="md"
+        footer={<button onClick={() => setShowHistory(false)} className="btn-secondary w-full">Close</button>}
+      >
+        {historyItems.length > 0 ? (
+          <div className="space-y-3">
+            {historyItems.map((item, idx) => (
+              <div key={item.id || idx} className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div>
+                  <p className="font-bold text-slate-800 text-base">{fmt(item.amount)}</p>
+                  <p className="text-xs text-slate-500 font-medium capitalize mt-0.5">{item.method} • {new Date(item.paid_at).toLocaleString()}</p>
+                </div>
+                {item.notes && <p className="text-xs text-slate-400 bg-white px-2 py-1 rounded border border-slate-200">{item.notes}</p>}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-slate-500 text-center py-6">No payments recorded yet.</p>
+        )}
+      </Modal>
+
+      {/* Refund Modal */}
+      <Modal
+        open={showRefund}
+        onClose={() => setShowRefund(false)}
+        title="Process Refund"
+        size="sm"
+        footer={
+          <div className="flex gap-2 w-full">
+            <button onClick={() => setShowRefund(false)} className="btn-secondary flex-1">Cancel</button>
+            <button onClick={handleRefund} disabled={saving} className="btn-primary flex-1 bg-red-600 hover:bg-red-700 focus:ring-red-500/20">
+              {saving ? 'Processing…' : 'Refund ✓'}
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            Total Paid: <strong className="text-slate-800">{fmt(refundBillData?.paid_amount || 0)}</strong>
+          </p>
+          <div>
+            <label className="label">Refund Amount</label>
+            <input
+              type="number"
+              className="input text-lg font-bold"
+              min="1"
+              max={refundBillData?.paid_amount || 0}
+              value={refundAmount}
+              onChange={e => setRefundAmount(e.target.value)}
+              autoFocus
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Email Modal */}
+      <Modal
+        open={showEmail}
+        onClose={() => setShowEmail(false)}
+        title="Email Invoice"
+        size="sm"
+        footer={
+          <div className="flex gap-2 w-full">
+            <button onClick={() => setShowEmail(false)} className="btn-secondary flex-1">Cancel</button>
+            <button onClick={handleEmail} disabled={saving} className="btn-primary flex-1">
+              {saving ? 'Sending…' : 'Send Email ✉'}
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">Send invoice receipt to {emailBillData?.patient_name}.</p>
+          <div>
+            <label className="label">Email Address</label>
+            <input
+              type="email"
+              className="input"
+              placeholder="patient@example.com"
+              value={emailAddr}
+              onChange={e => setEmailAddr(e.target.value)}
+              autoFocus
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
@@ -697,6 +919,21 @@ function generateReceiptHTML(bill, treatments = [], settings) {
         <td class="td-desc">1.&nbsp; Dental Treatment Procedures</td>
         <td class="td-amt">${cur}${Number(bill.total_amount).toLocaleString('en-IN')}</td>
       </tr>`
+
+  const subtotal = treatments.reduce((s, t) => s + (t.cost || 0), 0) || bill.total_amount
+  const discountHtml = bill.discount > 0 ? `
+    <div class="sum-row">
+      <span>Discount (${bill.discount}%)</span>
+      <span>- ${cur}${Math.round(subtotal * bill.discount / 100).toLocaleString('en-IN')}</span>
+    </div>
+  ` : ''
+  
+  const taxHtml = bill.tax_percent > 0 ? `
+    <div class="sum-row">
+      <span>GST (${bill.tax_percent}%)</span>
+      <span>+ ${cur}${Number(bill.tax_amount || 0).toLocaleString('en-IN')}</span>
+    </div>
+  ` : ''
 
   const isPaid = bill.balance <= 0
   const balanceColor = isPaid ? '#276749' : '#c53030'
@@ -754,6 +991,13 @@ function generateReceiptHTML(bill, treatments = [], settings) {
       text-transform: uppercase;
       letter-spacing: 0.12em;
       color: #D8C3A5;
+      margin-bottom: 2mm;
+    }
+    
+    .inv-number {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1a202c;
       margin-bottom: 5mm;
     }
 
@@ -930,15 +1174,12 @@ function generateReceiptHTML(bill, treatments = [], settings) {
   <div class="lh"><img src="${letterheadUrl}" alt="" /></div>
 
   <div class="wrap">
-
-    <p class="inv-label">Patient Invoice</p>
-
+    <div class="inv-label">Invoice Receipt</div>
+    ${bill.invoice_number ? `<div class="inv-number">${bill.invoice_number}</div>` : ''}
     <div class="patient-info-grid">
       <div><strong>Patient Name:</strong> ${bill.patient_name}</div>
-      <div><strong>Patient ID:</strong> ${bill.patient_id || '--'}</div>
-      <div><strong>Age / Gender:</strong> ${bill.patient_age || '--'} / ${bill.patient_gender || '--'}</div>
       <div><strong>Date:</strong> ${date}</div>
-      <div><strong>Phone:</strong> ${bill.patient_phone || '--'}</div>
+      ${bill.patient_phone ? `<div><strong>Phone:</strong> ${bill.patient_phone}</div>` : ''}
     </div>
 
     <hr class="rule">
@@ -957,17 +1198,32 @@ function generateReceiptHTML(bill, treatments = [], settings) {
     </table>
 
     <div class="sum-wrap">
+      <div class="sum-row">
+        <span>Subtotal</span>
+        <span>${cur}${Number(subtotal).toLocaleString('en-IN')}</span>
+      </div>
+      ${discountHtml}
+      ${taxHtml}
       <div class="sum-row total">
-        <span>Total</span>
+        <span>Grand Total</span>
         <span>${cur}${Number(bill.total_amount).toLocaleString('en-IN')}</span>
       </div>
-      <div class="sum-row">
-        <span>Paid</span>
-        <span class="c-green">${cur}${Number(bill.paid_amount).toLocaleString('en-IN')}</span>
-      </div>
-      <div class="sum-row">
-        <span>Balance</span>
-        <span class="c-bal">${isPaid ? 'Nil' : cur + Number(bill.balance).toLocaleString('en-IN')}</span>
+
+      <div style="margin-top:2mm; border-top:1px solid #e8e0d4; padding-top:2mm;">
+        <div class="sum-row">
+          <span>Amount Paid</span>
+          <span class="c-green">${cur}${Number(bill.paid_amount).toLocaleString('en-IN')}</span>
+        </div>
+        ${bill.refunded_amount > 0 ? `
+          <div class="sum-row">
+            <span>Refunded</span>
+            <span style="color:#c53030;">${cur}${Number(bill.refunded_amount).toLocaleString('en-IN')}</span>
+          </div>
+        ` : ''}
+        <div class="sum-row">
+          <span>Balance Due</span>
+          <span class="c-bal">${isPaid ? 'Nil' : cur + Number(bill.balance).toLocaleString('en-IN')}</span>
+        </div>
       </div>
     </div>
 
