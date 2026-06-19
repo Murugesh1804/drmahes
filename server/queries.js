@@ -12,6 +12,46 @@ function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id)
 }
 
+function badRequest(message) {
+  const err = new Error(message)
+  err.statusCode = 400
+  throw err
+}
+
+function toMoney(value, fallback = 0, label = 'Amount') {
+  if (value === undefined || value === null || value === '') return fallback
+  const num = Number(value)
+  if (!Number.isFinite(num) || num < 0) badRequest(`${label} must be a valid non-negative amount`)
+  return Math.round(num * 100) / 100
+}
+
+function toPercent(value) {
+  const num = Number(value)
+  if (!Number.isFinite(num)) return 0
+  return Math.min(100, Math.max(0, num))
+}
+
+function normalizePaymentMethod(method, fallback = 'cash') {
+  return ['cash', 'upi', 'card', 'other'].includes(method) ? method : fallback
+}
+
+function normalizeText(value) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function normalizeAge(value) {
+  if (value === undefined || value === null || value === '') return null
+  const age = Number(value)
+  if (!Number.isInteger(age) || age < 0 || age > 120) badRequest('Age must be a whole number between 0 and 120')
+  return age
+}
+
+function normalizeGender(value) {
+  if (!value) return null
+  if (!['Male', 'Female', 'Other'].includes(value)) badRequest('Gender must be Male, Female or Other')
+  return value
+}
+
 // ═══════════════════════════════════════════════════════════
 // PATIENTS
 // ═══════════════════════════════════════════════════════════
@@ -104,14 +144,17 @@ async function getPatientById(id) {
 }
 
 async function addPatient(data) {
+  const name = normalizeText(data.name)
+  if (!name) badRequest('Patient name is required')
+
   const patient = new Patient({
-    name: data.name || '',
-    phone: data.phone || '',
-    age: data.age || null,
-    gender: data.gender || null,
-    address: data.address || '',
-    complaint: data.complaint || '',
-    notes: data.notes || '',
+    name,
+    phone: normalizeText(data.phone),
+    age: normalizeAge(data.age),
+    gender: normalizeGender(data.gender),
+    address: normalizeText(data.address),
+    complaint: normalizeText(data.complaint),
+    notes: normalizeText(data.notes),
     consentFormSaved: data.consentFormSaved || false,
     consentFormPath: data.consentFormPath || '',
     consentSignedAt: data.consentSignedAt || null
@@ -124,15 +167,18 @@ async function addPatient(data) {
 
 async function updatePatient(id, data) {
   if (!isValidObjectId(id)) return null
+  const name = normalizeText(data.name)
+  if (!name) badRequest('Patient name is required')
+
   const patient = await Patient.findByIdAndUpdate(id, {
     $set: {
-      name: data.name,
-      phone: data.phone,
-      age: data.age || null,
-      gender: data.gender,
-      address: data.address,
-      complaint: data.complaint,
-      notes: data.notes
+      name,
+      phone: normalizeText(data.phone),
+      age: normalizeAge(data.age),
+      gender: normalizeGender(data.gender),
+      address: normalizeText(data.address),
+      complaint: normalizeText(data.complaint),
+      notes: normalizeText(data.notes)
     }
   }, { new: true }).lean()
 
@@ -370,14 +416,19 @@ async function getTreatmentsByPatient(patientId) {
 }
 
 async function addTreatment(data) {
+  if (!isValidObjectId(data.patient_id)) badRequest('Valid patient is required')
+  if (data.appointment_id && !isValidObjectId(data.appointment_id)) badRequest('Valid appointment is required')
+  const treatmentType = normalizeText(data.treatment_type)
+  if (!treatmentType) badRequest('Treatment type is required')
+
   const tx = new Treatment({
     patient_id: data.patient_id,
     appointment_id: data.appointment_id || null,
-    treatment_type: data.treatment_type || '',
-    tooth_number: data.tooth_number || '',
-    description: data.description || '',
-    cost: data.cost || 0,
-    doctor_notes: data.doctor_notes || ''
+    treatment_type: treatmentType,
+    tooth_number: normalizeText(data.tooth_number),
+    description: normalizeText(data.description),
+    cost: toMoney(data.cost, 0, 'Treatment cost'),
+    doctor_notes: normalizeText(data.doctor_notes)
   })
   await tx.save()
   const doc = tx.toObject()
@@ -387,13 +438,16 @@ async function addTreatment(data) {
 
 async function updateTreatment(id, data) {
   if (!isValidObjectId(id)) return null
+  const treatmentType = normalizeText(data.treatment_type)
+  if (!treatmentType) badRequest('Treatment type is required')
+
   const tx = await Treatment.findByIdAndUpdate(id, {
     $set: {
-      treatment_type: data.treatment_type,
-      tooth_number: data.tooth_number,
-      description: data.description,
-      cost: data.cost || 0,
-      doctor_notes: data.doctor_notes
+      treatment_type: treatmentType,
+      tooth_number: normalizeText(data.tooth_number),
+      description: normalizeText(data.description),
+      cost: toMoney(data.cost, 0, 'Treatment cost'),
+      doctor_notes: normalizeText(data.doctor_notes)
     }
   }, { new: true }).lean()
 
@@ -443,16 +497,36 @@ async function getBillById(id) {
 }
 
 async function createBill(data) {
-  const paid    = data.paid_amount || 0
-  const subTotal = data.total_amount || 0
-  const discount = data.discount || 0
-  const taxPct   = data.tax_percent || 0
+  if (!isValidObjectId(data.patient_id)) badRequest('Valid patient is required')
+  if (data.appointment_id && !isValidObjectId(data.appointment_id)) badRequest('Valid appointment is required')
+
+  const subTotal = toMoney(data.total_amount, 0, 'Bill total')
+  if (subTotal <= 0) badRequest('Bill total must be greater than zero')
+
+  const paid = toMoney(data.paid_amount, 0, 'Paid amount')
+  const discount = toPercent(data.discount)
+  const taxPct = toPercent(data.tax_percent)
   const discounted = subTotal * (1 - discount / 100)
-  const taxAmount  = discounted * (taxPct / 100)
+  const taxAmount  = Math.round(discounted * (taxPct / 100) * 100) / 100
   const total      = Math.round((discounted + taxAmount) * 100) / 100
+  if (paid > total) badRequest('Paid amount cannot exceed the final bill total')
+
+  const treatmentsToInsert = Array.isArray(data.treatments)
+    ? data.treatments.map(t => ({
+        patient_id: data.patient_id,
+        appointment_id: data.appointment_id || null,
+        treatment_type: normalizeText(t.treatment_type),
+        tooth_number: normalizeText(t.tooth_number),
+        description: normalizeText(t.description),
+        cost: toMoney(t.cost, 0, 'Treatment cost'),
+        doctor_notes: normalizeText(t.doctor_notes)
+      })).filter(t => t.treatment_type)
+    : []
+
   const balance    = Math.max(0, total - paid)
   const status     = paid >= total ? 'paid' : paid > 0 ? 'partial' : 'pending'
   const invoiceNumber = await getNextInvoiceNumber()
+  const paymentMethod = normalizePaymentMethod(data.payment_method)
 
   const bill = new Bill({
     patient_id: data.patient_id,
@@ -460,7 +534,7 @@ async function createBill(data) {
     total_amount: total,
     paid_amount: paid,
     balance,
-    payment_method: data.payment_method || 'cash',
+    payment_method: paymentMethod,
     status,
     notes: data.notes || '',
     invoice_number: invoiceNumber,
@@ -477,25 +551,14 @@ async function createBill(data) {
       bill_id: bill._id,
       patient_id: data.patient_id,
       amount: paid,
-      method: data.payment_method || 'cash',
+      method: paymentMethod,
       notes: 'Initial payment'
     })
   }
 
   // Save nested treatments if provided
-  if (data.treatments && Array.isArray(data.treatments)) {
-    const treatmentsToInsert = data.treatments.map(t => ({
-      patient_id: data.patient_id,
-      appointment_id: data.appointment_id || null,
-      treatment_type: t.treatment_type,
-      tooth_number: t.tooth_number || '',
-      description: t.description || '',
-      cost: t.cost || 0,
-      doctor_notes: t.doctor_notes || ''
-    }))
-    if (treatmentsToInsert.length > 0) {
-      await Treatment.insertMany(treatmentsToInsert)
-    }
+  if (treatmentsToInsert.length > 0) {
+    await Treatment.insertMany(treatmentsToInsert)
   }
 
   return getBillById(bill._id.toString())
@@ -506,22 +569,27 @@ async function updateBillPayment(id, data) {
   const bill = await Bill.findById(id)
   if (!bill) return null
 
-  const newPaid    = (bill.paid_amount || 0) + (data.amount || 0)
+  const amount = toMoney(data.amount)
+  if (amount <= 0) badRequest('Payment amount must be greater than zero')
+  if (amount > (bill.balance || 0)) badRequest('Payment amount cannot exceed the current balance')
+
+  const method = normalizePaymentMethod(data.payment_method, bill.payment_method)
+  const newPaid    = Math.round(((bill.paid_amount || 0) + amount) * 100) / 100
   const newBalance = Math.max(0, bill.total_amount - newPaid)
   const newStatus  = newPaid >= bill.total_amount ? 'paid' : newPaid > 0 ? 'partial' : 'pending'
 
   bill.paid_amount = newPaid
   bill.balance     = newBalance
   bill.status      = newStatus
-  if (data.payment_method) bill.payment_method = data.payment_method
+  bill.payment_method = method
   await bill.save()
 
   // Record in payment history
   await Payment.create({
     bill_id:    bill._id,
     patient_id: bill.patient_id,
-    amount:     data.amount,
-    method:     data.payment_method || bill.payment_method,
+    amount,
+    method,
     notes:      data.notes || ''
   })
 
@@ -533,9 +601,13 @@ async function refundBillPayment(id, amount) {
   const bill = await Bill.findById(id)
   if (!bill) return null
 
-  const refund     = Math.min(amount, bill.paid_amount)
+  const refundAmount = toMoney(amount)
+  if (refundAmount <= 0) badRequest('Refund amount must be greater than zero')
+  if (refundAmount > (bill.paid_amount || 0)) badRequest('Refund amount cannot exceed paid amount')
+
+  const refund     = refundAmount
   const newPaid    = bill.paid_amount - refund
-  const newBalance = bill.total_amount - newPaid
+  const newBalance = Math.max(0, bill.total_amount - newPaid)
   const newStatus  = newPaid >= bill.total_amount ? 'paid' : newPaid > 0 ? 'partial' : 'pending'
 
   bill.paid_amount      = newPaid
@@ -678,7 +750,7 @@ module.exports = {
   updateAppointmentCallStatus, getPendingCalls,
   getBlockedSlots, blockSlot, unblockSlot,
   getTreatmentsByAppointment, getTreatmentsByPatient, addTreatment, updateTreatment, deleteTreatment,
-  getBillsByPatient, getBillById, createBill, updateBillPayment, getAllBills,
+  getBillsByPatient, getBillById, createBill, updateBillPayment, refundBillPayment, getPaymentsByBill, getAllBills,
   getTodayQueue,
   getSettings, setSetting,
   getDashboardStats,

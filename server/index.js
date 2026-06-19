@@ -190,7 +190,10 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   console.error('[error]', err.message)
-  res.status(500).json({ error: 'Internal server error' })
+  const status = err.statusCode && err.statusCode >= 400 && err.statusCode < 500
+    ? err.statusCode
+    : 500
+  res.status(status).json({ error: status === 500 ? 'Internal server error' : err.message })
 })
 
 // ── START SERVER ──────────────────────────────────────────────────────────────

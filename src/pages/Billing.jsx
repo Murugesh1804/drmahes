@@ -194,15 +194,21 @@ export default function Billing() {
     setPatSearch(''); setSelPatient(null); setSelAppt(null)
     setPatAppts([]); setPatTreatments([]); setBillItems([])
     setCartSelect(''); setCartCost(''); setCartTooth(''); setCartDesc('')
-    setBillForm({ paid_amount: '', payment_method: 'cash', notes: '' })
+    setBillForm({ paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: '' })
     setShowCreate(true)
   }
 
   const calculatedTotal = billItems.reduce((sum, item) => sum + item.cost, 0)
+  const discountPercent = Math.min(100, Math.max(0, parseFloat(billForm.discount) || 0))
+  const taxPercent = Math.min(100, Math.max(0, parseFloat(billForm.tax_percent) || 0))
+  const finalTotal = Math.round((calculatedTotal * (1 - discountPercent / 100)) * (1 + taxPercent / 100) * 100) / 100
+  const paidNow = parseFloat(billForm.paid_amount) || 0
+  const balancePreview = Math.max(0, finalTotal - paidNow)
 
   async function handleCreate() {
     if (!selPatient) { notify('Select a patient', 'error'); return }
     if (billItems.length === 0) { notify('Add at least one treatment item', 'error'); return }
+    if (paidNow > finalTotal) { notify(`Paid amount cannot exceed final total of ${fmt(finalTotal)}`, 'error'); return }
 
     setSaving(true)
     try {
@@ -210,8 +216,10 @@ export default function Billing() {
         patient_id: selPatient.id,
         appointment_id: selAppt?.id || null,
         total_amount: calculatedTotal,
-        paid_amount: parseFloat(billForm.paid_amount) || 0,
+        paid_amount: paidNow,
         payment_method: billForm.payment_method,
+        discount: discountPercent,
+        tax_percent: taxPercent,
         notes: billForm.notes,
         treatments: billItems
       })
@@ -680,12 +688,7 @@ export default function Billing() {
                   <label className="label flex justify-between">
                     Final Total
                     <span className="text-primary-700 font-bold">
-                      {fmt(
-                        Math.round(
-                          (calculatedTotal * (1 - (parseFloat(billForm.discount) || 0) / 100)) *
-                          (1 + (parseFloat(billForm.tax_percent) || 0) / 100)
-                        )
-                      )}
+                      {fmt(finalTotal)}
                     </span>
                   </label>
                   <input
@@ -725,9 +728,9 @@ export default function Billing() {
               </div>
 
               {/* Balance preview */}
-              <div className={`rounded-xl px-5 py-4 font-bold flex justify-between items-center text-sm shadow-inner ${(calculatedTotal - parseFloat(billForm.paid_amount || 0)) > 0 ? 'bg-orange-50/80 text-orange-700 border border-orange-100' : 'bg-emerald-50/80 text-emerald-700 border border-emerald-100'}`}>
+              <div className={`rounded-xl px-5 py-4 font-bold flex justify-between items-center text-sm shadow-inner ${balancePreview > 0 ? 'bg-orange-50/80 text-orange-700 border border-orange-100' : 'bg-emerald-50/80 text-emerald-700 border border-emerald-100'}`}>
                 <span>Remaining Balance Due:</span>
-                <span className="text-lg">{fmt(calculatedTotal - parseFloat(billForm.paid_amount || 0))}</span>
+                <span className="text-lg">{fmt(balancePreview)}</span>
               </div>
             </div>
           )}
@@ -1247,6 +1250,5 @@ function generateReceiptHTML(bill, treatments = [], settings) {
 </body>
 </html>`
 }
-
 
 

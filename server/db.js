@@ -111,7 +111,7 @@ const paymentSchema = new mongoose.Schema({
   bill_id:    { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', required: true, index: true },
   patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
   amount:     { type: Number, required: true },
-  method:     { type: String, enum: ['cash', 'upi', 'card', 'other'], default: 'cash' },
+  method:     { type: String, enum: ['cash', 'upi', 'card', 'other', 'refund'], default: 'cash' },
   notes:      { type: String, default: '' }
 }, {
   timestamps: { createdAt: 'paid_at', updatedAt: false },
