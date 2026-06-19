@@ -238,26 +238,40 @@ export default function Appointments() {
       notify(`Appointment added for ${selectedPatient.name}`)
       setShowAdd(false)
       load()
+    } catch (e) {
+      notify(e.message || 'Failed to add appointment', 'error')
     } finally { setSaving(false) }
   }
 
   async function handleStatus(id, status) {
-    await updateAppointmentStatus(id, status)
-    notify(`Updated to ${STATUS_LABELS[status]}`)
-    load()
+    try {
+      await updateAppointmentStatus(id, status)
+      notify(`Updated to ${STATUS_LABELS[status]}`)
+      load()
+    } catch (e) {
+      notify('Failed to update status', 'error')
+    }
   }
 
   async function handleDelete(id) {
     if (!confirm('Delete this appointment?')) return
-    await deleteAppointment(id)
-    notify('Appointment deleted')
-    load()
+    try {
+      await deleteAppointment(id)
+      notify('Appointment deleted')
+      load()
+    } catch (e) {
+      notify('Failed to delete appointment', 'error')
+    }
   }
 
   async function handleMarkCalled(id) {
-    await updateCallStatus(id, 'called')
-    notify('Appointment marked as called')
-    loadPending()
+    try {
+      await updateCallStatus(id, 'called')
+      notify('Appointment marked as called')
+      loadPending()
+    } catch (e) {
+      notify('Failed to update call status', 'error')
+    }
   }
 
   const isToday = date === dateStr(new Date())

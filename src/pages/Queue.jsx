@@ -49,9 +49,24 @@ export default function Queue() {
   const done     = queue.filter(a => a.status === 'done')
 
   async function callNext() {
-    if (current) { await handleStatus(current.id, 'done') }
-    if (waiting.length > 0) { await handleStatus(waiting[0].id, 'in-progress') }
-    else if (!current) { notify('No patients waiting', 'error') }
+    try {
+      if (current) {
+        await updateAppointmentStatus(current.id, 'done')
+        notify('Finished current patient')
+      }
+      if (waiting.length > 0) {
+        await updateAppointmentStatus(waiting[0].id, 'in-progress')
+        notify(`Called ${waiting[0].patient_name}`)
+      } else if (!current) {
+        notify('No patients waiting', 'error')
+      } else {
+        notify('Queue is now clear')
+      }
+    } catch (e) {
+      notify('Error updating queue', 'error')
+    } finally {
+      load()
+    }
   }
 
   return (

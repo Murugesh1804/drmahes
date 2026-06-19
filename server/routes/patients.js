@@ -4,7 +4,8 @@ const queries = require('../queries')
 const asyncHandler = require('../middleware/asyncHandler')
 
 router.get('/', asyncHandler(async (req, res) => {
-  res.json(await queries.getAllPatients())
+  const limit = req.query.limit ? parseInt(req.query.limit) : 20
+  res.json(await queries.getAllPatients(limit))
 }))
 
 router.get('/search', asyncHandler(async (req, res) => {

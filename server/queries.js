@@ -15,7 +15,7 @@ function isValidObjectId(id) {
 // ═══════════════════════════════════════════════════════════
 // PATIENTS
 // ═══════════════════════════════════════════════════════════
-async function getAllPatients() {
+async function getAllPatients(limit = 20) {
   const result = await Patient.aggregate([
     {
       $lookup: {
@@ -43,7 +43,8 @@ async function getAllPatients() {
         last_visit: { $max: '$appts.scheduled_date' }
       }
     },
-    { $sort: { updated_at: -1 } }
+    { $sort: { updated_at: -1 } },
+    { $limit: limit }
   ])
 
   // Convert mongoose _id to virtual id for compatibility with the React app

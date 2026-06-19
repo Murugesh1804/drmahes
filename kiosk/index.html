@@ -716,7 +716,17 @@
     <!-- ═══════════════════════════════ HEADER ══════════════════════ -->
     <header class="site-header">
         <div class="header-brand">
-            <img src="logo.webp" width="50%" height="100%" >
+            <!-- Dynamic Logo Image -->
+            <img id="logo-img" src="logo.webp" alt="Logo" style="max-height: 46px; width: auto; object-fit: contain; display: block;" onerror="handleLogoError()">
+            
+            <!-- Fallback Dynamic Text Brand (shown only if image fails or is missing) -->
+            <div id="text-brand" class="hidden" style="align-items: center; gap: 12px;">
+                <div class="header-logo-mark">D</div>
+                <div class="header-title-wrap">
+                    <p class="header-clinic-name" id="clinic-name-display">Dr. Mahe's Dentistry</p>
+                    <p class="header-subtitle">Patient Self Check-in</p>
+                </div>
+            </div>
         </div>
         <button id="btn-fullscreen" class="btn-fullscreen">
             ⛶ Fullscreen
@@ -882,6 +892,16 @@
     </main>
 
     <script>
+        function handleLogoError() {
+            const img = document.getElementById('logo-img');
+            const textBrand = document.getElementById('text-brand');
+            if (img) img.style.display = 'none';
+            if (textBrand) {
+                textBrand.classList.remove('hidden');
+                textBrand.style.display = 'flex';
+            }
+        }
+
         // ═══════════════════════════════════════════════════════════
         // CONSTANTS
         // ═══════════════════════════════════════════════════════════
@@ -1013,12 +1033,13 @@
             state.form.name      = el('f-name').value.trim();
             state.form.phone     = el('f-phone').value.trim();
             state.form.age       = el('f-age').value.trim();
-            state.form.notes     = el('f-notes').value.trim();
+            state.form.notes     = el('f-notes') ? el('f-notes').value.trim() : '';
 
             if (!state.form.name)      return showError('form', 'Please enter your full name.');
             if (!state.form.phone)     return showError('form', 'Please enter your phone number.');
-            if (!/^\d{10}$/.test(state.form.phone.replace(/\s/g,'')))
-                                       return showError('form', 'Phone number should be 10 digits.');
+            const cleanPhone = state.form.phone.replace(/[\s\-\+]/g, '');
+            if (!/^\d{10,15}$/.test(cleanPhone))
+                                       return showError('form', 'Phone number should be 10 to 15 digits.');
             if (!state.form.complaint) return showError('form', 'Please select your primary dental concern.');
 
             showError('form', '');
@@ -1156,7 +1177,9 @@
         // ═══════════════════════════════════════════════════════════
         el('btn-done').onclick = () => {
             state.form = { name:'', phone:'', age:'', gender:'Male', complaint:'', notes:'' };
-            ['f-name','f-phone','f-age','f-notes'].forEach(id => { el(id).value = ''; });
+            ['f-name','f-phone','f-age'].forEach(id => { el(id).value = ''; });
+            const notesEl = el('f-notes');
+            if (notesEl) notesEl.value = '';
             renderGenderButtons();
             renderComplaintButtons();
             setStep('form');

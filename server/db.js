@@ -162,7 +162,14 @@ async function initDatabase() {
 
 async function seedSettings() {
   const bcrypt = require('bcryptjs')
-  const hashedPassword = await bcrypt.hash(process.env.DEFAULT_ADMIN_PASSWORD || 'change-me-now', 10)
+  let defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD
+  if (!defaultPassword) {
+    const crypto = require('crypto')
+    defaultPassword = crypto.randomBytes(8).toString('hex')
+    console.warn(`\n⚠️ WARNING: DEFAULT_ADMIN_PASSWORD not set in .env!`)
+    console.warn(`⚠️ Generated strong default password for CMS portal: ${defaultPassword}\n`)
+  }
+  const hashedPassword = await bcrypt.hash(defaultPassword, 10)
 
   const defaults = [
     { key: 'clinic_name',    value: "Dr. Mahe's Dentistry" },

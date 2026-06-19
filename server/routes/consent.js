@@ -7,17 +7,17 @@ const queries = require('../queries')
 const asyncHandler = require('../middleware/asyncHandler')
 const rateLimit = require('express-rate-limit')
 
-const publicFormLimiter = rateLimit({
+const kioskLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 5,
+  max: 50, // Higher limit for clinic's single-IP kiosk
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many submissions. Please try again later.' },
+  message: { error: 'Too many submissions from this kiosk. Please ask staff.' },
 })
 
 const consentFormsDir = path.join(__dirname, '../../consent_forms')
 
-router.post('/', publicFormLimiter, asyncHandler(async (req, res) => {
+router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
   const { name, phone, age, gender, complaint, notes, signature } = req.body
 
   if (!name || !phone || !signature) {
@@ -38,10 +38,10 @@ router.post('/', publicFormLimiter, asyncHandler(async (req, res) => {
     })
     await patient.save()
   } else {
-    patient.age = age ? Number(age) : patient.age
-    patient.gender = gender || patient.gender
-    patient.complaint = complaint || patient.complaint
-    patient.notes = notes || patient.notes
+    if (age) patient.age = Number(age)
+    if (gender) patient.gender = gender
+    if (complaint) patient.complaint = complaint
+    if (notes) patient.notes = notes
     await patient.save()
   }
 

@@ -6,16 +6,16 @@ import { useApp } from '../context/AppContext'
 
 const GENDERS = ['Male', 'Female', 'Other']
 const COMPLAINTS = [
-  { name: 'Toothache', icon: '⚡' },
-  { name: 'Tooth Sensitivity', icon: '❄️' },
-  { name: 'Bleeding Gums', icon: '🩸' },
-  { name: 'Broken Tooth', icon: '💥' },
-  { name: 'Cleaning Required', icon: '🧼' },
-  { name: 'Check-up', icon: '🔍' },
-  { name: 'Cavity / Filling', icon: '🕳️' },
-  { name: 'Missing Tooth', icon: '🦷' },
-  { name: 'Braces / Alignment', icon: '😬' },
-  { name: 'Other', icon: '💬' },
+  { name: 'Toothache' },
+  { name: 'Tooth Sensitivity' },
+  { name: 'Bleeding Gums' },
+  { name: 'Broken Tooth' },
+  { name: 'Cleaning' },
+  { name: 'Check-up' },
+  { name: 'Cavity / Filling' },
+  { name: 'Missing Tooth' },
+  { name: 'Braces' },
+  { name: 'Other' }
 ]
 const EMPTY = { name: '', phone: '', age: '', gender: 'Male', complaint: '', notes: '' }
 
@@ -43,7 +43,8 @@ export default function Kiosk() {
 
   function handleFormSubmit() {
     if (!form.name.trim()) { setError('Please enter your full name'); return }
-    if (!form.phone.trim()) { setError('Please enter your phone number'); return }
+    const cleanPhone = form.phone.replace(/[\s\-\+]/g, '')
+    if (!/^\d{10,15}$/.test(cleanPhone)) { setError('Please enter a valid phone number (10 to 15 digits)'); return }
     if (!form.complaint) { setError('Please select your complaint'); return }
     setError('')
     setStep('consent')
@@ -185,7 +186,7 @@ export default function Kiosk() {
       <header className="flex items-center justify-between px-8 py-5 border-b border-slate-900/60 bg-[#0d1527]/80 backdrop-blur-md z-10 flex-shrink-0">
         <div className="flex items-center gap-4">
           <img
-            src="/logo.png"
+            src="/logo.webp"
             className="h-12 w-auto object-contain rounded-xl bg-white/10 p-1 border border-white/5 shadow-md shadow-slate-950/20"
             alt="Logo"
             onError={(e) => { e.target.style.display = 'none' }}
@@ -356,14 +357,13 @@ export default function Kiosk() {
                     <button
                       key={c.name}
                       onClick={() => setForm(f => ({ ...f, complaint: c.name }))}
-                      className={`px-4 py-3.5 rounded-2xl font-bold text-xs text-left border flex items-center gap-2.5 transition-all
+                      className={`px-4 py-3.5 rounded-2xl font-bold text-xs text-left border flex items-center justify-center transition-all
                         ${form.complaint === c.name
                           ? 'bg-primary-950 border-primary-500 text-primary-300 shadow-md ring-1 ring-primary-500/30'
                           : 'bg-[#060a12]/30 border-slate-900/60 text-slate-400 hover:border-slate-800 hover:bg-slate-900/20'
                         }`}
                     >
-                      <span className="text-base">{c.icon}</span>
-                      <span>{c.name}</span>
+                      <span className="text-center">{c.name}</span>
                     </button>
                   ))}
                 </div>
@@ -480,8 +480,8 @@ export default function Kiosk() {
               <div className="absolute inset-0 bg-gradient-to-b from-primary-500/5 to-transparent pointer-events-none" />
               <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1.5">Your Queue Number</p>
               <p className="text-primary-400 text-8xl font-black leading-none">{result?.appt?.queue_number}</p>
-              <p className="text-white mt-5 text-lg font-bold">{result?.patient?.name}</p>
-              <p className="text-slate-400 text-sm mt-0.5 font-medium">{result?.patient?.complaint}</p>
+              <p className="text-white mt-5 text-lg font-bold">{result?.patient?.name || form.name}</p>
+              <p className="text-slate-400 text-sm mt-0.5 font-medium">{form.complaint}</p>
             </div>
 
             <button

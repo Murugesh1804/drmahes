@@ -98,8 +98,9 @@ const publicFormLimiter = rateLimit({
 app.use('/api', globalLimiter)
 
 // ── INITIALIZE DB ────────────────────────────────────────────────────────────
-const db = initDatabase()
-queries.init(db)
+initDatabase().then(db => {
+  queries.init(db)
+})
 
 // Create consent forms directory
 const consentFormsDir = path.join(__dirname, '../consent_forms')

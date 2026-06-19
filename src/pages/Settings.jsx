@@ -29,6 +29,7 @@ export default function Settings() {
     setSaving(true)
     try {
       for (const [k, v] of Object.entries(values)) {
+        if (v === '••••••••') continue
         await setSetting(k, v)
       }
       await loadSettings()
