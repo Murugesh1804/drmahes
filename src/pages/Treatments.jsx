@@ -7,6 +7,7 @@ import {
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
+import { clinicDateString } from '../utils/date'
 
 const TREATMENT_TYPES = [
   'Checkup', 'Cleaning', 'Scaling', 'Filling', 'Extraction',
@@ -26,12 +27,10 @@ const EMPTY_FORM = {
   description: '', cost: '', doctor_notes: '',
 }
 
-function dateStr(d) { return d.toISOString().split('T')[0] }
-
 export default function Treatments() {
   const { notify, fmt } = useApp()
   const navigate = useNavigate()
-  const [date, setDate] = useState(dateStr(new Date()))
+  const [date, setDate] = useState(clinicDateString())
   const [appointments, setAppointments] = useState([])
   const [selectedAppt, setSelectedAppt] = useState(null)
   const [treatments, setTreatments] = useState([])

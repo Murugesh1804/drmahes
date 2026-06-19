@@ -29,6 +29,7 @@ const schemaOptions = {
 const patientSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   phone: { type: String, default: '', index: true },
+  email: { type: String, default: '', index: true },
   age: { type: Number, default: null },
   gender: { type: String, enum: ['Male', 'Female', 'Other', null], default: null },
   address: { type: String, default: '' },
@@ -55,7 +56,7 @@ const appointmentSchema = new mongoose.Schema({
     enum: ['pending', 'called', 'not_required'],
     default: 'not_required'
   },
-  queue_number: { type: Number, default: 1 },
+  queue_number: { type: Number, default: 0 },
   notes: { type: String, default: '' }
 }, {
   ...schemaOptions,
@@ -63,11 +64,22 @@ const appointmentSchema = new mongoose.Schema({
 })
 
 appointmentSchema.index({ scheduled_date: 1, status: 1 })
+appointmentSchema.index(
+  { scheduled_date: 1, scheduled_time: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      scheduled_time: { $type: 'string', $gt: '' },
+      status: { $in: ['waiting', 'in-progress', 'done'] }
+    }
+  }
+)
 
 // ── TREATMENT SCHEMA ────────────────────────────────────────────────────────
 const treatmentSchema = new mongoose.Schema({
   patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
   appointment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment', default: null },
+  bill_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', default: null, index: true },
   treatment_type: { type: String, required: true },
   tooth_number: { type: String, default: '' },
   description: { type: String, default: '' },
@@ -105,6 +117,20 @@ const billSchema = new mongoose.Schema({
 
 billSchema.index({ status: 1 })
 billSchema.index({ created_at: 1 })
+
+const billItemSchema = new mongoose.Schema({
+  bill_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', required: true, index: true },
+  patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
+  appointment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment', default: null },
+  treatment_type: { type: String, required: true },
+  tooth_number: { type: String, default: '' },
+  description: { type: String, default: '' },
+  cost: { type: Number, default: 0 },
+  doctor_notes: { type: String, default: '' }
+}, {
+  ...schemaOptions,
+  timestamps: { createdAt: 'created_at', updatedAt: false }
+})
 
 // ── PAYMENT SCHEMA ─────────────────────────────────────────
 const paymentSchema = new mongoose.Schema({
@@ -154,6 +180,7 @@ const Patient = mongoose.model('Patient', patientSchema)
 const Appointment = mongoose.model('Appointment', appointmentSchema)
 const Treatment = mongoose.model('Treatment', treatmentSchema)
 const Bill = mongoose.model('Bill', billSchema)
+const BillItem = mongoose.model('BillItem', billItemSchema)
 const Payment = mongoose.model('Payment', paymentSchema)
 const Counter = mongoose.model('Counter', counterSchema)
 const Setting = mongoose.model('Setting', settingSchema)
@@ -226,6 +253,7 @@ module.exports = {
   Appointment,
   Treatment,
   Bill,
+  BillItem,
   Payment,
   Counter,
   Setting,

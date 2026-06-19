@@ -10,7 +10,6 @@ const PatientDetail = lazy(() => import('./pages/PatientDetail'))
 const Appointments = lazy(() => import('./pages/Appointments'))
 const Treatments = lazy(() => import('./pages/Treatments'))
 const Billing = lazy(() => import('./pages/Billing'))
-const Queue = lazy(() => import('./pages/Queue'))
 const Kiosk = lazy(() => import('./pages/Kiosk'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Login = lazy(() => import('./pages/Login'))
@@ -50,10 +49,6 @@ function AppLayout() {
             e.preventDefault()
             navigate('/billing')
             break
-          case 'q':
-            e.preventDefault()
-            navigate('/queue')
-            break
         }
       }
     }
@@ -89,7 +84,6 @@ function AppLayout() {
               <Route path="/appointments"  element={<Appointments />} />
               <Route path="/treatments"    element={<Treatments />} />
               <Route path="/billing"       element={<Billing />} />
-              <Route path="/queue"         element={<Queue />} />
               <Route path="/kiosk"         element={<Kiosk />} />
               <Route path="/settings"      element={<Settings />} />
             </Routes>

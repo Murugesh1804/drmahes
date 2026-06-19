@@ -49,6 +49,23 @@ router.post('/appointments/website-book', publicFormLimiter, asyncHandler(async 
     await patient.save()
   }
 
+  if (timeSlot) {
+    const blocked = await queries.getBlockedSlots(date)
+    const blockedSlots = blocked.map(r => r.slot)
+    if (blockedSlots.includes(timeSlot)) {
+      return res.status(409).json({ error: 'This appointment slot is blocked' })
+    }
+
+    const existing = await queries.getAppointmentsByDate(date)
+    const bookedSlots = existing
+      .filter(a => a.status !== 'cancelled')
+      .map(a => a.scheduled_time)
+      .filter(Boolean)
+    if (bookedSlots.includes(timeSlot)) {
+      return res.status(409).json({ error: 'This appointment slot is already booked' })
+    }
+  }
+
   const appt = await queries.addAppointment({
     patient_id: patient._id.toString(),
     scheduled_date: date,

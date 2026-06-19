@@ -7,6 +7,28 @@ const queries = require('../queries')
 const asyncHandler = require('../middleware/asyncHandler')
 const rateLimit = require('express-rate-limit')
 
+function clinicDateString(date = new Date()) {
+  const CLINIC_TIME_ZONE = process.env.CLINIC_TIME_ZONE || 'Asia/Kolkata'
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: CLINIC_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(date)
+  const byType = Object.fromEntries(parts.map(p => [p.type, p.value]))
+  return `${byType.year}-${byType.month}-${byType.day}`
+}
+
+function escapeHtml(text) {
+  if (!text) return ''
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 const kioskLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 50, // Higher limit for clinic's single-IP kiosk
@@ -27,22 +49,19 @@ router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
   const cleanPhone = phone.trim()
   let patient = await Patient.findOne({ phone: cleanPhone })
 
+  const patientData = {
+    name: name.trim(),
+    phone: cleanPhone,
+    age: age ? Number(age) : null,
+    gender,
+    complaint,
+    notes: notes || 'Kiosk check-in'
+  }
+
   if (!patient) {
-    patient = new Patient({
-      name: name.trim(),
-      phone: cleanPhone,
-      age: age ? Number(age) : null,
-      gender,
-      complaint,
-      notes: notes || 'Kiosk check-in'
-    })
-    await patient.save()
+    patient = await queries.addPatient(patientData)
   } else {
-    if (age) patient.age = Number(age)
-    if (gender) patient.gender = gender
-    if (complaint) patient.complaint = complaint
-    if (notes) patient.notes = notes
-    await patient.save()
+    patient = await queries.updatePatient(patient._id.toString(), patientData)
   }
 
   // Store ONLY the signature image (Option B)
@@ -50,18 +69,21 @@ router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
   const buffer = Buffer.from(base64Data, 'base64')
 
   // Don't timestamp, overwrite on re-consent
-  const sigFilename = `sig_${patient._id.toString()}.jpg`
+  const sigFilename = `sig_${patient.id}.jpg`
   const sigPath = path.join(consentFormsDir, sigFilename)
   fs.writeFileSync(sigPath, buffer)
 
-  patient.consentFormSaved = true
-  patient.consentFormPath = `consent_forms/${sigFilename}` // Just save the signature path
-  patient.consentSignedAt = new Date()
-  await patient.save()
+  // Update patient with consent info
+  patient = await queries.updatePatient(patient.id, {
+    ...patient,
+    consentFormSaved: true,
+    consentFormPath: `consent_forms/${sigFilename}`,
+    consentSignedAt: new Date()
+  })
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = clinicDateString()
   const appt = await queries.addAppointment({
-    patient_id: patient._id.toString(),
+    patient_id: patient.id,
     scheduled_date: today,
     scheduled_time: '',
     reason: complaint,
@@ -91,11 +113,17 @@ router.get('/:patientId', asyncHandler(async (req, res) => {
     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
   })
 
+  const safeName = escapeHtml(patient.name)
+  const safePhone = escapeHtml(patient.phone || '—')
+  const safeAge = escapeHtml(patient.age ? patient.age + ' yrs' : '—')
+  const safeGender = escapeHtml(patient.gender || '—')
+  const safeComplaint = escapeHtml(patient.complaint || 'General check-up')
+
   const consentHtml = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-    <title>Dental Treatment Consent Form - ${patient.name}</title>
+    <title>Dental Treatment Consent Form - ${safeName}</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; color: #1e293b; background-color: #ffffff; }
     .header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
@@ -118,11 +146,11 @@ router.get('/:patientId', asyncHandler(async (req, res) => {
     <div class="subtitle">Patient Treatment Consent</div>
   </div>
   <div class="grid">
-    <div class="field"><span class="label">Patient Name</span><span class="value">${patient.name}</span></div>
-    <div class="field"><span class="label">Phone Number</span><span class="value">${patient.phone || '—'}</span></div>
-    <div class="field"><span class="label">Age &amp; Gender</span><span class="value">${patient.age ? patient.age + ' yrs' : '—'} · ${patient.gender || '—'}</span></div>
+    <div class="field"><span class="label">Patient Name</span><span class="value">${safeName}</span></div>
+    <div class="field"><span class="label">Phone Number</span><span class="value">${safePhone}</span></div>
+    <div class="field"><span class="label">Age &amp; Gender</span><span class="value">${safeAge} · ${safeGender}</span></div>
     <div class="field"><span class="label">Date Signed</span><span class="value">${dateStr}</span></div>
-    <div class="field" style="grid-column: span 2;"><span class="label">Chief Complaint</span><span class="value">${patient.complaint || 'General check-up'}</span></div>
+    <div class="field" style="grid-column: span 2;"><span class="label">Chief Complaint</span><span class="value">${safeComplaint}</span></div>
   </div>
   <div class="text-block">
     I hereby authorize the clinical team of Dr. Mahe's Dentistry to perform dental procedures, diagnostic scans and treatments as necessary to address my condition. I understand that the clinical options, costs and risks have been discussed and I consent to proceed with the treatment plan.

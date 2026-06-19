@@ -11,6 +11,10 @@ router.get('/patient/:pid', asyncHandler(async (req, res) => {
   res.json(await queries.getTreatmentsByPatient(req.params.pid))
 }))
 
+router.get('/bill/:bid', asyncHandler(async (req, res) => {
+  res.json(await queries.getTreatmentsByBill(req.params.bid))
+}))
+
 router.post('/', asyncHandler(async (req, res) => {
   res.status(201).json(await queries.addTreatment(req.body))
 }))

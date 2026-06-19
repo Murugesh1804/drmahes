@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, Calendar, CheckCircle2, Clock, TrendingUp,
-  AlertCircle, Plus, ArrowRight, Banknote
+  AlertCircle, Plus, Banknote
 } from 'lucide-react'
 import { getDashboardStats, getTodayAppointments, updateAppointmentStatus } from '../services/api'
 import { useApp } from '../context/AppContext'
@@ -161,27 +161,18 @@ export default function Dashboard() {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="font-bold text-slate-800 text-base">Today's Queue</h2>
+            <h2 className="font-bold text-slate-800 text-base">Today's Appointments</h2>
             <p className="text-xs text-slate-400 mt-0.5">
               {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              id="btn-view-queue"
-              onClick={() => navigate('/queue')}
-              className="btn-secondary text-xs"
-            >
-              Full Queue <ArrowRight size={13} />
-            </button>
-            <button
-              id="btn-add-appt"
-              onClick={() => navigate('/appointments')}
-              className="btn-primary text-xs"
-            >
-              <Plus size={14} /> Add
-            </button>
-          </div>
+          <button
+            id="btn-add-appt"
+            onClick={() => navigate('/appointments')}
+            className="btn-primary text-xs"
+          >
+            <Plus size={14} /> Add
+          </button>
         </div>
 
         {appointments.length === 0 ? (

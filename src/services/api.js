@@ -71,6 +71,8 @@ export const getTreatmentsByAppointment = (aid) => request(`/treatments/appointm
 
 export const getTreatmentsByPatient = (pid) => request(`/treatments/patient/${pid}`)
 
+export const getTreatmentsByBill = (bid) => request(`/treatments/bill/${bid}`)
+
 export const addTreatment = (data) => request('/treatments', { method: 'POST', body: JSON.stringify(data) })
 
 export const updateTreatment = (id, data) => request(`/treatments/${id}`, { method: 'PUT', body: JSON.stringify(data) })
@@ -90,9 +92,6 @@ export const getAllBills = (qs = '') => request(`/bills${qs}`)
 export const getPaymentsByBill = (id) => request(`/bills/${id}/payments`)
 export const refundBill = (id, amount) => request(`/bills/${id}/refund`, { method: 'POST', body: JSON.stringify({ amount }) })
 export const emailBillInvoice = (id, email) => request(`/bills/${id}/email`, { method: 'POST', body: JSON.stringify({ email }) })
-
-// ── Queue ──────────────────────────────────────────────────
-export const getTodayQueue = () => request('/queue/today')
 
 // ── Dashboard ──────────────────────────────────────────────
 export const getDashboardStats = () => request('/dashboard/stats')

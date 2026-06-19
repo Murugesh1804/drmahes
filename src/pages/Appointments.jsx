@@ -11,6 +11,7 @@ import {
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
 import ConfirmModal from '../components/ConfirmModal'
+import { clinicDateString, fmtDate } from '../utils/date'
 
 const STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
 const STATUS_LABELS = { waiting: 'Waiting', 'in-progress': 'In Progress', done: 'Done', cancelled: 'Cancelled' }
@@ -29,12 +30,6 @@ const ALL_SLOTS = [
   '07:00 PM', '08:00 PM', '09:00 PM',
 ]
 
-function dateStr(d) { return d.toISOString().split('T')[0] }
-function fmtDate(s) {
-  return new Date(s + 'T00:00:00').toLocaleDateString('en-IN', {
-    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
-  })
-}
 const TIMES = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
                '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
                '16:00','16:30','17:00','17:30','18:00','18:30','19:00']
@@ -173,7 +168,7 @@ export default function Appointments() {
   const { notify } = useApp()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('schedule') // 'schedule' | 'tocall'
-  const [date, setDate] = useState(dateStr(new Date()))
+  const [date, setDate] = useState(clinicDateString())
   const [appointments, setAppointments] = useState([])
   const [pendingCalls, setPendingCalls] = useState([])
   const [showAdd, setShowAdd] = useState(false)
@@ -216,9 +211,9 @@ export default function Appointments() {
     return () => clearTimeout(t)
   }, [patientSearch, showAdd])
 
-  function prevDay() { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate()-1); setDate(dateStr(d)) }
-  function nextDay() { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate()+1); setDate(dateStr(d)) }
-  function today()   { setDate(dateStr(new Date())) }
+  function prevDay() { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate()-1); setDate(clinicDateString(d)) }
+  function nextDay() { const d = new Date(date + 'T00:00:00'); d.setDate(d.getDate()+1); setDate(clinicDateString(d)) }
+  function today()   { setDate(clinicDateString()) }
 
   function openAdd() {
     setPatientSearch('')

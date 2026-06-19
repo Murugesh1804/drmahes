@@ -4,7 +4,7 @@ import { Plus, Search, X, Printer, CreditCard, ShoppingBag, Trash2, Mail, Refres
 import {
   getAllBills, getBillsByPatient, createBill, updateBillPayment,
   getAllPatients, searchPatients,
-  getTreatmentsByPatient, getTreatmentsByAppointment, getPatientAppointments,
+  getTreatmentsByPatient, getTreatmentsByAppointment, getTreatmentsByBill, getPatientAppointments,
   getPaymentsByBill, refundBill, emailBillInvoice
 } from '../services/api'
 import { useApp } from '../context/AppContext'
@@ -311,13 +311,9 @@ export default function Billing() {
   async function printBill(bill) {
     let txs = []
     try {
-      if (bill.appointment_id) {
+      txs = await getTreatmentsByBill(bill.id)
+      if (txs.length === 0 && bill.appointment_id) {
         txs = await getTreatmentsByAppointment(bill.appointment_id)
-      } else {
-        const allTxs = await getTreatmentsByPatient(bill.patient_id)
-        // Match within ±5 minutes of bill creation to avoid same-day collisions
-        const billMs = new Date(bill.created_at).getTime()
-        txs = allTxs.filter(t => Math.abs(new Date(t.created_at).getTime() - billMs) < 5 * 60 * 1000)
       }
     } catch (e) {
       console.warn('Failed fetching treatments for receipt:', e)

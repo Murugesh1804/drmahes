@@ -1,5 +1,9 @@
 const mongoose = require('mongoose')
-const { Patient, Appointment, Treatment, Bill, Payment, Counter, Setting, BlockedSlot, getDbPath } = require('./db')
+const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, getDbPath } = require('./db')
+
+const CLINIC_TIME_ZONE = process.env.CLINIC_TIME_ZONE || 'Asia/Kolkata'
+const APPOINTMENT_STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
+const CALL_STATUSES = ['pending', 'called', 'not_required']
 
 let db = null
 
@@ -50,6 +54,76 @@ function normalizeGender(value) {
   if (!value) return null
   if (!['Male', 'Female', 'Other'].includes(value)) badRequest('Gender must be Male, Female or Other')
   return value
+}
+
+function clinicDateString(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: CLINIC_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(date)
+  const byType = Object.fromEntries(parts.map(p => [p.type, p.value]))
+  return `${byType.year}-${byType.month}-${byType.day}`
+}
+
+function clinicDayRange(dateString = clinicDateString()) {
+  const [year, month, day] = dateString.split('-').map(Number)
+  const utcStart = Date.UTC(year, month - 1, day) - (5.5 * 60 * 60 * 1000)
+  return {
+    start: new Date(utcStart),
+    end: new Date(utcStart + 24 * 60 * 60 * 1000 - 1)
+  }
+}
+
+function normalizeDateString(value) {
+  const date = normalizeText(value)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) badRequest('Date must be in YYYY-MM-DD format')
+  return date
+}
+
+function normalizeAppointmentStatus(status) {
+  if (!APPOINTMENT_STATUSES.includes(status)) badRequest('Invalid appointment status')
+  return status
+}
+
+function normalizeCallStatus(status) {
+  if (!CALL_STATUSES.includes(status)) badRequest('Invalid call status')
+  return status
+}
+
+function mapAppointment(a) {
+  return {
+    id: a._id.toString(),
+    patient_id: a.patient_id ? a.patient_id._id.toString() : null,
+    patient_name: a.patient_id ? a.patient_id.name : '',
+    patient_phone: a.patient_id ? a.patient_id.phone : '',
+    patient_age: a.patient_id ? a.patient_id.age : null,
+    scheduled_date: a.scheduled_date,
+    scheduled_time: a.scheduled_time || '',
+    reason: a.reason || '',
+    status: a.status || 'waiting',
+    call_status: a.call_status || 'not_required',
+    queue_number: a.queue_number || 0,
+    notes: a.notes || '',
+    created_at: a.created_at
+  }
+}
+
+function sortAppointments(list) {
+  const statusOrder = { 'in-progress': 0, waiting: 1, done: 2, cancelled: 3 }
+  list.sort((x, y) => {
+    const ox = statusOrder[x.status] ?? 4
+    const oy = statusOrder[y.status] ?? 4
+    if (ox !== oy) return ox - oy
+    if ((x.scheduled_time || '') !== (y.scheduled_time || '')) {
+      if (!x.scheduled_time) return 1
+      if (!y.scheduled_time) return -1
+      return x.scheduled_time.localeCompare(y.scheduled_time)
+    }
+    return new Date(x.created_at || 0) - new Date(y.created_at || 0)
+  })
+  return list
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -143,6 +217,12 @@ async function getPatientById(id) {
   return patient
 }
 
+function normalizeEmail(value) {
+  const email = normalizeText(value)
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) badRequest('Invalid email format')
+  return email.toLowerCase()
+}
+
 async function addPatient(data) {
   const name = normalizeText(data.name)
   if (!name) badRequest('Patient name is required')
@@ -150,6 +230,7 @@ async function addPatient(data) {
   const patient = new Patient({
     name,
     phone: normalizeText(data.phone),
+    email: normalizeEmail(data.email),
     age: normalizeAge(data.age),
     gender: normalizeGender(data.gender),
     address: normalizeText(data.address),
@@ -174,13 +255,14 @@ async function updatePatient(id, data) {
     $set: {
       name,
       phone: normalizeText(data.phone),
+      email: normalizeEmail(data.email),
       age: normalizeAge(data.age),
       gender: normalizeGender(data.gender),
       address: normalizeText(data.address),
       complaint: normalizeText(data.complaint),
       notes: normalizeText(data.notes)
     }
-  }, { new: true }).lean()
+  }, { new: true, runValidators: true }).lean()
 
   if (patient) patient.id = patient._id.toString()
   return patient
@@ -190,40 +272,16 @@ async function updatePatient(id, data) {
 // APPOINTMENTS
 // ═══════════════════════════════════════════════════════════
 async function getTodayAppointments() {
-  const today = new Date().toISOString().split('T')[0]
-  return getAppointmentsByDate(today)
+  return getAppointmentsByDate(clinicDateString())
 }
 
 async function getAppointmentsByDate(date) {
-  const appts = await Appointment.find({ scheduled_date: date })
+  const scheduledDate = normalizeDateString(date)
+  const appts = await Appointment.find({ scheduled_date: scheduledDate })
     .populate('patient_id')
     .lean()
 
-  const mapped = appts.map(a => ({
-    id: a._id.toString(),
-    patient_id: a.patient_id ? a.patient_id._id.toString() : null,
-    patient_name: a.patient_id ? a.patient_id.name : '',
-    patient_phone: a.patient_id ? a.patient_id.phone : '',
-    patient_age: a.patient_id ? a.patient_id.age : null,
-    scheduled_date: a.scheduled_date,
-    scheduled_time: a.scheduled_time || '',
-    reason: a.reason || '',
-    status: a.status || 'waiting',
-    call_status: a.call_status || 'not_required',
-    queue_number: a.queue_number || 1,
-    notes: a.notes || '',
-    created_at: a.created_at
-  }))
-
-  const statusOrder = { 'in-progress': 0, 'waiting': 1, 'done': 2, 'cancelled': 3 }
-  mapped.sort((x, y) => {
-    const ox = statusOrder[x.status] ?? 4
-    const oy = statusOrder[y.status] ?? 4
-    if (ox !== oy) return ox - oy
-    return (x.queue_number || 0) - (y.queue_number || 0)
-  })
-
-  return mapped
+  return sortAppointments(appts.map(mapAppointment))
 }
 
 async function getPatientAppointments(patientId) {
@@ -252,7 +310,8 @@ async function getPatientAppointments(patientId) {
 
   return result.map(a => ({
     ...a,
-    call_status: a.call_status || 'not_required'
+    call_status: a.call_status || 'not_required',
+    queue_number: a.queue_number || 0
   }))
 }
 
@@ -269,26 +328,48 @@ async function getNextInvoiceNumber() {
 }
 
 async function addAppointment(data) {
-  const date = data.scheduled_date
-  // Get max queue number
-  const maxRow = await Appointment.findOne({ scheduled_date: date })
-    .sort({ queue_number: -1 })
-    .select('queue_number')
-    .lean()
+  if (!isValidObjectId(data.patient_id)) badRequest('Valid patient is required')
+  const patient = await Patient.findById(data.patient_id).select('_id').lean()
+  if (!patient) badRequest('Patient not found')
 
-  const queueNumber = (maxRow?.queue_number || 0) + 1
+  const date = normalizeDateString(data.scheduled_date)
+  const scheduledTime = normalizeText(data.scheduled_time)
+
+  if (scheduledTime) {
+    const blocked = await BlockedSlot.exists({ date, slot: scheduledTime })
+    if (blocked) badRequest('This appointment slot is blocked')
+
+    const existing = await Appointment.exists({
+      scheduled_date: date,
+      scheduled_time: scheduledTime,
+      status: { $ne: 'cancelled' }
+    })
+    if (existing) badRequest('This appointment slot is already booked')
+  }
+
+  const queueCounter = await Counter.findOneAndUpdate(
+    { key: `queue_${date}` },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  )
+  const queueNumber = queueCounter.seq
 
   const appt = new Appointment({
     patient_id: data.patient_id,
     scheduled_date: date,
-    scheduled_time: data.scheduled_time || '',
-    reason: data.reason || '',
+    scheduled_time: scheduledTime,
+    reason: normalizeText(data.reason),
     status: 'waiting',
-    call_status: data.call_status || 'not_required',
+    call_status: data.call_status ? normalizeCallStatus(data.call_status) : 'not_required',
     queue_number: queueNumber,
-    notes: data.notes || ''
+    notes: normalizeText(data.notes)
   })
-  await appt.save()
+  try {
+    await appt.save()
+  } catch (err) {
+    if (err.code === 11000) badRequest('This appointment slot is already booked')
+    throw err
+  }
 
   const doc = appt.toObject()
   doc.id = doc._id.toString()
@@ -297,14 +378,30 @@ async function addAppointment(data) {
 
 async function updateAppointment(id, data) {
   if (!isValidObjectId(id)) return null
+  const scheduledDate = normalizeDateString(data.scheduled_date)
+  const scheduledTime = normalizeText(data.scheduled_time)
+
+  if (scheduledTime) {
+    const blocked = await BlockedSlot.exists({ date: scheduledDate, slot: scheduledTime })
+    if (blocked) badRequest('This appointment slot is blocked')
+
+    const existing = await Appointment.exists({
+      _id: { $ne: id },
+      scheduled_date: scheduledDate,
+      scheduled_time: scheduledTime,
+      status: { $ne: 'cancelled' }
+    })
+    if (existing) badRequest('This appointment slot is already booked')
+  }
+
   const appt = await Appointment.findByIdAndUpdate(id, {
     $set: {
-      scheduled_date: data.scheduled_date,
-      scheduled_time: data.scheduled_time,
-      reason: data.reason,
-      notes: data.notes
+      scheduled_date: scheduledDate,
+      scheduled_time: scheduledTime,
+      reason: normalizeText(data.reason),
+      notes: normalizeText(data.notes)
     }
-  }, { new: true }).lean()
+  }, { new: true, runValidators: true }).lean()
 
   if (appt) appt.id = appt._id.toString()
   return appt
@@ -312,20 +409,22 @@ async function updateAppointment(id, data) {
 
 async function updateAppointmentStatus(id, status) {
   if (!isValidObjectId(id)) return null
-  await Appointment.findByIdAndUpdate(id, { $set: { status } })
-  return { id, status }
+  const normalizedStatus = normalizeAppointmentStatus(status)
+  await Appointment.findByIdAndUpdate(id, { $set: { status: normalizedStatus } }, { runValidators: true })
+  return { id, status: normalizedStatus }
 }
 
 async function deleteAppointment(id) {
   if (!isValidObjectId(id)) return { success: false }
-  await Appointment.findByIdAndDelete(id)
+  await Appointment.findByIdAndUpdate(id, { $set: { status: 'cancelled' } }, { runValidators: true })
   return { success: true }
 }
 
 async function updateAppointmentCallStatus(id, call_status) {
   if (!isValidObjectId(id)) return null
-  await Appointment.findByIdAndUpdate(id, { $set: { call_status } })
-  return { id, call_status }
+  const normalizedStatus = normalizeCallStatus(call_status)
+  await Appointment.findByIdAndUpdate(id, { $set: { call_status: normalizedStatus } }, { runValidators: true })
+  return { id, call_status: normalizedStatus }
 }
 
 async function getPendingCalls() {
@@ -334,20 +433,7 @@ async function getPendingCalls() {
     .sort({ scheduled_date: 1, created_at: 1 })
     .lean()
 
-  return appts.map(a => ({
-    id: a._id.toString(),
-    patient_id: a.patient_id ? a.patient_id._id.toString() : null,
-    patient_name: a.patient_id ? a.patient_id.name : '',
-    patient_phone: a.patient_id ? a.patient_id.phone : '',
-    patient_age: a.patient_id ? a.patient_id.age : null,
-    scheduled_date: a.scheduled_date,
-    scheduled_time: a.scheduled_time || '',
-    reason: a.reason || '',
-    status: a.status || 'waiting',
-    call_status: a.call_status,
-    notes: a.notes || '',
-    created_at: a.created_at
-  }))
+  return appts.map(mapAppointment)
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -394,7 +480,20 @@ async function getTreatmentsByAppointment(appointmentId) {
     ...t,
     id: t._id.toString(),
     patient_id: t.patient_id.toString(),
-    appointment_id: t.appointment_id ? t.appointment_id.toString() : null
+    appointment_id: t.appointment_id ? t.appointment_id.toString() : null,
+    bill_id: t.bill_id ? t.bill_id.toString() : null
+  }))
+}
+
+async function getTreatmentsByBill(billId) {
+  if (!isValidObjectId(billId)) return []
+  const txs = await Treatment.find({ bill_id: billId }).sort({ created_at: 1 }).lean()
+  return txs.map(t => ({
+    ...t,
+    id: t._id.toString(),
+    patient_id: t.patient_id.toString(),
+    appointment_id: t.appointment_id ? t.appointment_id.toString() : null,
+    bill_id: t.bill_id ? t.bill_id.toString() : null
   }))
 }
 
@@ -418,6 +517,11 @@ async function getTreatmentsByPatient(patientId) {
 async function addTreatment(data) {
   if (!isValidObjectId(data.patient_id)) badRequest('Valid patient is required')
   if (data.appointment_id && !isValidObjectId(data.appointment_id)) badRequest('Valid appointment is required')
+  if (data.appointment_id) {
+    const appt = await Appointment.findById(data.appointment_id).select('patient_id').lean()
+    if (!appt) badRequest('Appointment not found')
+    if (appt.patient_id.toString() !== data.patient_id) badRequest('Appointment does not belong to this patient')
+  }
   const treatmentType = normalizeText(data.treatment_type)
   if (!treatmentType) badRequest('Treatment type is required')
 
@@ -449,7 +553,7 @@ async function updateTreatment(id, data) {
       cost: toMoney(data.cost, 0, 'Treatment cost'),
       doctor_notes: normalizeText(data.doctor_notes)
     }
-  }, { new: true }).lean()
+  }, { new: true, runValidators: true }).lean()
 
   if (tx) tx.id = tx._id.toString()
   return tx
@@ -511,18 +615,6 @@ async function createBill(data) {
   const total      = Math.round((discounted + taxAmount) * 100) / 100
   if (paid > total) badRequest('Paid amount cannot exceed the final bill total')
 
-  const treatmentsToInsert = Array.isArray(data.treatments)
-    ? data.treatments.map(t => ({
-        patient_id: data.patient_id,
-        appointment_id: data.appointment_id || null,
-        treatment_type: normalizeText(t.treatment_type),
-        tooth_number: normalizeText(t.tooth_number),
-        description: normalizeText(t.description),
-        cost: toMoney(t.cost, 0, 'Treatment cost'),
-        doctor_notes: normalizeText(t.doctor_notes)
-      })).filter(t => t.treatment_type)
-    : []
-
   const balance    = Math.max(0, total - paid)
   const status     = paid >= total ? 'paid' : paid > 0 ? 'partial' : 'pending'
   const invoiceNumber = await getNextInvoiceNumber()
@@ -556,9 +648,23 @@ async function createBill(data) {
     })
   }
 
-  // Save nested treatments if provided
-  if (treatmentsToInsert.length > 0) {
-    await Treatment.insertMany(treatmentsToInsert)
+  // Save nested treatments if provided, linking them to the bill
+  if (Array.isArray(data.treatments) && data.treatments.length > 0) {
+    const treatmentsToInsert = data.treatments
+      .map(t => ({
+        patient_id: data.patient_id,
+        appointment_id: data.appointment_id || null,
+        bill_id: bill._id,
+        treatment_type: normalizeText(t.treatment_type),
+        tooth_number: normalizeText(t.tooth_number),
+        description: normalizeText(t.description),
+        cost: toMoney(t.cost, 0, 'Treatment cost'),
+        doctor_notes: normalizeText(t.doctor_notes)
+      }))
+      .filter(t => t.treatment_type)
+    if (treatmentsToInsert.length > 0) {
+      await Treatment.insertMany(treatmentsToInsert)
+    }
   }
 
   return getBillById(bill._id.toString())
@@ -653,42 +759,6 @@ async function getAllBills(page = 1, limit = 50) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// QUEUE
-// ═══════════════════════════════════════════════════════════
-async function getTodayQueue() {
-  const today = new Date().toISOString().split('T')[0]
-  const appts = await Appointment.find({ scheduled_date: today, status: { $ne: 'cancelled' } })
-    .populate('patient_id')
-    .lean()
-
-  const mapped = appts.map(a => ({
-    id: a._id.toString(),
-    patient_id: a.patient_id ? a.patient_id._id.toString() : null,
-    patient_name: a.patient_id ? a.patient_id.name : '',
-    patient_phone: a.patient_id ? a.patient_id.phone : '',
-    patient_age: a.patient_id ? a.patient_id.age : null,
-    scheduled_date: a.scheduled_date,
-    scheduled_time: a.scheduled_time || '',
-    reason: a.reason || '',
-    status: a.status || 'waiting',
-    call_status: a.call_status || 'not_required',
-    queue_number: a.queue_number || 1,
-    notes: a.notes || '',
-    created_at: a.created_at
-  }))
-
-  const statusOrder = { 'in-progress': 0, 'waiting': 1, 'done': 2 }
-  mapped.sort((x, y) => {
-    const ox = statusOrder[x.status] ?? 3
-    const oy = statusOrder[y.status] ?? 3
-    if (ox !== oy) return ox - oy
-    return (x.queue_number || 0) - (y.queue_number || 0)
-  })
-
-  return mapped
-}
-
-// ═══════════════════════════════════════════════════════════
 // SETTINGS
 // ═══════════════════════════════════════════════════════════
 async function getSettings() {
@@ -705,9 +775,8 @@ async function setSetting(key, value) {
 // DASHBOARD STATS
 // ═══════════════════════════════════════════════════════════
 async function getDashboardStats() {
-  const today = new Date().toISOString().split('T')[0]
-  const startOfDay = new Date(today + 'T00:00:00.000Z')
-  const endOfDay = new Date(today + 'T23:59:59.999Z')
+  const today = clinicDateString()
+  const range = clinicDayRange(today)
 
   const [
     totalPatients,
@@ -723,7 +792,7 @@ async function getDashboardStats() {
     Appointment.countDocuments({ scheduled_date: today, status: 'waiting' }),
     Appointment.countDocuments({ scheduled_date: today, status: 'in-progress' }),
     Appointment.countDocuments({ scheduled_date: today, status: 'done' }),
-    Bill.find({ created_at: { $gte: startOfDay, $lte: endOfDay } }).select('paid_amount').lean(),
+    Bill.find({ created_at: { $gte: range.start, $lte: range.end } }).select('paid_amount').lean(),
     Bill.find({ status: { $ne: 'paid' } }).select('balance').lean()
   ])
 
@@ -749,9 +818,8 @@ module.exports = {
   addAppointment, updateAppointment, updateAppointmentStatus, deleteAppointment,
   updateAppointmentCallStatus, getPendingCalls,
   getBlockedSlots, blockSlot, unblockSlot,
-  getTreatmentsByAppointment, getTreatmentsByPatient, addTreatment, updateTreatment, deleteTreatment,
+  getTreatmentsByAppointment, getTreatmentsByPatient, getTreatmentsByBill, addTreatment, updateTreatment, deleteTreatment,
   getBillsByPatient, getBillById, createBill, updateBillPayment, refundBillPayment, getPaymentsByBill, getAllBills,
-  getTodayQueue,
   getSettings, setSetting,
   getDashboardStats,
 }
