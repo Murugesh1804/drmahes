@@ -680,88 +680,317 @@ function generateReceiptHTML(bill, treatments = [], settings) {
   const date = new Date(bill.created_at).toLocaleDateString('en-IN', {
     day: 'numeric', month: 'long', year: 'numeric'
   })
+  const cur = settings?.currency || '₹'
 
-  // Map receipt rows for treatment items
   const rowsHtml = treatments.length > 0
     ? treatments.map((t, idx) => `
-      <tr>
-        <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #475569; font-weight: 600;">${t.treatment_type} ${t.tooth_number ? `(Tooth #${t.tooth_number})` : ''}</td>
-        <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; text-align: right; color: #1e293b; font-weight: bold;">${settings.currency || '₹'}${t.cost}</td>
-      </tr>
-    `).join('')
-    : `
-      <tr>
-        <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #475569; font-weight: 600;">Dental Treatment Procedures</td>
-        <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; text-align: right; color: #1e293b; font-weight: bold;">${settings.currency || '₹'}${bill.total_amount}</td>
-      </tr>
-    `;
+        <tr>
+          <td class="td-desc">
+            ${idx + 1}.&nbsp; ${t.treatment_type}
+            ${t.tooth_number ? `<span class="tooth">Tooth #${t.tooth_number}</span>` : ''}
+            ${t.description ? `<br><span class="note">${t.description}</span>` : ''}
+          </td>
+          <td class="td-amt">${cur}${Number(t.cost).toLocaleString('en-IN')}</td>
+        </tr>
+      `).join('')
+    : `<tr>
+        <td class="td-desc">1.&nbsp; Dental Treatment Procedures</td>
+        <td class="td-amt">${cur}${Number(bill.total_amount).toLocaleString('en-IN')}</td>
+      </tr>`
+
+  const isPaid = bill.balance <= 0
+  const balanceColor = isPaid ? '#276749' : '#c53030'
+  const letterheadUrl = '/Letter Head.png'
 
   return `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Receipt - ${bill.patient_name}</title>
+  <title>Invoice – ${bill.patient_name}</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 440px; margin: 0 auto; padding: 25px; color: #1e293b; background-color: #ffffff; }
-    .header { text-align: center; border-bottom: 2px solid #0f766e; padding-bottom: 18px; margin-bottom: 20px; }
-    .clinic { font-size: 22px; font-weight: 800; color: #0f766e; letter-spacing: -0.02em; }
-    .doctor { font-size: 13px; color: #475569; margin-top: 4px; font-weight: 600; }
-    .meta-box { background: #f8fafc; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; border: 1px solid #f1f5f9; }
-    .meta-row { display: flex; justify-content: space-between; font-size: 12px; margin: 5px 0; color: #64748b; }
-    .meta-value { color: #1e293b; font-weight: 600; }
-    .meta-title { font-weight: 500; }
-    .table-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
-    .total-box { margin-top: 20px; border-top: 2px solid #e2e8f0; padding-top: 15px; }
-    .row { display: flex; justify-content: space-between; font-size: 13px; margin: 7px 0; color: #475569; }
-    .grand-total { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
-    .paid { color: #10b981; font-weight: 700; }
-    .balance { color: ${bill.balance > 0 ? '#ef4444' : '#10b981'}; font-weight: 700; }
-    .footer { text-align: center; margin-top: 35px; font-size: 12px; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 15px; font-weight: 500; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page { size: A4; margin: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #ffffff;
+      color: #1a202c;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* Letterhead pinned behind everything */
+    .lh {
+      position: fixed;
+      inset: 0;
+      width: 210mm;
+      height: 297mm;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .lh img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: fill; 
+      display: block; 
+      opacity: 0.03;
+    }
+
+    /* Content sits on top */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      padding: 58mm 17mm 38mm 17mm;
+    }
+
+    /* ── Invoice label ── */
+    .inv-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #D8C3A5;
+      margin-bottom: 5mm;
+    }
+
+    /* ── Patient Info Block ── */
+    .patient-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2mm 6mm;
+      margin-bottom: 7mm;
+      font-size: 12px;
+    }
+    .patient-info-grid div strong {
+      display: inline-block;
+      width: 90px;
+      color: #718096;
+      font-weight: 600;
+    }
+
+    /* ── Divider ── */
+    .rule { border: none; border-top: 1px solid #e8e0d4; margin: 0 0 5mm 0; }
+
+    /* ── Section heading ── */
+    .sec {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #D8C3A5;
+      margin-bottom: 2mm;
+    }
+
+    /* ── Treatment table ── */
+    table { width: 100%; border-collapse: collapse; }
+    .th-desc, .th-amt {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #D8C3A5;
+      padding: 6px 8px;
+      background: #f8f6f2;
+      border-bottom: 1px solid #e8e0d4;
+    }
+    .th-amt { text-align: right; }
+
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    .td-desc {
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #2d3748;
+      vertical-align: top;
+    }
+    .td-amt {
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a202c;
+      text-align: right;
+      white-space: nowrap;
+      vertical-align: top;
+    }
+    .tooth {
+      font-size: 10px;
+      font-weight: 500;
+      color: #D8C3A5;
+      margin-left: 4px;
+    }
+    .note {
+      font-size: 10px;
+      font-weight: 400;
+      color: #718096;
+    }
+
+    /* ── Summary lines ── */
+    .sum-wrap {
+      width: 50%;
+      margin-left: auto;
+      margin-top: 4mm;
+    }
+    .sum-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 8px;
+      font-size: 12px;
+      color: #4a5568;
+    }
+    .sum-row.total {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1a202c;
+      padding: 6px 8px;
+      border-top: 1px solid #e8e0d4;
+      margin-top: 1mm;
+    }
+    .sum-row.total span:last-child { color: #D8C3A5; }
+    .c-green { color: #276749; font-weight: 700; }
+    .c-bal   { color: ${balanceColor}; font-weight: 800; }
+
+    /* ── Payment method ── */
+    .pay-line {
+      font-size: 11px;
+      color: #718096;
+      margin-top: 3mm;
+    }
+    .pay-line strong {
+      color: #2d3748;
+      text-transform: capitalize;
+    }
+
+    /* ── Status text ── */
+    .status-line {
+      margin-top: 5mm;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: ${balanceColor};
+    }
+
+    /* ── Notes ── */
+    .notes {
+      margin-top: 5mm;
+      font-size: 11px;
+      color: #718096;
+      font-style: italic;
+    }
+    .notes strong { color: #2d3748; font-style: normal; }
+
+    /* ── Signature ── */
+    .signature {
+      margin-top: 40px;
+      text-align: right;
+    }
+    .signature .line {
+      width: 180px;
+      border-top: 1px solid #999;
+      margin-left: auto;
+      margin-bottom: 8px;
+    }
+    .signature p {
+      font-size: 12px;
+      font-weight: 600;
+      color: #2d3748;
+      margin: 0;
+      line-height: 1.4;
+    }
+    .signature p:last-child {
+      font-size: 11px;
+      font-weight: 400;
+      color: #718096;
+    }
+
+    /* ── Thank you ── */
+    .ty {
+      margin-top: 7mm;
+      font-size: 11px;
+      color: #a0aec0;
+      font-style: italic;
+      text-align: center;
+    }
+
     @media print {
-      body { padding: 0; max-width: 100%; }
-      .meta-box { border: 1px solid #cbd5e1; background: transparent; }
+      body { width: 210mm; }
+      .lh { position: fixed; }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="clinic">${settings?.clinic_name || "Dr. Mahe's Dentistry"}</div>
-    <div class="doctor">${settings?.doctor_name || "Dr. Mahe"}</div>
-    ${settings?.clinic_phone ? `<div style="font-size: 11px; color: #64748b; margin-top: 2px;">Phone: ${settings.clinic_phone}</div>` : ''}
-    ${settings?.clinic_address ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 2px; max-width: 320px; margin-left: auto; margin-right: auto;">${settings.clinic_address}</div>` : ''}
-  </div>
 
-  <div class="meta-box">
-    <div class="meta-row"><span class="meta-title">Receipt Invoice No.</span><span class="meta-value" style="font-family: monospace;">#${bill.id.slice(-8).toUpperCase()}</span></div>
-    <div class="meta-row"><span class="meta-title">Billing Date</span><span class="meta-value">${date}</span></div>
-    <div class="meta-row"><span class="meta-title">Patient Name</span><span class="meta-value" style="font-size: 13px; color: #0f766e;">${bill.patient_name}</span></div>
-    ${bill.patient_phone ? `<div class="meta-row"><span class="meta-title">Patient Phone</span><span class="meta-value">${bill.patient_phone}</span></div>` : ''}
-  </div>
+  <div class="lh"><img src="${letterheadUrl}" alt="" /></div>
 
-  <div class="table-title">Treatment Details &amp; Charge Statement</div>
-  <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 5px;">
-    <tbody>
-      ${rowsHtml}
-    </tbody>
-  </table>
+  <div class="wrap">
 
-  <div class="total-box">
-    <div class="row grand-total"><span>Total Charge</span><span>${settings?.currency || '₹'}${bill.total_amount}</span></div>
-    <div class="row"><span>Amount Paid</span><span class="paid">${settings?.currency || '₹'}${bill.paid_amount}</span></div>
-    <div class="row" style="border-top: 1px solid #f1f5f9; padding-top: 8px;"><span>Balance Due</span><span class="balance">${settings?.currency || '₹'}${bill.balance}</span></div>
-    <div class="row"><span>Payment Method</span><span style="text-transform: capitalize; font-weight: 600; color: #1e293b;">${bill.payment_method}</span></div>
-  </div>
+    <p class="inv-label">Patient Invoice</p>
 
-  ${bill.notes ? `
-    <div style="margin-top: 15px; background: #fafafa; border-radius: 8px; padding: 10px; font-size: 11px; color: #64748b; border: 1px solid #f1f5f9;">
-      <strong>Remarks / Notes:</strong> ${bill.notes}
+    <div class="patient-info-grid">
+      <div><strong>Patient Name:</strong> ${bill.patient_name}</div>
+      <div><strong>Patient ID:</strong> ${bill.patient_id || '--'}</div>
+      <div><strong>Age / Gender:</strong> ${bill.patient_age || '--'} / ${bill.patient_gender || '--'}</div>
+      <div><strong>Date:</strong> ${date}</div>
+      <div><strong>Phone:</strong> ${bill.patient_phone || '--'}</div>
     </div>
-  ` : ''}
 
-  <div class="footer">
-    Thank you for choosing ${settings?.clinic_name || "Dr. Mahe's Dentistry"}!<br>
-    Wish you a healthy, beautiful smile.
+    <hr class="rule">
+
+    <p class="sec">Treatment Details</p>
+    <table>
+      <thead>
+        <tr>
+          <th class="th-desc">Description</th>
+          <th class="th-amt">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rowsHtml}
+      </tbody>
+    </table>
+
+    <div class="sum-wrap">
+      <div class="sum-row total">
+        <span>Total</span>
+        <span>${cur}${Number(bill.total_amount).toLocaleString('en-IN')}</span>
+      </div>
+      <div class="sum-row">
+        <span>Paid</span>
+        <span class="c-green">${cur}${Number(bill.paid_amount).toLocaleString('en-IN')}</span>
+      </div>
+      <div class="sum-row">
+        <span>Balance</span>
+        <span class="c-bal">${isPaid ? 'Nil' : cur + Number(bill.balance).toLocaleString('en-IN')}</span>
+      </div>
+    </div>
+
+    <p class="pay-line">Payment via <strong>${bill.payment_method}</strong></p>
+
+    <p class="status-line">${isPaid ? '✓ Fully Settled' : '⚠ Balance Due'}</p>
+
+    ${bill.notes ? `<p class="notes"><strong>Note:</strong> ${bill.notes}</p>` : ''}
+
+    <div class="signature">
+      <div class="line"></div>
+      <p>Dr. S Maheswari, BDS</p>
+      <p>Dental Surgeon</p>
+    </div>
+
+    <p class="ty">Thank you for choosing ${settings?.clinic_name || "Dr. Mahe's Dentistry"} — Wishing you a healthy smile.</p>
+
   </div>
+
+  <script>window.onload = function(){ window.print(); }</script>
 </body>
 </html>`
 }
+
+
+

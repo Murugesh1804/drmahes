@@ -2,380 +2,1055 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Patient Check-in Kiosk</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0fdfa',
-                            100: '#ccfbf1',
-                            200: '#99f6e4',
-                            300: '#5eead4',
-                            400: '#2dd4bf',
-                            500: '#14b8a6',
-                            600: '#0d9488',
-                            700: '#0f766e',
-                            800: '#115e59',
-                            900: '#134e4a',
-                            950: '#042f2e',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="description" content="Patient self check-in kiosk for Dr. Mahe's Dentistry – register your visit quickly and join the treatment queue.">
+    <title>Patient Check-in – Dr. Mahe's Dentistry</title>
+
+    <!-- Google Fonts: Poppins (headings) + Open Sans (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        /* ─── DESIGN TOKENS (mirrors landing page) ─────────────── */
+        :root {
+            --primary:        #111111;
+            --accent:         #C4B097;
+            --accent-hover:   #A89680;
+            --accent-rgb:     196, 176, 151;
+            --bg-primary:     #FFFFFF;
+            --bg-secondary:   #F7F5F0;
+            --bg-card:        #FFFFFF;
+            --text-primary:   #111111;
+            --text-secondary: #555555;
+            --border:         rgba(17,17,17,0.09);
+            --border-accent:  rgba(196,176,151,0.35);
+            --success:        #2E7D32;
+            --shadow-sm:      0 2px 12px rgba(0,0,0,0.04);
+            --shadow-md:      0 8px 28px rgba(0,0,0,0.07);
+            --shadow-lg:      0 20px 50px rgba(0,0,0,0.10);
+            --radius:         10px;
+            --header-h:       64px;
+        }
+
+        /* ─── RESET ─────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Open Sans', system-ui, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100svh;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.2;
+        }
+
+        button, input, select, textarea {
+            font-family: inherit;
+            font-size: inherit;
+            color: inherit;
+        }
+
+        img { max-width: 100%; display: block; }
+
+        /* ─── SCROLLBAR ──────────────────────────────────────────── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1ccc5; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* ─── UTILITIES ─────────────────────────────────────────── */
         .hidden { display: none !important; }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        canvas { touch-action: none; } /* Prevents scrolling while signing */
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeInUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+        /* ─── HEADER ─────────────────────────────────────────────── */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: var(--header-h);
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .header-logo-mark {
+            width: 42px;
+            height: 42px;
+            background-color: #111111;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .header-title-wrap { min-width: 0; }
+
+        .header-clinic-name {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-subtitle {
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            margin-top: 2px;
+        }
+
+        .btn-fullscreen {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            background: var(--bg-primary);
+            cursor: pointer;
+            transition: border-color 0.25s, color 0.25s, background-color 0.25s;
+            white-space: nowrap;
+        }
+        .btn-fullscreen:hover {
+            border-color: var(--accent);
+            color: var(--primary);
+            background-color: rgba(var(--accent-rgb), 0.06);
+        }
+
+        /* ─── PROGRESS STEPPER ───────────────────────────────────── */
+        .stepper-wrap {
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            flex-shrink: 0;
+        }
+
+        .stepper {
+            max-width: 480px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .step-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .step-circle.active {
+            background-color: #111111;
+            border-color: #111111;
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.2);
+        }
+        .step-circle.done {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: #111111;
+        }
+
+        .step-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            transition: color 0.3s;
+        }
+        .step-label.active { color: var(--primary); }
+        .step-label.done   { color: var(--accent); }
+
+        .step-connector {
+            flex: 1;
+            height: 2px;
+            background-color: var(--border);
+            margin: 0 4px;
+            margin-bottom: 20px; /* offset for the label below */
+            position: relative;
+            overflow: hidden;
+            border-radius: 2px;
+        }
+        .step-connector-fill {
+            position: absolute;
+            inset: 0;
+            background-color: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            border-radius: 2px;
+        }
+        .step-connector-fill.active { transform: scaleX(1); }
+
+        /* ─── MAIN ───────────────────────────────────────────────── */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 28px 16px 40px;
+            overflow-y: auto;
+        }
+
+        /* ─── FORM CARD ──────────────────────────────────────────── */
+        .kiosk-card {
+            width: 100%;
+            max-width: 640px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            padding: 36px 36px 40px;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .card-badge {
+            display: inline-block;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+
+        .card-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        /* ─── ERROR BANNER ───────────────────────────────────────── */
+        .error-banner {
+            background-color: #fff0f0;
+            border: 1px solid #fca5a5;
+            border-left: 4px solid #ef4444;
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            color: #b91c1c;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ─── FORM FIELDS ────────────────────────────────────────── */
+        .form-stack { display: flex; flex-direction: column; gap: 20px; }
+
+        .field-label {
+            display: block;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 13px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .form-input::placeholder { color: #aaa; }
+        .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18);
+        }
+
+        textarea.form-input { resize: none; }
+
+        /* ─── GRID ROW ───────────────────────────────────────────── */
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ─── GENDER TOGGLE ──────────────────────────────────────── */
+        .gender-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .gender-btn {
+            flex: 1;
+            padding: 11px 8px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--bg-secondary);
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .gender-btn:hover {
+            border-color: var(--accent);
+            color: var(--primary);
+        }
+        .gender-btn.selected {
+            background-color: #111111;
+            border-color: #111111;
+            color: #ffffff;
+        }
+
+        /* ─── COMPLAINT GRID ─────────────────────────────────────── */
+        .complaint-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .complaint-btn {
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--bg-secondary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+            transition: all 0.2s ease;
+            line-height: 1.3;
+        }
+        .complaint-btn .icon { font-size: 1.1rem; flex-shrink: 0; }
+        .complaint-btn:hover {
+            border-color: var(--accent);
+            background-color: rgba(var(--accent-rgb), 0.06);
+            color: var(--primary);
+        }
+        .complaint-btn.selected {
+            border-color: var(--accent);
+            background-color: rgba(var(--accent-rgb), 0.12);
+            color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18);
+        }
+
+        /* ─── PRIMARY BUTTON ─────────────────────────────────────── */
+        .btn-primary {
+            width: 100%;
+            padding: 15px 24px;
+            background-color: #111111;
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.25s, transform 0.15s;
+        }
+        .btn-primary:hover {
+            background-color: var(--accent);
+            color: #111111;
+            transform: translateY(-1px);
+        }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary-outline {
+            flex: 1;
+            padding: 13px 20px;
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.25s, color 0.25s;
+        }
+        .btn-secondary-outline:hover {
+            border-color: var(--accent);
+            color: var(--primary);
+        }
+
+        /* ─── CONSENT CARD ───────────────────────────────────────── */
+        .back-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .btn-back {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-back:hover { border-color: var(--accent); color: var(--primary); }
+
+        .consent-text-box {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            font-size: 0.88rem;
+            color: var(--text-primary);
+            line-height: 1.75;
+            margin-bottom: 22px;
+        }
+
+        .consent-text-box .consent-label {
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* ─── SIGNATURE CANVAS ───────────────────────────────────── */
+        .sig-wrap { margin-bottom: 24px; }
+
+        .sig-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .btn-clear {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: color 0.2s, background-color 0.2s;
+        }
+        .btn-clear:hover { color: #ef4444; background-color: #fff0f0; }
+
+        .sig-canvas-wrap {
+            border: 2px dashed var(--border-accent);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: #ffffff;
+            height: 200px;
+            position: relative;
+        }
+        .sig-canvas-wrap:focus-within {
+            border-color: var(--accent);
+            border-style: solid;
+        }
+
+        #sig-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            touch-action: none;
+            display: block;
+        }
+
+        .sig-hint {
+            font-size: 0.74rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* ─── SUCCESS VIEW ───────────────────────────────────────── */
+        .success-wrap {
+            text-align: center;
+        }
+
+        .success-check {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background-color: var(--success);
+            color: #ffffff;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 4px 20px rgba(46,125,50,0.25);
+        }
+
+        .success-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .success-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+        }
+
+        .queue-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-accent);
+            border-radius: 16px;
+            padding: 32px 24px;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .queue-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(var(--accent-rgb),0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .queue-label {
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .queue-number {
+            font-family: 'Poppins', sans-serif;
+            font-size: 5rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+
+        .queue-patient-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 14px;
+        }
+
+        .queue-complaint {
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* ─── RESPONSIVE ─────────────────────────────────────────── */
+
+        /* Mobile: up to 480px */
+        @media (max-width: 480px) {
+            :root { --header-h: 56px; }
+
+            .site-header { padding: 0 14px; gap: 10px; }
+
+            .header-logo-mark { width: 36px; height: 36px; font-size: 1rem; }
+
+            .header-clinic-name { font-size: 0.88rem; }
+
+            .btn-fullscreen { display: none; } /* Hide on very small screens */
+
+            .stepper-wrap { padding: 12px 16px; }
+
+            .step-circle { width: 28px; height: 28px; font-size: 0.72rem; }
+
+            .step-label { font-size: 0.58rem; letter-spacing: 0.06em; }
+
+            main { padding: 16px 12px 32px; }
+
+            .kiosk-card { padding: 20px 16px 24px; border-radius: 12px; }
+
+            .card-title { font-size: 1.3rem; }
+
+            .field-row { grid-template-columns: 1fr; gap: 14px; }
+
+            .complaint-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+            .complaint-btn { padding: 10px 10px; font-size: 0.74rem; }
+
+            .btn-row { flex-direction: column; }
+
+            .sig-canvas-wrap { height: 170px; }
+
+            .queue-number { font-size: 4rem; }
+
+            .btn-fullscreen-mobile { display: none; }
+        }
+
+        /* Tablet: 481px – 768px */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .kiosk-card { padding: 28px 24px 32px; }
+
+            .card-title { font-size: 1.5rem; }
+
+            .complaint-grid { grid-template-columns: repeat(2, 1fr); }
+
+            main { padding: 20px 16px 36px; }
+        }
+
+        /* Desktop kiosk: 769px+ */
+        @media (min-width: 769px) {
+            .complaint-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* ─── CANVAS TOUCH FIXES ─────────────────────────────────── */
+        canvas { touch-action: none; }
     </style>
 </head>
-<body class="bg-[#060c18] text-slate-100 min-h-screen flex flex-col selection:bg-primary-500/30">
+<body>
 
-    <!-- Top bar -->
-    <header class="flex items-center justify-between px-8 py-5 border-b border-slate-900/60 bg-[#0d1527]/80 backdrop-blur-md z-10 flex-shrink-0">
-        <div class="flex items-center gap-4">
-            <div class="h-12 w-12 bg-white/10 border border-white/5 shadow-md shadow-slate-950/20 rounded-xl flex items-center justify-center text-primary-400 font-black text-2xl">
-                D
-            </div>
-            <div>
-                <p id="clinic-name-display" class="text-white font-extrabold text-xl tracking-tight leading-none">Dr. Mahe's Dentistry</p>
-                <p class="text-slate-400 text-xs mt-1.5 font-medium tracking-wide uppercase">Patient Self Check-in</p>
-            </div>
+    <!-- ═══════════════════════════════ HEADER ══════════════════════ -->
+    <header class="site-header">
+        <div class="header-brand">
+            <img src="logo.webp" width="50%" height="100%" >
         </div>
-        <div class="flex items-center gap-3">
-            <button id="btn-fullscreen" class="text-xs text-slate-300 hover:text-white border border-slate-800 hover:border-slate-600 rounded-xl px-4 py-2.5 transition-all font-semibold bg-slate-950/30">
-                Fullscreen Kiosk
-            </button>
-        </div>
+        <button id="btn-fullscreen" class="btn-fullscreen">
+            ⛶ Fullscreen
+        </button>
     </header>
 
-    <!-- Progress Indicator -->
-    <div class="w-full max-w-lg mx-auto mt-8 px-6">
-        <div class="flex items-center justify-between relative">
-            <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-slate-800 -z-10 rounded-full"></div>
-            <div id="progress-bar" class="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary-500 -z-10 rounded-full transition-all duration-300" style="width: 10%"></div>
-
+    <!-- ═══════════════════════════════ STEPPER ═════════════════════ -->
+    <div class="stepper-wrap">
+        <div class="stepper">
             <!-- Step 1 -->
-            <div class="flex flex-col items-center gap-2">
-                <div id="step1-icon" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-600 border-primary-500 text-white ring-4 ring-primary-950/50">1</div>
-                <span id="step1-text" class="text-xs font-bold transition-all duration-300 text-primary-400">Details</span>
+            <div class="step-node">
+                <div id="step1-circle" class="step-circle active">1</div>
+                <span id="step1-label" class="step-label active">Details</span>
+            </div>
+
+            <div class="step-connector">
+                <div id="conn1" class="step-connector-fill"></div>
             </div>
 
             <!-- Step 2 -->
-            <div class="flex flex-col items-center gap-2">
-                <div id="step2-icon" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-[#0b1222] border-slate-800 text-slate-600">2</div>
-                <span id="step2-text" class="text-xs font-bold transition-all duration-300 text-slate-500">Consent</span>
+            <div class="step-node">
+                <div id="step2-circle" class="step-circle">2</div>
+                <span id="step2-label" class="step-label">Consent</span>
+            </div>
+
+            <div class="step-connector">
+                <div id="conn2" class="step-connector-fill"></div>
             </div>
 
             <!-- Step 3 -->
-            <div class="flex flex-col items-center gap-2">
-                <div id="step3-icon" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-[#0b1222] border-slate-800 text-slate-600">3</div>
-                <span id="step3-text" class="text-xs font-bold transition-all duration-300 text-slate-500">Complete</span>
+            <div class="step-node">
+                <div id="step3-circle" class="step-circle">3</div>
+                <span id="step3-label" class="step-label">Done</span>
             </div>
         </div>
     </div>
 
-    <!-- Main Container -->
-    <main class="flex-1 flex items-center justify-center px-6 py-6 overflow-y-auto">
-        
-        <!-- STEP 1: FORM -->
-        <div id="view-form" class="w-full max-w-2xl bg-[#0b1222]/80 p-8 rounded-[2rem] border border-slate-900/60 shadow-2xl shadow-slate-950/40 animate-fade-in my-6">
-            <div class="text-center mb-8">
-                <h1 class="text-white text-3xl font-black tracking-tight mb-2">Welcome to Our Clinic</h1>
-                <p class="text-slate-400 text-sm">Please register your information to enter the treatment queue</p>
+    <!-- ═══════════════════════════════ MAIN ════════════════════════ -->
+    <main>
+
+        <!-- ─── STEP 1: PATIENT DETAILS FORM ─── -->
+        <div id="view-form" class="kiosk-card animate-fade-in">
+
+            <div class="card-header">
+                <span class="card-badge">Welcome</span>
+                <h1 class="card-title">Register Your Visit</h1>
+                <p class="card-desc">Fill in your details to join the treatment queue</p>
             </div>
 
-            <div id="form-error" class="hidden bg-red-500/10 border border-red-500/20 rounded-2xl px-5 py-3.5 text-red-300 text-sm font-semibold mb-6 text-center">
-                ⚠️ <span id="form-error-text"></span>
+            <div id="form-error" class="error-banner hidden" role="alert" aria-live="polite">
+                <span>⚠</span>
+                <span id="form-error-text"></span>
             </div>
 
-            <div class="space-y-6">
+            <div class="form-stack">
+
                 <!-- Name -->
                 <div>
-                    <label class="block text-slate-300 font-bold text-sm mb-2">Full Name *</label>
-                    <input id="f-name" class="w-full bg-[#060a12]/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl px-5 py-4 text-white text-base placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Enter your full name">
+                    <label class="field-label" for="f-name">Full Name <span style="color:#ef4444">*</span></label>
+                    <input id="f-name" class="form-input" type="text" autocomplete="name"
+                           inputmode="text" placeholder="Enter your full name">
                 </div>
 
                 <!-- Phone -->
                 <div>
-                    <label class="block text-slate-300 font-bold text-sm mb-2">Phone Number *</label>
-                    <input id="f-phone" type="tel" inputmode="tel" class="w-full bg-[#060a12]/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl px-5 py-4 text-white text-base placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Enter 10-digit mobile number">
+                    <label class="field-label" for="f-phone">Phone Number <span style="color:#ef4444">*</span></label>
+                    <input id="f-phone" class="form-input" type="tel" autocomplete="tel"
+                           inputmode="tel" placeholder="10-digit mobile number">
                 </div>
 
                 <!-- Age + Gender -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field-row">
                     <div>
-                        <label class="block text-slate-300 font-bold text-sm mb-2">Age (optional)</label>
-                        <input id="f-age" type="number" inputmode="numeric" min="1" max="120" class="w-full bg-[#060a12]/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl px-5 py-4 text-white text-base placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Enter your age">
+                        <label class="field-label" for="f-age">Age (optional)</label>
+                        <input id="f-age" class="form-input" type="number"
+                               inputmode="numeric" min="1" max="120" placeholder="Your age">
                     </div>
                     <div>
-                        <label class="block text-slate-300 font-bold text-sm mb-2">Gender</label>
-                        <div class="flex gap-2" id="gender-buttons">
-                            <!-- Injected by JS -->
-                        </div>
+                        <label class="field-label">Gender</label>
+                        <div class="gender-group" id="gender-buttons" role="group" aria-label="Select gender"></div>
                     </div>
                 </div>
 
-                <!-- Complaint -->
+                <!-- Dental Concern -->
                 <div>
-                    <label class="block text-slate-300 font-bold text-sm mb-3">Primary Dental Concern *</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" id="complaint-buttons">
-                        <!-- Injected by JS -->
-                    </div>
+                    <label class="field-label">Primary Dental Concern <span style="color:#ef4444">*</span></label>
+                    <div class="complaint-grid" id="complaint-buttons" role="group" aria-label="Select dental concern"></div>
                 </div>
 
-                <!-- Notes -->
-                <div>
-                    <label class="block text-slate-300 font-bold text-sm mb-2">Details / Remarks (optional)</label>
-                    <textarea id="f-notes" class="w-full bg-[#060a12]/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl px-5 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none transition-all" rows="2" placeholder="Mention active tooth pain locations, systemic diseases, allergies, etc."></textarea>
-                </div>
 
-                <button id="btn-proceed" class="w-full bg-primary-600 hover:bg-primary-500 text-white font-extrabold text-lg py-4 rounded-2xl shadow-xl shadow-primary-950/40 transition-all mt-2 flex items-center justify-center gap-2">
-                    Proceed to Treatment Consent <span class="text-xl">→</span>
+                <button id="btn-proceed" class="btn-primary" type="button">
+                    Proceed to Consent &nbsp;→
                 </button>
+
             </div>
         </div>
 
-        <!-- STEP 2: CONSENT -->
-        <div id="view-consent" class="hidden w-full max-w-2xl bg-[#0b1222]/80 p-8 rounded-[2rem] border border-slate-900/60 shadow-2xl animate-fade-in flex flex-col my-6">
-            <div class="flex items-center gap-3 mb-6">
-                <button id="btn-back-form" class="text-slate-400 hover:text-white p-2 hover:bg-slate-800/40 rounded-xl transition-all">←</button>
+        <!-- ─── STEP 2: CONSENT + SIGNATURE ─── -->
+        <div id="view-consent" class="kiosk-card animate-fade-in hidden">
+
+            <div class="back-row">
+                <button id="btn-back-form" class="btn-back" aria-label="Go back">←</button>
                 <div>
-                    <h2 class="text-white text-2xl font-bold tracking-tight">Clinical Consent</h2>
-                    <p class="text-slate-400 text-xs mt-0.5">Step 2: Sign declaration agreement</p>
+                    <h2 class="card-title" style="font-size:1.4rem; margin-bottom:2px;">Clinical Consent</h2>
+                    <p class="card-desc" style="font-size:0.78rem;">Step 2 of 3 — Review and sign the declaration</p>
                 </div>
             </div>
 
-            <div id="consent-error" class="hidden bg-red-500/10 border border-red-500/20 rounded-2xl px-5 py-3 text-red-300 text-sm font-semibold mb-5 text-center">
-                ⚠️ <span id="consent-error-text"></span>
+            <div id="consent-error" class="error-banner hidden" role="alert" aria-live="polite">
+                <span>⚠</span>
+                <span id="consent-error-text"></span>
             </div>
 
-            <div class="bg-[#060a12]/80 rounded-2xl p-6 border border-slate-800/80 text-slate-300 text-sm leading-relaxed mb-6 relative overflow-hidden">
-                <div class="absolute right-0 top-0 w-24 h-24 bg-primary-500/5 rounded-full blur-2xl"></div>
-                <p class="font-semibold text-white mb-2 uppercase text-xs tracking-wider text-primary-400">Treatment Authorization</p>
-                I, <strong class="text-white" id="display-name"></strong>, hereby consent to undergo clinical diagnostic scans, dental cleanings and treatments deemed necessary by the specialist team. I confirm the treatment options, procedural risks and associated budgets have been outlined to my satisfaction.
+            <div class="consent-text-box">
+                <span class="consent-label">Treatment Authorization</span>
+                I, <strong id="display-name"></strong>, hereby consent to undergo clinical diagnostic
+                scans, dental cleanings, and treatments deemed necessary by the specialist team.
+                I confirm the treatment options, procedural risks, and associated budgets have been
+                outlined to my satisfaction.
             </div>
 
             <!-- Signature -->
-            <div class="flex flex-col">
-                <div class="flex justify-between items-center mb-2.5">
-                    <label class="text-slate-300 font-bold text-sm">Patient Signature Space *</label>
-                    <button id="btn-clear-sig" class="text-slate-500 hover:text-slate-300 text-xs transition-colors font-semibold">↺ Clear Canvas</button>
+            <div class="sig-wrap">
+                <div class="sig-header">
+                    <label class="field-label" style="margin:0;">Patient Signature <span style="color:#ef4444">*</span></label>
+                    <button id="btn-clear-sig" class="btn-clear" type="button">↺ Clear</button>
                 </div>
-                <div class="bg-white rounded-2xl overflow-hidden shadow-inner border-2 border-slate-800 p-2" style="height: 220px;">
-                    <canvas id="sig-canvas" class="w-full h-full cursor-crosshair bg-white touch-none"></canvas>
+                <div class="sig-canvas-wrap">
+                    <canvas id="sig-canvas"></canvas>
                 </div>
-                <p class="text-slate-500 text-xs text-center mt-2.5">Use your finger or mouse pointer to sign within the white box</p>
+                <p class="sig-hint">Sign with your finger or mouse inside the box above</p>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-3 mt-8">
-                <button id="btn-back-form2" class="flex-1 bg-slate-950/60 hover:bg-slate-900/60 text-slate-300 border border-slate-800 font-bold py-4 rounded-2xl transition-all">
-                    Back to Details
+            <div class="btn-row">
+                <button id="btn-back-form2" class="btn-secondary-outline" type="button">← Back</button>
+                <button id="btn-submit" class="btn-primary" type="button" style="flex:2;">
+                    Agree &amp; Complete Check-in ✓
                 </button>
-                <button id="btn-submit" class="flex-1 bg-primary-600 hover:bg-primary-500 text-white font-extrabold text-base py-4 rounded-2xl shadow-lg transition-all">
-                    Agree & Finish Check In ✓
+            </div>
+
+        </div>
+
+        <!-- ─── STEP 3: SUCCESS ─── -->
+        <div id="view-success" class="kiosk-card animate-fade-in hidden">
+            <div class="success-wrap">
+                <div class="success-check">✓</div>
+                <h2 class="success-title">Check-in Complete!</h2>
+                <p class="success-desc">Please wait in the reception area. We will call your name shortly.</p>
+
+                <div class="queue-card">
+                    <p class="queue-label">Your Queue Number</p>
+                    <p id="success-queue" class="queue-number">—</p>
+                    <p id="success-name" class="queue-patient-name"></p>
+                    <p id="success-complaint" class="queue-complaint"></p>
+                </div>
+
+                <button id="btn-done" class="btn-primary" type="button">
+                    Done / Next Patient →
                 </button>
             </div>
         </div>
 
-        <!-- STEP 3: SUCCESS -->
-        <div id="view-success" class="hidden text-center animate-fade-in max-w-md w-full bg-[#0b1222]/80 p-8 rounded-[2rem] border border-slate-900/60 shadow-2xl my-6">
-            <div class="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-5 text-emerald-400 text-4xl">✓</div>
-            <h2 class="text-white text-3xl font-black mb-1">Check-in Complete!</h2>
-            <p class="text-slate-400 text-sm mb-8">Please wait in the reception. We will call you shortly.</p>
-
-            <div class="bg-[#060a12]/80 rounded-2xl p-8 border border-slate-800/80 mb-8 relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-b from-primary-500/5 to-transparent pointer-events-none"></div>
-                <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1.5">Your Queue Number</p>
-                <p id="success-queue" class="text-primary-400 text-8xl font-black leading-none">1</p>
-                <p id="success-name" class="text-white mt-5 text-lg font-bold">John Doe</p>
-                <p id="success-complaint" class="text-slate-400 text-sm mt-0.5 font-medium">Check-up</p>
-            </div>
-
-            <button id="btn-done" class="w-full bg-slate-850 hover:bg-slate-800 text-white font-bold py-4 rounded-2xl transition-all border border-slate-800">
-                Done / Next Patient →
-            </button>
-        </div>
     </main>
 
     <script>
-        // --- CONSTANTS ---
+        // ═══════════════════════════════════════════════════════════
+        // CONSTANTS
+        // ═══════════════════════════════════════════════════════════
         const GENDERS = ['Male', 'Female', 'Other'];
         const COMPLAINTS = [
-            { name: 'Toothache', icon: '⚡' },
-            { name: 'Tooth Sensitivity', icon: '❄️' },
-            { name: 'Bleeding Gums', icon: '🩸' },
-            { name: 'Broken Tooth', icon: '💥' },
-            { name: 'Cleaning Required', icon: '🧼' },
-            { name: 'Check-up', icon: '🔍' },
-            { name: 'Cavity / Filling', icon: '🕳️' },
-            { name: 'Missing Tooth', icon: '🦷' },
-            { name: 'Braces / Alignment', icon: '😬' },
-            { name: 'Other', icon: '💬' },
+            'Toothache',
+            'Tooth Sensitivity',
+            'Bleeding Gums',
+            'Broken Tooth',
+            'Cleaning',
+            'Check-up',
+            'Cavity / Filling',
+            'Missing Tooth',
+            'Braces',
+            'Other'
         ];
 
-        // --- STATE ---
+        // ═══════════════════════════════════════════════════════════
+        // STATE
+        // ═══════════════════════════════════════════════════════════
         let state = {
-            step: 'form', // form, consent, success
-            form: { name: '', phone: '', age: '', gender: 'Male', complaint: '', notes: '' },
+            step: 'form',
+            form: { name:'', phone:'', age:'', gender:'Male', complaint:'', notes:'' },
             hasSigned: false
         };
 
-        // --- DOM ELEMENTS ---
         const el = id => document.getElementById(id);
+
         const views = {
-            form: el('view-form'),
+            form:    el('view-form'),
             consent: el('view-consent'),
             success: el('view-success')
         };
-        const steps = [
-            { icon: el('step1-icon'), text: el('step1-text') },
-            { icon: el('step2-icon'), text: el('step2-text') },
-            { icon: el('step3-icon'), text: el('step3-text') }
-        ];
 
-        // --- INITIALIZATION ---
+        // ═══════════════════════════════════════════════════════════
+        // RENDER GENDER BUTTONS
+        // ═══════════════════════════════════════════════════════════
         function renderGenderButtons() {
             const container = el('gender-buttons');
             container.innerHTML = '';
             GENDERS.forEach(g => {
                 const btn = document.createElement('button');
-                const isSelected = state.form.gender === g;
-                btn.className = `flex-1 py-4 rounded-2xl font-bold text-sm transition-all border ${isSelected ? 'bg-primary-600 border-primary-500 text-white shadow-lg' : 'bg-[#060a12]/80 border-slate-800 text-slate-400 hover:bg-slate-900/40'}`;
+                btn.type = 'button';
+                btn.className = 'gender-btn' + (state.form.gender === g ? ' selected' : '');
                 btn.textContent = g;
+                btn.setAttribute('aria-pressed', state.form.gender === g);
                 btn.onclick = () => { state.form.gender = g; renderGenderButtons(); };
                 container.appendChild(btn);
             });
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // RENDER COMPLAINT BUTTONS
+        // ═══════════════════════════════════════════════════════════
         function renderComplaintButtons() {
             const container = el('complaint-buttons');
             container.innerHTML = '';
             COMPLAINTS.forEach(c => {
                 const btn = document.createElement('button');
-                const isSelected = state.form.complaint === c.name;
-                btn.className = `px-4 py-3.5 rounded-2xl font-bold text-xs text-left border flex items-center gap-2.5 transition-all ${isSelected ? 'bg-primary-950 border-primary-500 text-primary-300 shadow-md ring-1 ring-primary-500/30' : 'bg-[#060a12]/30 border-slate-900/60 text-slate-400 hover:border-slate-800 hover:bg-slate-900/20'}`;
-                btn.innerHTML = `<span class="text-base">${c.icon}</span><span>${c.name}</span>`;
-                btn.onclick = () => { state.form.complaint = c.name; renderComplaintButtons(); };
+                btn.type = 'button';
+                btn.className = 'complaint-btn' + (state.form.complaint === c ? ' selected' : '');
+                btn.setAttribute('aria-pressed', state.form.complaint === c);
+                btn.innerHTML = `<span>${c}</span>`;
+                btn.onclick = () => { state.form.complaint = c; renderComplaintButtons(); };
                 container.appendChild(btn);
             });
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // STEP NAVIGATION
+        // ═══════════════════════════════════════════════════════════
         function setStep(newStep) {
             state.step = newStep;
-            
-            // Hide all views
+
+            // Hide all, show current
             Object.values(views).forEach(v => v.classList.add('hidden'));
-            
-            // Show current
             views[newStep].classList.remove('hidden');
 
-            // Update Progress Bar
-            const bar = el('progress-bar');
-            if (newStep === 'form') bar.style.width = '10%';
-            if (newStep === 'consent') bar.style.width = '50%';
-            if (newStep === 'success') bar.style.width = '100%';
+            // ── Stepper UI ──
+            const s1c = el('step1-circle'), s1l = el('step1-label');
+            const s2c = el('step2-circle'), s2l = el('step2-label');
+            const s3c = el('step3-circle'), s3l = el('step3-label');
+            const conn1 = el('conn1'), conn2 = el('conn2');
 
-            // Step 1 UI
+            // Reset all
+            [s1c, s2c, s3c].forEach(c => { c.className = 'step-circle'; });
+            [s1l, s2l, s3l].forEach(l => { l.className = 'step-label'; });
+            conn1.classList.remove('active');
+            conn2.classList.remove('active');
+
             if (newStep === 'form') {
-                steps[0].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-600 border-primary-500 text-white ring-4 ring-primary-950/50";
-                steps[0].icon.innerHTML = "1";
-                steps[0].text.className = "text-xs font-bold transition-all duration-300 text-primary-400";
-            } else {
-                steps[0].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-950 border-primary-600 text-primary-400";
-                steps[0].icon.innerHTML = "✓";
-                steps[0].text.className = "text-xs font-bold transition-all duration-300 text-slate-500";
-            }
-
-            // Step 2 UI
-            if (newStep === 'consent') {
-                steps[1].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-600 border-primary-500 text-white ring-4 ring-primary-950/50";
-                steps[1].icon.innerHTML = "2";
-                steps[1].text.className = "text-xs font-bold transition-all duration-300 text-primary-400";
-                
-                // Initialize canvas sizes
+                s1c.classList.add('active'); s1l.classList.add('active');
+            } else if (newStep === 'consent') {
+                s1c.classList.add('done');  s1l.classList.add('done');  s1c.textContent = '✓';
+                s2c.classList.add('active'); s2l.classList.add('active');
+                conn1.classList.add('active');
                 initCanvas();
             } else if (newStep === 'success') {
-                steps[1].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-primary-950 border-primary-600 text-primary-400";
-                steps[1].icon.innerHTML = "✓";
-                steps[1].text.className = "text-xs font-bold transition-all duration-300 text-slate-500";
-            } else {
-                steps[1].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-[#0b1222] border-slate-800 text-slate-600";
-                steps[1].icon.innerHTML = "2";
-                steps[1].text.className = "text-xs font-bold transition-all duration-300 text-slate-500";
+                s1c.classList.add('done');  s1l.classList.add('done');  s1c.textContent = '✓';
+                s2c.classList.add('done');  s2l.classList.add('done');  s2c.textContent = '✓';
+                s3c.classList.add('active'); s3l.classList.add('active');
+                conn1.classList.add('active');
+                conn2.classList.add('active');
             }
 
-            // Step 3 UI
-            if (newStep === 'success') {
-                steps[2].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-emerald-600 border-emerald-500 text-white ring-4 ring-emerald-950/50";
-                steps[2].text.className = "text-xs font-bold transition-all duration-300 text-emerald-400";
-            } else {
-                steps[2].icon.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 bg-[#0b1222] border-slate-800 text-slate-600";
-                steps[2].text.className = "text-xs font-bold transition-all duration-300 text-slate-500";
-            }
+            // Scroll to top on step change (mobile)
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- ACTIONS ---
+        // ═══════════════════════════════════════════════════════════
+        // ERROR HELPERS
+        // ═══════════════════════════════════════════════════════════
         function showError(view, msg) {
             const errDiv = el(view + '-error');
             const errTxt = el(view + '-error-text');
-            if(msg) {
+            if (msg) {
                 errTxt.textContent = msg;
                 errDiv.classList.remove('hidden');
+                errDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
                 errDiv.classList.add('hidden');
             }
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // FORM PROCEED
+        // ═══════════════════════════════════════════════════════════
         el('btn-proceed').onclick = () => {
-            state.form.name = el('f-name').value;
-            state.form.phone = el('f-phone').value;
-            state.form.age = el('f-age').value;
-            state.form.notes = el('f-notes').value;
+            state.form.name      = el('f-name').value.trim();
+            state.form.phone     = el('f-phone').value.trim();
+            state.form.age       = el('f-age').value.trim();
+            state.form.notes     = el('f-notes').value.trim();
 
-            if (!state.form.name.trim()) return showError('form', 'Please enter your full name');
-            if (!state.form.phone.trim()) return showError('form', 'Please enter your phone number');
-            if (!state.form.complaint) return showError('form', 'Please select your complaint');
-            
+            if (!state.form.name)      return showError('form', 'Please enter your full name.');
+            if (!state.form.phone)     return showError('form', 'Please enter your phone number.');
+            if (!/^\d{10}$/.test(state.form.phone.replace(/\s/g,'')))
+                                       return showError('form', 'Phone number should be 10 digits.');
+            if (!state.form.complaint) return showError('form', 'Please select your primary dental concern.');
+
             showError('form', '');
             el('display-name').textContent = state.form.name;
             setStep('consent');
         };
 
-        el('btn-back-form').onclick = () => setStep('form');
+        el('btn-back-form').onclick  = () => setStep('form');
         el('btn-back-form2').onclick = () => setStep('form');
 
-        // --- SIGNATURE CANVAS LOGIC ---
+        // ═══════════════════════════════════════════════════════════
+        // SIGNATURE CANVAS
+        // ═══════════════════════════════════════════════════════════
         const canvas = el('sig-canvas');
-        let ctx = null;
-        let drawing = false;
-        let lastPos = {x:0, y:0};
+        let ctx = null, drawing = false, lastPos = {x:0, y:0};
 
         function initCanvas() {
-            if(!ctx) {
-                ctx = canvas.getContext('2d');
-            }
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
+            if (!ctx) ctx = canvas.getContext('2d');
+            const wrap = canvas.parentElement;
+            canvas.width  = wrap.clientWidth;
+            canvas.height = wrap.clientHeight;
             clearCanvas();
         }
 
         function clearCanvas() {
+            if (!ctx) return;
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = '#0f766e';
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#111111';
+            ctx.lineWidth   = 3;
+            ctx.lineCap     = 'round';
+            ctx.lineJoin    = 'round';
             state.hasSigned = false;
             showError('consent', '');
         }
@@ -384,20 +1059,14 @@
 
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const src  = e.touches ? e.touches[0] : e;
             return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
+                x: (src.clientX - rect.left) * (canvas.width / rect.width),
+                y: (src.clientY - rect.top)  * (canvas.height / rect.height)
             };
         }
 
-        function startDrawing(e) {
-            e.preventDefault();
-            drawing = true;
-            lastPos = getPos(e);
-        }
-
+        function startDraw(e) { e.preventDefault(); drawing = true; lastPos = getPos(e); }
         function draw(e) {
             if (!drawing) return;
             e.preventDefault();
@@ -409,50 +1078,54 @@
             lastPos = pos;
             state.hasSigned = true;
         }
+        function stopDraw(e) { if (e) e.preventDefault(); drawing = false; }
 
-        function stopDrawing(e) {
-            if(e) e.preventDefault();
-            drawing = false;
-        }
+        canvas.addEventListener('mousedown',  startDraw);
+        canvas.addEventListener('mousemove',  draw);
+        canvas.addEventListener('mouseup',    stopDraw);
+        canvas.addEventListener('mouseleave', stopDraw);
+        canvas.addEventListener('touchstart', startDraw, { passive: false });
+        canvas.addEventListener('touchmove',  draw,      { passive: false });
+        canvas.addEventListener('touchend',   stopDraw,  { passive: false });
 
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing);
-        
-        canvas.addEventListener('touchstart', startDrawing, {passive: false});
-        canvas.addEventListener('touchmove', draw, {passive: false});
-        canvas.addEventListener('touchend', stopDrawing);
+        // Handle canvas resize (orientation change on mobile)
+        window.addEventListener('resize', () => {
+            if (state.step === 'consent') {
+                const prevSigned = state.hasSigned;
+                initCanvas();
+                state.hasSigned = prevSigned; // keep signed state
+            }
+        });
 
         function getCompressedSignature() {
             if (!state.hasSigned) return null;
-            const smallCanvas = document.createElement('canvas');
-            smallCanvas.width = 400;
-            smallCanvas.height = 200;
-            const sCtx = smallCanvas.getContext('2d');
-            sCtx.drawImage(canvas, 0, 0, smallCanvas.width, smallCanvas.height);
-            return smallCanvas.toDataURL('image/jpeg', 0.3);
+            const small = document.createElement('canvas');
+            small.width  = 400;
+            small.height = 200;
+            small.getContext('2d').drawImage(canvas, 0, 0, 400, 200);
+            return small.toDataURL('image/jpeg', 0.3);
         }
 
-        // --- SUBMISSION ---
+        // ═══════════════════════════════════════════════════════════
+        // SUBMIT
+        // ═══════════════════════════════════════════════════════════
         el('btn-submit').onclick = async () => {
-            if (!state.hasSigned) return showError('consent', 'Please sign the consent form before checking in.');
-            const sig = getCompressedSignature();
-            
+            if (!state.hasSigned) return showError('consent', 'Please sign the consent form before continuing.');
+
             const btn = el('btn-submit');
             btn.disabled = true;
-            btn.textContent = 'Registering...';
+            btn.textContent = 'Registering…';
             showError('consent', '');
 
             try {
                 const payload = {
-                    name: state.form.name.trim(),
-                    phone: state.form.phone.trim(),
-                    age: state.form.age ? Number(state.form.age) : null,
-                    gender: state.form.gender,
+                    name:      state.form.name,
+                    phone:     state.form.phone,
+                    age:       state.form.age ? Number(state.form.age) : null,
+                    gender:    state.form.gender,
                     complaint: state.form.complaint,
-                    notes: state.form.notes,
-                    signature: sig
+                    notes:     state.form.notes,
+                    signature: getCompressedSignature()
                 };
 
                 const res = await fetch('https://portal.drmahesdentistry.in/api/consent', {
@@ -461,53 +1134,60 @@
                     body: JSON.stringify(payload)
                 });
 
-                if(!res.ok) throw new Error('API Error');
+                if (!res.ok) throw new Error('API Error');
                 const data = await res.json();
 
-                // Success
-                el('success-queue').textContent = data.appt.queue_number;
-                el('success-name').textContent = data.patient.name;
+                el('success-queue').textContent     = data.appt.queue_number;
+                el('success-name').textContent      = data.patient.name;
                 el('success-complaint').textContent = state.form.complaint;
                 setStep('success');
 
             } catch (err) {
                 console.error(err);
-                showError('consent', 'Something went wrong saving consent. Please ask staff for help.');
+                showError('consent', 'Something went wrong. Please ask a staff member for assistance.');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Agree & Finish Check In ✓';
+                btn.textContent = 'Agree & Complete Check-in ✓';
             }
         };
 
-        // --- RESET ---
+        // ═══════════════════════════════════════════════════════════
+        // RESET
+        // ═══════════════════════════════════════════════════════════
         el('btn-done').onclick = () => {
-            state.form = { name: '', phone: '', age: '', gender: 'Male', complaint: '', notes: '' };
-            el('f-name').value = '';
-            el('f-phone').value = '';
-            el('f-age').value = '';
-            el('f-notes').value = '';
+            state.form = { name:'', phone:'', age:'', gender:'Male', complaint:'', notes:'' };
+            ['f-name','f-phone','f-age','f-notes'].forEach(id => { el(id).value = ''; });
             renderGenderButtons();
             renderComplaintButtons();
             setStep('form');
         };
 
-        // --- FULLSCREEN ---
+        // ═══════════════════════════════════════════════════════════
+        // FULLSCREEN
+        // ═══════════════════════════════════════════════════════════
         el('btn-fullscreen').onclick = () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                    console.log('Fullscreen error:', err.message);
                 });
-                el('btn-fullscreen').textContent = 'Exit Fullscreen';
+                el('btn-fullscreen').textContent = '⛶ Exit Full';
             } else {
                 document.exitFullscreen();
-                el('btn-fullscreen').textContent = 'Fullscreen Kiosk';
+                el('btn-fullscreen').textContent = '⛶ Fullscreen';
             }
         };
 
-        // Initialize
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                el('btn-fullscreen').textContent = '⛶ Fullscreen';
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════════════
         renderGenderButtons();
         renderComplaintButtons();
-
     </script>
 </body>
 </html>
