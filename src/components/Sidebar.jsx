@@ -12,8 +12,6 @@ const navItems = [
   { to: '/appointments', icon: Calendar,        label: 'Appointments' },
   { to: '/treatments',   icon: Activity,        label: 'Treatments'   },
   { to: '/billing',      icon: Receipt,         label: 'Billing'      },
-  { to: '/queue',        icon: ListOrdered,     label: 'Queue'        },
-  { to: '/kiosk',        icon: Monitor,         label: 'Kiosk'        },
 ]
 
 export default function Sidebar({ isOpen, onClose }) {

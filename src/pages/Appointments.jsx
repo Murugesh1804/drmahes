@@ -271,7 +271,7 @@ export default function Appointments() {
     }
   }
 
-  const isToday = date === dateStr(new Date())
+  const isToday = date === clinicDateString(new Date())
 
   return (
     <div className="space-y-5 animate-fade-in">

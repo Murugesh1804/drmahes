@@ -73,25 +73,37 @@ router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
   const sigPath = path.join(consentFormsDir, sigFilename)
   fs.writeFileSync(sigPath, buffer)
 
-  // Update patient with consent info
-  patient = await queries.updatePatient(patient.id, {
-    ...patient,
-    consentFormSaved: true,
-    consentFormPath: `consent_forms/${sigFilename}`,
-    consentSignedAt: new Date()
-  })
+  // Update patient with consent info directly in DB so it actually saves
+  const updatedPatientDoc = await Patient.findByIdAndUpdate(
+    patient.id,
+    {
+      $set: {
+        consentFormSaved: true,
+        consentFormPath: `consent_forms/${sigFilename}`,
+        consentSignedAt: new Date()
+      }
+    },
+    { new: true }
+  ).lean()
+
+  if (!updatedPatientDoc) {
+    return res.status(404).json({ error: 'Patient not found for updating consent' })
+  }
+  patient = updatedPatientDoc
 
   const today = clinicDateString()
   const appt = await queries.addAppointment({
-    patient_id: patient.id,
+    patient_id: patient._id.toString(),
     scheduled_date: today,
     scheduled_time: '',
     reason: complaint,
     notes: notes || 'Kiosk check-in'
   })
 
-  const patientJSON = patient.toObject()
-  patientJSON.id = patientJSON._id.toString()
+  const patientJSON = {
+    ...patient,
+    id: patient._id.toString()
+  }
 
   res.status(201).json({ patient: patientJSON, appt })
 }))

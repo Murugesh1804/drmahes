@@ -139,7 +139,7 @@ export default function Billing() {
   // Auto-calculate items from appointment when linked
   useEffect(() => {
     if (!selAppt) { setBillItems([]); return }
-    const txsForAppt = patTreatments.filter(t => t.appointment_id === selAppt.id)
+    const txsForAppt = patTreatments.filter(t => t.appointment_id === selAppt.id && !t.bill_id)
     const items = txsForAppt.map(t => ({
       id: t.id,  // Preserve treatment ID to avoid duplicates
       treatment_type: t.treatment_type,

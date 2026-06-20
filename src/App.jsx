@@ -10,7 +10,6 @@ const PatientDetail = lazy(() => import('./pages/PatientDetail'))
 const Appointments = lazy(() => import('./pages/Appointments'))
 const Treatments = lazy(() => import('./pages/Treatments'))
 const Billing = lazy(() => import('./pages/Billing'))
-const Kiosk = lazy(() => import('./pages/Kiosk'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Login = lazy(() => import('./pages/Login'))
 
@@ -56,7 +55,7 @@ function AppLayout() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [navigate])
 
-  if (!isAuthenticated && location.pathname !== '/kiosk') {
+  if (!isAuthenticated) {
     return <Login />
   }
 
@@ -84,7 +83,6 @@ function AppLayout() {
               <Route path="/appointments"  element={<Appointments />} />
               <Route path="/treatments"    element={<Treatments />} />
               <Route path="/billing"       element={<Billing />} />
-              <Route path="/kiosk"         element={<Kiosk />} />
               <Route path="/settings"      element={<Settings />} />
             </Routes>
           </Suspense>

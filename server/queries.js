@@ -67,6 +67,7 @@ function clinicDateString(date = new Date()) {
   return `${byType.year}-${byType.month}-${byType.day}`
 }
 
+// IST offset applied by default (5.5 hours) as per business requirement
 function clinicDayRange(dateString = clinicDateString()) {
   const [year, month, day] = dateString.split('-').map(Number)
   const utcStart = Date.UTC(year, month - 1, day) - (5.5 * 60 * 60 * 1000)
@@ -710,7 +711,7 @@ async function unblockSlot(date, slot) {
 // ═══════════════════════════════════════════════════════════
 async function getTreatmentsByAppointment(appointmentId) {
   if (!isValidObjectId(appointmentId)) return []
-  const txs = await Treatment.find({ appointment_id: appointmentId }).sort({ created_at: 1 }).lean()
+  const txs = await Treatment.find({ appointment_id: appointmentId, deleted_at: null }).sort({ created_at: 1 }).lean()
   return txs.map(t => ({
     ...t,
     id: t._id.toString(),
@@ -770,7 +771,8 @@ async function addTreatment(data) {
     tooth_number: normalizeText(data.tooth_number),
     description: normalizeText(data.description),
     cost: toMoney(data.cost, 0, 'Treatment cost'),
-    doctor_notes: normalizeText(data.doctor_notes)
+    doctor_notes: normalizeText(data.doctor_notes),
+    status: data.status || 'planned'
   })
   await tx.save()
   const doc = tx.toObject()
@@ -851,10 +853,6 @@ async function deleteTreatment(id) {
   // FIX #2: Prevent deletion of billed treatments
   if (tx.bill_id) {
     badRequest(`Cannot delete billed treatment. Linked to bill: ${tx.bill_id}`)
-  }
-  
-  if (tx.status === 'completed') {
-    badRequest('Cannot delete completed treatments. Archive instead by marking as cancelled.')
   }
   
   // FIX #2: Soft delete instead of hard delete

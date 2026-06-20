@@ -1040,6 +1040,7 @@
             const cleanPhone = state.form.phone.replace(/[\s\-\+]/g, '');
             if (!/^\d{10,15}$/.test(cleanPhone))
                                        return showError('form', 'Phone number should be 10 to 15 digits.');
+            state.form.phone = cleanPhone; // Save sanitized phone number to state
             if (!state.form.complaint) return showError('form', 'Please select your primary dental concern.');
 
             showError('form', '');
@@ -1149,7 +1150,7 @@
                     signature: getCompressedSignature()
                 };
 
-                const res = await fetch('https://portal.drmahesdentistry.in/api/consent', {
+                const res = await fetch('/api/consent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

@@ -80,19 +80,28 @@ export default function Treatments() {
         description: form.description,
         cost: parseFloat(form.cost) || 0,
         doctor_notes: form.doctor_notes,
+        status: 'completed'
       })
       notify('Treatment recorded')
       setShowAdd(false)
       setForm(EMPTY_FORM)
       loadTreatments()
+    } catch (e) {
+      console.error(e)
+      notify(e.message || 'Failed to record treatment', 'error')
     } finally { setSaving(false) }
   }
 
   async function handleDelete(id) {
     if (!confirm('Delete this treatment?')) return
-    await deleteTreatment(id)
-    notify('Treatment deleted')
-    loadTreatments()
+    try {
+      await deleteTreatment(id)
+      notify('Treatment deleted')
+      loadTreatments()
+    } catch (e) {
+      console.error(e)
+      notify(e.message || 'Failed to delete treatment', 'error')
+    }
   }
 
   const total = treatments.reduce((s, t) => s + (t.cost || 0), 0)
@@ -170,6 +179,12 @@ export default function Treatments() {
                     className="btn-primary"
                   >
                     <Plus size={16} /> Add Treatment
+                  </button>
+                  <button
+                    onClick={() => navigate('/billing')}
+                    className="btn-secondary border-primary-600 text-primary-700 hover:bg-primary-50"
+                  >
+                    Go to Billing →
                   </button>
                 </div>
               </div>
