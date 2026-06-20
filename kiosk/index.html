@@ -1150,7 +1150,16 @@
                     signature: getCompressedSignature()
                 };
 
-                const res = await fetch('/api/consent', {
+                // const res = await fetch('/api/consent', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(payload)
+                // });
+
+                // if (!res.ok) throw new Error('API Error');
+                // const data = await res.json();
+
+                const res = await fetch('https://portal.drmahesdentistry.in/api/consent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
