@@ -10,9 +10,11 @@ import {
   getTreatmentsByPatient,
   getBillsByPatient,
   openConsentForm,
+  signExistingConsentForm
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
+import SignatureModal from '../components/SignatureModal'
 import { PatientForm } from './Patients'
 
 const TABS = [
@@ -43,6 +45,7 @@ export default function PatientDetail() {
   const [treatments, setTreatments] = useState([])
   const [bills, setBills] = useState([])
   const [showEdit, setShowEdit] = useState(false)
+  const [showSignatureModal, setShowSignatureModal] = useState(false)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
   const [notFound, setNotFound] = useState(false)
@@ -86,6 +89,20 @@ export default function PatientDetail() {
     } finally { setSaving(false) }
   }
 
+  async function handleSignConsent(signatureDataUrl) {
+    setSaving(true)
+    try {
+      await signExistingConsentForm(id, signatureDataUrl)
+      notify('Consent form signed and saved')
+      setShowSignatureModal(false)
+      load() // Reload patient to update the consent status
+    } catch (e) {
+      notify(e.message || 'Failed to save signature', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (notFound) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-slate-400 gap-4">
@@ -114,19 +131,26 @@ export default function PatientDetail() {
         <span className="text-slate-300">/</span>
         <span className="text-sm font-semibold text-slate-700">{patient.name}</span>
         
-        {patient.consentFormSaved && (
+        {patient.consentFormSaved ? (
           <button
             onClick={() => openConsentForm(patient.id)}
             className="btn-secondary ml-auto text-emerald-700 border-emerald-250 bg-emerald-50/40 hover:bg-emerald-50 px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5"
           >
-            ✍ View Consent Form
+            ✓ View Consent Form
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowSignatureModal(true)}
+            className="btn-secondary ml-auto text-amber-700 border-amber-250 bg-amber-50/40 hover:bg-amber-50 px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5"
+          >
+            ✍ Sign Consent Form
           </button>
         )}
         
         <button
           id="btn-edit-patient"
           onClick={() => setShowEdit(true)}
-          className={patient.consentFormSaved ? "btn-secondary" : "btn-secondary ml-auto"}
+          className="btn-secondary"
         >
           <Edit2 size={14} /> Edit
         </button>
@@ -313,6 +337,15 @@ export default function PatientDetail() {
       >
         <PatientForm form={form} set={(k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))} />
       </Modal>
+
+      {/* Signature Modal */}
+      <SignatureModal
+        open={showSignatureModal}
+        onClose={() => setShowSignatureModal(false)}
+        onSave={handleSignConsent}
+        patientName={patient.name}
+        saving={saving}
+      />
     </div>
   )
 }

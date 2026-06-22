@@ -34,9 +34,21 @@ router.put('/:id/payment', asyncHandler(async (req, res) => {
   res.json(await queries.updateBillPayment(req.params.id, req.body))
 }))
 
+// ── Edit bill (corrections.md §2.2) ─────────────────────────
+router.put('/:id', asyncHandler(async (req, res) => {
+  const result = await queries.updateBill(req.params.id, req.body)
+  if (!result) return res.status(404).json({ error: 'Bill not found' })
+  res.json(result)
+}))
+
 // ── Payment history for a bill ──────────────────────────────
 router.get('/:id/payments', asyncHandler(async (req, res) => {
   res.json(await queries.getPaymentsByBill(req.params.id))
+}))
+
+// ── Edit history for a bill (corrections.md §2.2) ──────────
+router.get('/:id/history', asyncHandler(async (req, res) => {
+  res.json(await queries.getBillEditHistory(req.params.id))
 }))
 
 // ── Email invoice ───────────────────────────────────────────
@@ -55,6 +67,13 @@ router.post('/:id/email', asyncHandler(async (req, res) => {
   const result = await email.sendInvoiceEmail(toEmail, bill, treatments)
   if (!result.success) return res.status(500).json({ error: result.error })
   res.json({ success: true })
+}))
+
+// FIX #1: Delete bill with balance recalculation
+router.delete('/:id', asyncHandler(async (req, res) => {
+  const result = await queries.deleteBill(req.params.id)
+  if (!result) return res.status(404).json({ error: 'Bill not found' })
+  res.json(result)
 }))
 
 module.exports = router

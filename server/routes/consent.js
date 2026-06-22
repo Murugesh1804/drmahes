@@ -40,7 +40,7 @@ const kioskLimiter = rateLimit({
 const consentFormsDir = path.join(__dirname, '../../consent_forms')
 
 router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
-  const { name, phone, age, gender, complaint, notes, signature } = req.body
+  const { name, phone, email, age, gender, complaint, notes, signature } = req.body
 
   if (!name || !phone || !signature) {
     return res.status(400).json({ error: 'Name, Phone and Signature are required' })
@@ -52,6 +52,7 @@ router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
   const patientData = {
     name: name.trim(),
     phone: cleanPhone,
+    email: email ? email.trim() : undefined,
     age: age ? Number(age) : null,
     gender,
     complaint,
@@ -106,6 +107,37 @@ router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
   }
 
   res.status(201).json({ patient: patientJSON, appt })
+}))
+
+router.post('/sign/:patientId', asyncHandler(async (req, res) => {
+  const { signature } = req.body
+  const patientId = req.params.patientId
+
+  if (!signature) return res.status(400).json({ error: 'Signature is required' })
+
+  let patient = await Patient.findById(patientId)
+  if (!patient) return res.status(404).json({ error: 'Patient not found' })
+
+  const base64Data = signature.replace(/^data:image\/[a-z]+;base64,/, '')
+  const buffer = Buffer.from(base64Data, 'base64')
+
+  const sigFilename = `sig_${patient.id}.jpg`
+  const sigPath = path.join(consentFormsDir, sigFilename)
+  fs.writeFileSync(sigPath, buffer)
+
+  const updatedPatientDoc = await Patient.findByIdAndUpdate(
+    patient.id,
+    {
+      $set: {
+        consentFormSaved: true,
+        consentFormPath: `consent_forms/${sigFilename}`,
+        consentSignedAt: new Date()
+      }
+    },
+    { new: true }
+  ).lean()
+
+  res.status(200).json({ patient: updatedPatientDoc })
 }))
 
 router.get('/:patientId', asyncHandler(async (req, res) => {

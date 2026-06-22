@@ -797,6 +797,13 @@
                            inputmode="tel" placeholder="10-digit mobile number">
                 </div>
 
+                <!-- Email -->
+                <div>
+                    <label class="field-label" for="f-email">Email Address (optional)</label>
+                    <input id="f-email" class="form-input" type="email" autocomplete="email"
+                           inputmode="email" placeholder="your.email@example.com">
+                </div>
+
                 <!-- Age + Gender -->
                 <div class="field-row">
                     <div>
@@ -880,6 +887,7 @@
                     <p class="queue-label">Your Queue Number</p>
                     <p id="success-queue" class="queue-number">—</p>
                     <p id="success-name" class="queue-patient-name"></p>
+                    <p id="success-pid" class="queue-complaint" style="font-weight: 700; color: var(--accent); margin-top: 8px;"></p>
                     <p id="success-complaint" class="queue-complaint"></p>
                 </div>
 
@@ -924,7 +932,7 @@
         // ═══════════════════════════════════════════════════════════
         let state = {
             step: 'form',
-            form: { name:'', phone:'', age:'', gender:'Male', complaint:'', notes:'' },
+            form: { name:'', phone:'', email:'', age:'', gender:'Male', complaint:'', notes:'' },
             hasSigned: false
         };
 
@@ -1032,6 +1040,7 @@
         el('btn-proceed').onclick = () => {
             state.form.name      = el('f-name').value.trim();
             state.form.phone     = el('f-phone').value.trim();
+            state.form.email     = el('f-email') ? el('f-email').value.trim() : '';
             state.form.age       = el('f-age').value.trim();
             state.form.notes     = el('f-notes') ? el('f-notes').value.trim() : '';
 
@@ -1143,6 +1152,7 @@
                 const payload = {
                     name:      state.form.name,
                     phone:     state.form.phone,
+                    email:     state.form.email,
                     age:       state.form.age ? Number(state.form.age) : null,
                     gender:    state.form.gender,
                     complaint: state.form.complaint,
@@ -1170,6 +1180,7 @@
 
                 el('success-queue').textContent     = data.appt.queue_number;
                 el('success-name').textContent      = data.patient.name;
+                el('success-pid').textContent       = data.patient.pid ? `Patient ID: ${data.patient.pid}` : '';
                 el('success-complaint').textContent = state.form.complaint;
                 setStep('success');
 
@@ -1186,8 +1197,8 @@
         // RESET
         // ═══════════════════════════════════════════════════════════
         el('btn-done').onclick = () => {
-            state.form = { name:'', phone:'', age:'', gender:'Male', complaint:'', notes:'' };
-            ['f-name','f-phone','f-age'].forEach(id => { el(id).value = ''; });
+            state.form = { name:'', phone:'', email:'', age:'', gender:'Male', complaint:'', notes:'' };
+            ['f-name','f-phone','f-email','f-age'].forEach(id => { if (el(id)) el(id).value = ''; });
             const notesEl = el('f-notes');
             if (notesEl) notesEl.value = '';
             renderGenderButtons();

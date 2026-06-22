@@ -10,6 +10,8 @@ const PatientDetail = lazy(() => import('./pages/PatientDetail'))
 const Appointments = lazy(() => import('./pages/Appointments'))
 const Treatments = lazy(() => import('./pages/Treatments'))
 const Billing = lazy(() => import('./pages/Billing'))
+const ConsultantPayments = lazy(() => import('./pages/ConsultantPayments'))
+const TreatmentMaster = lazy(() => import('./pages/TreatmentMaster'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Login = lazy(() => import('./pages/Login'))
 
@@ -83,6 +85,8 @@ function AppLayout() {
               <Route path="/appointments"  element={<Appointments />} />
               <Route path="/treatments"    element={<Treatments />} />
               <Route path="/billing"       element={<Billing />} />
+              <Route path="/consultants"   element={<ConsultantPayments />} />
+              <Route path="/treatments-master" element={<TreatmentMaster />} />
               <Route path="/settings"      element={<Settings />} />
             </Routes>
           </Suspense>

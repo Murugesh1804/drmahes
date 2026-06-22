@@ -51,6 +51,13 @@ const patientSchema = new mongoose.Schema({
   consentFormPath: { type: String, default: '' },
   consentSignedAt: { type: Date, default: null },
   total_outstanding_balance: { type: Number, default: 0 },
+  // PID Generation (corrections.md §3.2)
+  pid: { type: String, unique: true, sparse: true, index: true },
+  registration_source: {
+    type: String,
+    enum: ['kiosk', 'reception', 'website-booking', 'walk-in', null],
+    default: 'reception'
+  },
   // FIX #3.1: Patient archiving system
   is_archived: { type: Boolean, default: false, index: true },
   archived_at: { type: Date, default: null },
@@ -131,7 +138,8 @@ const treatmentSchema = new mongoose.Schema({
   bill_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', default: null, index: true },
   diagnosis_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Diagnosis', default: null }, // FIX #2.2: Link to diagnosis
   treatment_type: { type: String, required: true },
-  tooth_number: { type: String, default: '' },
+  tooth_number: { type: String, default: '' },  // Legacy single-tooth (backward compat)
+  tooth_numbers: [{ type: String }],             // Multi-tooth selection array
   description: { type: String, default: '' },
   cost: { type: Number, default: 0, min: 0 },
   doctor_notes: { type: String, default: '' },
@@ -200,9 +208,20 @@ const billSchema = new mongoose.Schema({
     sparse: true,
     index: true
   },
-  discount:       { type: Number, default: 0 },   // Discount %
+  discount:       { type: Number, default: 0 },   // Flat Discount Amount
   tax_percent:    { type: Number, default: 0 },   // GST/Tax %
-  tax_amount:     { type: Number, default: 0 }
+  tax_amount:     { type: Number, default: 0 },
+  manual_charges: { type: Number, default: 0 },
+  medicine_charges: { type: Number, default: 0 },
+  // Editable Bills (corrections.md §2.2)
+  edit_history: [{
+    edited_by: { type: String, default: 'admin' },
+    edited_at: { type: Date, default: Date.now },
+    previous_values: { type: Object },
+    change_description: { type: String, default: '' }
+  }],
+  last_edited_at: { type: Date, default: null },
+  last_edited_by: { type: String, default: null }
 }, schemaOptions)
 
 billSchema.index({ status: 1 })
@@ -387,6 +406,45 @@ const auditLogSchema = new mongoose.Schema({
 auditLogSchema.index({ entity_type: 1, entity_id: 1 })
 auditLogSchema.index({ logged_at: 1 })
 
+// ── CONSULTANT PAYMENT SCHEMA (corrections.md §2.3) ──────────────────────────
+const consultantPaymentSchema = new mongoose.Schema({
+  consultant_name: { type: String, required: true, trim: true, index: true },
+  patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
+  treatment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Treatment', default: null },
+  bill_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', default: null },
+  treatment_type: { type: String, default: '' },
+  treatment_cost: { type: Number, default: 0, min: 0 },
+  consultant_share: { type: Number, default: 0, min: 0 },
+  amount_paid: { type: Number, default: 0, min: 0 },
+  balance_due: { type: Number, default: 0, min: 0 },
+  payment_date: { type: Date, default: null },
+  payment_method: { type: String, enum: ['cash', 'upi', 'card', 'other', null], default: null },
+  notes: { type: String, default: '' },
+  status: { type: String, enum: ['pending', 'partial', 'paid'], default: 'pending' }
+}, {
+  ...schemaOptions,
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+})
+consultantPaymentSchema.index({ consultant_name: 1, status: 1 })
+consultantPaymentSchema.index({ created_at: -1 })
+
+// ── TREATMENT MASTER SCHEMA (corrections.md §4.1) ────────────────────────────
+const treatmentMasterSchema = new mongoose.Schema({
+  treatment_name: { type: String, required: true, unique: true, trim: true },
+  category: {
+    type: String,
+    enum: ['general', 'endodontics', 'orthodontics', 'prosthodontics', 'periodontics', 'surgery', 'cosmetic', 'other'],
+    default: 'general'
+  },
+  standard_cost: { type: Number, default: 0, min: 0 },
+  is_active: { type: Boolean, default: true, index: true }
+}, {
+  ...schemaOptions,
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+})
+treatmentMasterSchema.index({ treatment_name: 1 })
+treatmentMasterSchema.index({ category: 1, is_active: 1 })
+
 const Patient = mongoose.model('Patient', patientSchema)
 const Appointment = mongoose.model('Appointment', appointmentSchema)
 const Treatment = mongoose.model('Treatment', treatmentSchema)
@@ -399,6 +457,8 @@ const BlockedSlot = mongoose.model('BlockedSlot', blockedSlotSchema)
 const Diagnosis = mongoose.model('Diagnosis', diagnosisSchema)
 const FollowUp = mongoose.model('FollowUp', followUpSchema)
 const AuditLog = mongoose.model('AuditLog', auditLogSchema)
+const ConsultantPayment = mongoose.model('ConsultantPayment', consultantPaymentSchema)
+const TreatmentMaster = mongoose.model('TreatmentMaster', treatmentMasterSchema)
 
 let connected = false
 
@@ -483,5 +543,7 @@ module.exports = {
   BlockedSlot,
   Diagnosis,
   FollowUp,
-  AuditLog
+  AuditLog,
+  ConsultantPayment,
+  TreatmentMaster
 }

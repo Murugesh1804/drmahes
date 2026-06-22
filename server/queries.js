@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, getDbPath } = require('./db')
+const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, ConsultantPayment, TreatmentMaster, getDbPath } = require('./db')
 
 const CLINIC_TIME_ZONE = process.env.CLINIC_TIME_ZONE || 'Asia/Kolkata'
 const APPOINTMENT_STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
@@ -54,6 +54,26 @@ function normalizeGender(value) {
   if (!value) return null
   if (!['Male', 'Female', 'Other'].includes(value)) badRequest('Gender must be Male, Female or Other')
   return value
+}
+
+// FIX #5: Helper to normalize tooth numbers to consistent array format
+function normalizeToothNumbers(value) {
+  // If already an array, filter out empty strings
+  if (Array.isArray(value)) {
+    return value.filter(t => t && typeof t === 'string' && t.trim())
+  }
+  // If string, split by comma and trim
+  if (typeof value === 'string' && value.trim()) {
+    return value.split(',').map(s => s.trim()).filter(Boolean)
+  }
+  // Default to empty array
+  return []
+}
+
+// FIX #5: Helper to convert tooth numbers array to display string
+function toothNumbersToString(toothNumbers) {
+  if (!Array.isArray(toothNumbers) || toothNumbers.length === 0) return ''
+  return toothNumbers.join(', ')
 }
 
 function clinicDateString(date = new Date()) {
@@ -709,15 +729,37 @@ async function unblockSlot(date, slot) {
 // ═══════════════════════════════════════════════════════════
 // TREATMENTS
 // ═══════════════════════════════════════════════════════════
+
+/**
+ * Apply current TreatmentMaster standard_cost to unbilled treatments.
+ * Billed treatments keep their locked cost (price at time of billing).
+ * For unbilled treatments, cost is always recalculated from the current
+ * TreatmentMaster price × tooth count so price changes propagate everywhere.
+ */
+async function applyMasterCost(txs) {
+  const masters = await TreatmentMaster.find({ is_active: true }).lean()
+  return txs.map(t => {
+    // Billed treatments: keep locked cost
+    if (t.bill_id) return t
+    const toothNumbers = normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
+    const count = toothNumbers.length > 0 ? toothNumbers.length : 1
+    const master = masters.find(m => m.treatment_name.toLowerCase() === (t.treatment_type || '').toLowerCase())
+    const masterCost = master ? master.standard_cost : 0
+    return { ...t, cost: masterCost * count }
+  })
+}
+
 async function getTreatmentsByAppointment(appointmentId) {
   if (!isValidObjectId(appointmentId)) return []
   const txs = await Treatment.find({ appointment_id: appointmentId, deleted_at: null }).sort({ created_at: 1 }).lean()
-  return txs.map(t => ({
+  const enriched = await applyMasterCost(txs)
+  return enriched.map(t => ({
     ...t,
     id: t._id.toString(),
     patient_id: t.patient_id.toString(),
     appointment_id: t.appointment_id ? t.appointment_id.toString() : null,
-    bill_id: t.bill_id ? t.bill_id.toString() : null
+    bill_id: t.bill_id ? t.bill_id.toString() : null,
+    tooth_numbers: normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
   }))
 }
 
@@ -729,7 +771,8 @@ async function getTreatmentsByBill(billId) {
     id: t._id.toString(),
     patient_id: t.patient_id.toString(),
     appointment_id: t.appointment_id ? t.appointment_id.toString() : null,
-    bill_id: t.bill_id ? t.bill_id.toString() : null
+    bill_id: t.bill_id ? t.bill_id.toString() : null,
+    tooth_numbers: normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
   }))
 }
 
@@ -743,13 +786,15 @@ async function getTreatmentsByPatient(patientId) {
     .sort({ created_at: -1 })
     .lean()
 
-  return txs.map(t => ({
+  const enriched = await applyMasterCost(txs)
+  return enriched.map(t => ({
     ...t,
     id: t._id.toString(),
     patient_id: t.patient_id.toString(),
     appointment_id: t.appointment_id ? t.appointment_id._id.toString() : null,
     appointment_date: t.appointment_id ? t.appointment_id.scheduled_date : null,
-    appointment_status: t.appointment_id ? t.appointment_id.status : null
+    appointment_status: t.appointment_id ? t.appointment_id.status : null,
+    tooth_numbers: normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
   }))
 }
 
@@ -764,17 +809,35 @@ async function addTreatment(data) {
   const treatmentType = normalizeText(data.treatment_type)
   if (!treatmentType) badRequest('Treatment type is required')
 
+  // Case-insensitive lookup so cost is always found regardless of capitalisation
+  const selectedMaster = await TreatmentMaster.findOne({
+    treatment_name: { $regex: `^${treatmentType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+  })
+  if (!selectedMaster) {
+    badRequest(`Treatment type "${treatmentType}" not found in Treatment Masters`)
+  }
+  const toothNumbers = normalizeToothNumbers(data.tooth_numbers || data.tooth_number)
+  const toothCount = toothNumbers.length > 0 ? toothNumbers.length : 1
+  const costPerTooth = selectedMaster.standard_cost || 0
+  const calculatedCost = costPerTooth * toothCount
+
+  // Save treatment WITHOUT linking to a bill.
+  // Bills are only created explicitly from the Billing page.
+  // The treatment will appear in "Unbilled Completed Treatments" until then.
   const tx = new Treatment({
     patient_id: data.patient_id,
     appointment_id: data.appointment_id || null,
     treatment_type: treatmentType,
-    tooth_number: normalizeText(data.tooth_number),
+    tooth_number: toothNumbersToString(toothNumbers),
+    tooth_numbers: toothNumbers,
     description: normalizeText(data.description),
-    cost: toMoney(data.cost, 0, 'Treatment cost'),
+    cost: calculatedCost,
     doctor_notes: normalizeText(data.doctor_notes),
-    status: data.status || 'planned'
+    status: data.status || 'completed',
+    bill_id: null
   })
   await tx.save()
+
   const doc = tx.toObject()
   doc.id = doc._id.toString()
   return doc
@@ -815,9 +878,11 @@ async function updateTreatment(id, data) {
   }
 
   // FIX #2.4: Add to cost history if cost changed
+  const toothNumbers = normalizeToothNumbers(data.tooth_numbers || data.tooth_number || tx.tooth_numbers)
   const updates = {
     treatment_type: treatmentType,
-    tooth_number: normalizeText(data.tooth_number),
+    tooth_number: toothNumbersToString(toothNumbers),
+    tooth_numbers: toothNumbers,
     description: normalizeText(data.description),
     cost: data.cost !== undefined ? toMoney(data.cost, tx.cost, 'Treatment cost') : tx.cost,
     doctor_notes: normalizeText(data.doctor_notes)
@@ -1161,6 +1226,58 @@ async function getBillById(id) {
   }
 }
 
+// FIX #1: Delete bill and recalculate patient outstanding balance
+async function deleteBill(id) {
+  if (!isValidObjectId(id)) return null
+  
+  const bill = await Bill.findById(id)
+  if (!bill) return null
+  
+  const session = await mongoose.startSession()
+  session.startTransaction()
+  
+  try {
+    const patientId = bill.patient_id
+    
+    // Unlink treatments from this bill
+    await Treatment.updateMany(
+      { bill_id: id },
+      { $set: { bill_id: null } },
+      { session }
+    )
+    
+    // Delete bill
+    await Bill.findByIdAndDelete(id, { session })
+    
+    // FIX #6: Use atomic decrement instead of recalculating from all bills
+    // Subtract the deleted bill's balance from patient's total
+    await Patient.findByIdAndUpdate(
+      patientId,
+      { $inc: { total_outstanding_balance: -bill.balance } },
+      { session }
+    )
+    
+    // Log audit
+    await logAudit(
+      'delete',
+      'bill',
+      id,
+      { total_amount: bill.total_amount, balance: bill.balance },
+      {},
+      `Bill deleted with balance ₹${bill.balance}`,
+      session
+    )
+    
+    await session.commitTransaction()
+    return { success: true }
+  } catch (err) {
+    await session.abortTransaction()
+    throw err
+  } finally {
+    await session.endSession()
+  }
+}
+
 async function createBill(data) {
   if (!isValidObjectId(data.patient_id)) badRequest('Valid patient is required')
   if (data.appointment_id && !isValidObjectId(data.appointment_id)) badRequest('Valid appointment is required')
@@ -1190,6 +1307,7 @@ async function createBill(data) {
 
   try {
     let subTotal = 0
+    const masters = await TreatmentMaster.find({ is_active: true }).session(session).lean()
 
     // Fetch and link existing treatments
     if (existingIds.length > 0) {
@@ -1205,7 +1323,16 @@ async function createBill(data) {
       }
       
       for (const t of existing) {
-        subTotal += t.cost || 0
+        const toothNumbers = normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
+        const count = toothNumbers.length > 0 ? toothNumbers.length : 1
+        const matchedMaster = masters.find(m => m.treatment_name.toLowerCase() === t.treatment_type.toLowerCase())
+        const costPerTooth = matchedMaster ? matchedMaster.standard_cost : 0
+        const dynamicCost = costPerTooth * count
+        subTotal += dynamicCost
+        
+        // Also update the treatment cost in the db so it is persisted
+        t.cost = dynamicCost
+        await Treatment.findByIdAndUpdate(t._id, { $set: { cost: dynamicCost } }).session(session)
       }
     }
 
@@ -1213,16 +1340,28 @@ async function createBill(data) {
     let treatmentsToInsert = []
     if (hasNewTreatments) {
       treatmentsToInsert = data.treatments
-        .map(t => ({
-          patient_id: data.patient_id,
-          appointment_id: data.appointment_id || null,
-          treatment_type: normalizeText(t.treatment_type),
-          tooth_number: normalizeText(t.tooth_number),
-          description: normalizeText(t.description),
-          cost: toMoney(t.cost, 0, 'Treatment cost'),
-          doctor_notes: normalizeText(t.doctor_notes),
-          status: 'completed' // New treatments created in bill must be marked completed
-        }))
+        .map(t => {
+          const toothNumbers = normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
+          const count = toothNumbers.length > 0 ? toothNumbers.length : 1
+          const matchedMaster = masters.find(m => m.treatment_name.toLowerCase() === t.treatment_type.toLowerCase())
+          if (!matchedMaster) {
+            badRequest(`Treatment type "${t.treatment_type}" not found in Treatment Masters`)
+          }
+          const costPerTooth = matchedMaster.standard_cost || 0
+          const dynamicCost = costPerTooth * count
+
+          return {
+            patient_id: data.patient_id,
+            appointment_id: data.appointment_id || null,
+            treatment_type: normalizeText(t.treatment_type),
+            tooth_number: toothNumbersToString(toothNumbers),
+            tooth_numbers: toothNumbers,
+            description: normalizeText(t.description),
+            cost: dynamicCost,
+            doctor_notes: normalizeText(t.doctor_notes),
+            status: 'completed'
+          }
+        })
         .filter(t => t.treatment_type)
 
       for (const t of treatmentsToInsert) {
@@ -1232,13 +1371,17 @@ async function createBill(data) {
 
     if (subTotal <= 0) badRequest('Bill must include at least one treatment with cost > 0')
 
-    // Apply discount and tax
+    // Apply discount, manual/medicine charges and tax
     const paid = toMoney(data.paid_amount, 0, 'Paid amount')
-    const discount = toPercent(data.discount)
+    const manualCharges = toMoney(data.manual_charges, 0, 'Manual charges')
+    const medicineCharges = toMoney(data.medicine_charges, 0, 'Medicine charges')
+    const discount = toMoney(data.discount, 0, 'Discount') // Flat amount
     const taxPct = toPercent(data.tax_percent)
-    const discounted = subTotal * (1 - discount / 100)
-    const taxAmount = Math.round(discounted * (taxPct / 100) * 100) / 100
-    const total = Math.round((discounted + taxAmount) * 100) / 100
+    
+    // Formula: Bill Total = Sum(All Treatment Costs) + Manual Charges + Medicine Charges - Discount
+    const baseTotal = subTotal + manualCharges + medicineCharges - discount
+    const taxAmount = Math.round(baseTotal * (taxPct / 100) * 100) / 100
+    const total = Math.round((baseTotal + taxAmount) * 100) / 100
 
     if (paid > total) badRequest('Paid amount cannot exceed the final bill total')
 
@@ -1259,7 +1402,9 @@ async function createBill(data) {
       invoice_number: invoiceNumber,
       discount,
       tax_percent: taxPct,
-      tax_amount: taxAmount
+      tax_amount: taxAmount,
+      manual_charges: manualCharges,
+      medicine_charges: medicineCharges
     })
     await bill.save({ session })
 
@@ -1289,16 +1434,11 @@ async function createBill(data) {
       await Treatment.insertMany(newTreatments, { session })
     }
 
-    // Update patient total outstanding balance
-    const bills = await Bill.find({
-      patient_id: data.patient_id,
-      status: { $ne: 'paid' }
-    }).session(session)
-    
-    const totalOutstanding = bills.reduce((sum, b) => sum + (b.balance || 0), 0)
+    // FIX #6: Use atomic increment instead of recalculating from all bills
+    // This prevents race conditions and is more efficient
     await Patient.findByIdAndUpdate(
       data.patient_id,
-      { $set: { total_outstanding_balance: totalOutstanding } },
+      { $inc: { total_outstanding_balance: balance } },
       { session }
     )
 
@@ -1348,37 +1488,46 @@ async function updateBillPayment(id, data) {
     status: newStatus
   }
 
-  bill.paid_amount = newPaid
-  bill.balance     = newBalance
-  bill.status      = newStatus
-  bill.payment_method = method
-  await bill.save()
+  // FIX #4: Wrap in transaction for consistency
+  const session = await mongoose.startSession()
+  session.startTransaction()
 
-  // Record in payment history
-  const payment = await Payment.create({
-    bill_id:    bill._id,
-    patient_id: bill.patient_id,
-    amount,
-    method,
-    notes:      data.notes || ''
-  })
+  try {
+    bill.paid_amount = newPaid
+    bill.balance     = newBalance
+    bill.status      = newStatus
+    bill.payment_method = method
+    await bill.save({ session })
 
-  // Log audit
-  await logAudit('payment', 'bill', bill._id, before, after, `Payment of ₹${amount} received via ${method}`)
+    // Record in payment history
+    const payment = await Payment.create([{
+      bill_id:    bill._id,
+      patient_id: bill.patient_id,
+      amount,
+      method,
+      notes:      data.notes || ''
+    }], { session })
 
-  // Update patient total outstanding balance
-  const bills = await Bill.find({
-    patient_id: bill.patient_id,
-    status: { $ne: 'paid' }
-  })
-  
-  const totalOutstanding = bills.reduce((sum, b) => sum + (b.balance || 0), 0)
-  await Patient.findByIdAndUpdate(
-    bill.patient_id,
-    { $set: { total_outstanding_balance: totalOutstanding } }
-  )
+    // Log audit
+    await logAudit('payment', 'bill', bill._id, before, after, `Payment of ₹${amount} received via ${method}`, session)
 
-  return getBillById(id)
+    // FIX #6: Use atomic decrement instead of recalculating from all bills
+    // Calculate the difference in balance and apply atomically
+    const balanceDifference = newBalance - bill.balance
+    await Patient.findByIdAndUpdate(
+      bill.patient_id,
+      { $inc: { total_outstanding_balance: balanceDifference } },
+      { session }
+    )
+
+    await session.commitTransaction()
+    return getBillById(id)
+  } catch (err) {
+    await session.abortTransaction()
+    throw err
+  } finally {
+    await session.endSession()
+  }
 }
 
 async function getPaymentsByBill(billId) {
@@ -1612,6 +1761,500 @@ async function getDashboardStats() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+// PID GENERATION (corrections.md §3.2)
+// ═══════════════════════════════════════════════════════════
+async function generatePID() {
+  const year = new Date().getFullYear()
+  const key = `pid_${year}`
+  const doc = await Counter.findOneAndUpdate(
+    { key },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  )
+  const seq = String(doc.seq).padStart(4, '0')
+  const pid = `PID-${year}-${seq}`
+  
+  // Validate uniqueness
+  const exists = await Patient.findOne({ pid })
+  if (exists) {
+    return generatePID() // Retry on collision
+  }
+  return pid
+}
+
+// ═══════════════════════════════════════════════════════════
+// UNBILLED TREATMENTS (corrections.md §1.3)
+// ═══════════════════════════════════════════════════════════
+async function getUnbilledTreatments(patientId) {
+  if (!isValidObjectId(patientId)) return []
+  const txs = await Treatment.find({
+    patient_id: patientId,
+    status: 'completed',
+    bill_id: null,
+    deleted_at: null
+  })
+    .populate('appointment_id', 'scheduled_date')
+    .sort({ created_at: -1 })
+    .lean()
+
+  // Use shared helper: always recalculates cost from current TreatmentMaster
+  const enriched = await applyMasterCost(txs)
+
+  return enriched.map(t => ({
+    ...t,
+    id: t._id.toString(),
+    patient_id: t.patient_id.toString(),
+    appointment_id: t.appointment_id ? t.appointment_id._id.toString() : null,
+    appointment_date: t.appointment_id ? t.appointment_id.scheduled_date : null,
+    tooth_numbers: normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
+  }))
+}
+
+// ═══════════════════════════════════════════════════════════
+// TREATMENT FILTERS (corrections.md §1.4)
+// ═══════════════════════════════════════════════════════════
+async function getTreatmentsFiltered({ startDate, endDate, patientId, status } = {}) {
+  const filter = { deleted_at: null }
+  if (patientId && isValidObjectId(patientId)) filter.patient_id = patientId
+  if (status) filter.status = status
+  if (startDate || endDate) {
+    filter.created_at = {}
+    if (startDate) filter.created_at.$gte = new Date(startDate + 'T00:00:00.000Z')
+    if (endDate) filter.created_at.$lte = new Date(endDate + 'T23:59:59.999Z')
+  }
+
+  const txs = await Treatment.find(filter)
+    .populate('patient_id', 'name phone')
+    .populate('appointment_id', 'scheduled_date')
+    .sort({ created_at: -1 })
+    .limit(200)
+    .lean()
+
+  const enriched = await applyMasterCost(txs)
+  return enriched.map(t => ({
+    ...t,
+    id: t._id.toString(),
+    patient_id: t.patient_id ? t.patient_id._id.toString() : null,
+    patient_name: t.patient_id ? t.patient_id.name : '',
+    patient_phone: t.patient_id ? t.patient_id.phone : '',
+    appointment_id: t.appointment_id ? t.appointment_id._id.toString() : null,
+    appointment_date: t.appointment_id ? t.appointment_id.scheduled_date : null,
+    tooth_numbers: normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
+  }))
+}
+
+// ═══════════════════════════════════════════════════════════
+// EDITABLE BILLS (corrections.md §2.2)
+// ═══════════════════════════════════════════════════════════
+async function updateBill(id, data) {
+  if (!isValidObjectId(id)) return null
+  const bill = await Bill.findById(id)
+  if (!bill) return null
+
+  // Capture previous values for audit
+  const previousValues = {
+    total_amount: bill.total_amount,
+    discount: bill.discount,
+    tax_percent: bill.tax_percent,
+    tax_amount: bill.tax_amount,
+    notes: bill.notes,
+    manual_charges: bill.manual_charges || 0,
+    medicine_charges: bill.medicine_charges || 0
+  }
+
+  // Apply changes
+  if (data.discount !== undefined) bill.discount = toMoney(data.discount, 0, 'Discount')
+  if (data.tax_percent !== undefined) bill.tax_percent = toPercent(data.tax_percent)
+  if (data.notes !== undefined) bill.notes = normalizeText(data.notes)
+  if (data.manual_charges !== undefined) bill.manual_charges = toMoney(data.manual_charges, 0, 'Manual charges')
+  if (data.medicine_charges !== undefined) bill.medicine_charges = toMoney(data.medicine_charges, 0, 'Medicine charges')
+
+  // Recalculate totals from linked treatments
+  const treatments = await Treatment.find({ bill_id: bill._id, deleted_at: null }).lean()
+  const subTotal = treatments.reduce((sum, t) => sum + (t.cost || 0), 0)
+
+  // Formula: Bill Total = Sum(All Treatment Costs) + Manual Charges + Medicine Charges - Discount
+  const baseTotal = subTotal + (bill.manual_charges || 0) + (bill.medicine_charges || 0) - (bill.discount || 0)
+  const taxAmount = Math.round(baseTotal * (bill.tax_percent / 100) * 100) / 100
+  const newTotal = Math.round((baseTotal + taxAmount) * 100) / 100
+
+  bill.total_amount = newTotal
+  bill.tax_amount = taxAmount
+  bill.balance = Math.max(0, newTotal - bill.paid_amount)
+  bill.status = bill.paid_amount >= newTotal ? 'paid' : bill.paid_amount > 0 ? 'partial' : 'pending'
+
+  // Push to edit history
+  bill.edit_history.push({
+    edited_by: 'admin',
+    edited_at: new Date(),
+    previous_values,
+    change_description: normalizeText(data.change_description) || 'Bill updated'
+  })
+  bill.last_edited_at = new Date()
+  bill.last_edited_by = 'admin'
+
+  await bill.save()
+
+  // Log audit
+  await logAudit('edit', 'bill', bill._id, previousValues, {
+    total_amount: bill.total_amount,
+    discount: bill.discount,
+    tax_percent: bill.tax_percent,
+    manual_charges: bill.manual_charges,
+    medicine_charges: bill.medicine_charges
+  }, `Bill edited: ${data.change_description || 'Updated'}`)
+
+  // Update patient outstanding
+  const bills = await Bill.find({ patient_id: bill.patient_id, status: { $ne: 'paid' } })
+  const totalOutstanding = bills.reduce((sum, b) => sum + (b.balance || 0), 0)
+  await Patient.findByIdAndUpdate(bill.patient_id, { $set: { total_outstanding_balance: totalOutstanding } })
+
+  return getBillById(id)
+}
+
+async function getBillEditHistory(id) {
+  if (!isValidObjectId(id)) return []
+  const bill = await Bill.findById(id).select('edit_history').lean()
+  if (!bill) return []
+  return bill.edit_history || []
+}
+
+// ═══════════════════════════════════════════════════════════
+// WALK-IN APPOINTMENT (corrections.md §3.1)
+// ═══════════════════════════════════════════════════════════
+async function addWalkInAppointment(data) {
+  const name = normalizeText(data.name)
+  if (!name) badRequest('Patient name is required')
+  const phone = normalizeText(data.phone)
+  if (!phone) badRequest('Phone number is required')
+
+  // Find or create patient
+  let patient = await Patient.findOne({
+    phone: { $regex: `^${phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+  })
+
+  if (!patient) {
+    // Create new patient inline with PID
+    const pid = await generatePID()
+    patient = new Patient({
+      name,
+      phone,
+      age: normalizeAge(data.age),
+      gender: normalizeGender(data.gender),
+      complaint: normalizeText(data.reason),
+      registration_source: 'walk-in',
+      pid
+    })
+    await patient.save()
+  }
+
+  const date = clinicDateString()
+  const queueNumber = await getNextQueueNumber(date)
+
+  const appt = new Appointment({
+    patient_id: patient._id,
+    scheduled_date: date,
+    scheduled_time: '',
+    reason: normalizeText(data.reason),
+    status: 'waiting',
+    call_status: 'not_required',
+    queue_number: queueNumber,
+    notes: normalizeText(data.notes) || 'Walk-in appointment',
+    appointment_type: 'walk-in',
+    is_urgent: data.is_urgent === true || data.is_urgent === 'true',
+    is_walk_in: true,
+    is_time_confirmed: false
+  })
+  await appt.save()
+
+  const apptDoc = appt.toObject()
+  apptDoc.id = apptDoc._id.toString()
+
+  const patientDoc = patient.toObject()
+  patientDoc.id = patientDoc._id.toString()
+
+  return { patient: patientDoc, appointment: apptDoc }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONSULTANT PAYMENT TRACKING (corrections.md §2.3)
+// ═══════════════════════════════════════════════════════════
+async function addConsultantPayment(data) {
+  const consultantName = normalizeText(data.consultant_name)
+  if (!consultantName) badRequest('Consultant name is required')
+  if (!isValidObjectId(data.patient_id)) badRequest('Valid patient is required')
+
+  const treatmentCost = toMoney(data.treatment_cost, 0, 'Treatment cost')
+  const consultantShare = toMoney(data.consultant_share, 0, 'Consultant share')
+  const amountPaid = toMoney(data.amount_paid, 0, 'Amount paid')
+  
+  if (amountPaid > consultantShare) badRequest('Amount paid cannot exceed consultant share')
+
+  const balanceDue = Math.max(0, consultantShare - amountPaid)
+  const status = amountPaid >= consultantShare ? 'paid' : amountPaid > 0 ? 'partial' : 'pending'
+
+  const payment = new ConsultantPayment({
+    consultant_name: consultantName,
+    patient_id: data.patient_id,
+    treatment_id: isValidObjectId(data.treatment_id) ? data.treatment_id : null,
+    bill_id: isValidObjectId(data.bill_id) ? data.bill_id : null,
+    treatment_type: normalizeText(data.treatment_type),
+    treatment_cost: treatmentCost,
+    consultant_share: consultantShare,
+    amount_paid: amountPaid,
+    balance_due: balanceDue,
+    payment_date: amountPaid > 0 ? new Date() : null,
+    payment_method: amountPaid > 0 ? normalizePaymentMethod(data.payment_method) : null,
+    notes: normalizeText(data.notes),
+    status
+  })
+  await payment.save()
+
+  const doc = payment.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function updateConsultantPayment(id, data) {
+  if (!isValidObjectId(id)) return null
+  const payment = await ConsultantPayment.findById(id)
+  if (!payment) return null
+
+  if (data.consultant_share !== undefined) payment.consultant_share = toMoney(data.consultant_share, payment.consultant_share)
+  if (data.amount_paid !== undefined) payment.amount_paid = toMoney(data.amount_paid, payment.amount_paid)
+  if (data.treatment_cost !== undefined) payment.treatment_cost = toMoney(data.treatment_cost, payment.treatment_cost)
+  if (data.treatment_type !== undefined) payment.treatment_type = normalizeText(data.treatment_type)
+  if (data.notes !== undefined) payment.notes = normalizeText(data.notes)
+  if (data.payment_method !== undefined) payment.payment_method = normalizePaymentMethod(data.payment_method)
+  if (data.consultant_name !== undefined) payment.consultant_name = normalizeText(data.consultant_name)
+
+  payment.balance_due = Math.max(0, payment.consultant_share - payment.amount_paid)
+  payment.status = payment.amount_paid >= payment.consultant_share ? 'paid' : payment.amount_paid > 0 ? 'partial' : 'pending'
+  if (payment.amount_paid > 0 && !payment.payment_date) payment.payment_date = new Date()
+
+  await payment.save()
+
+  const doc = payment.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function deleteConsultantPayment(id) {
+  if (!isValidObjectId(id)) return { success: false }
+  await ConsultantPayment.findByIdAndDelete(id)
+  return { success: true }
+}
+
+async function getConsultantPayments({ consultant, status, startDate, endDate, page = 1, limit = 50 } = {}) {
+  const filter = {}
+  if (consultant) filter.consultant_name = { $regex: consultant, $options: 'i' }
+  if (status) filter.status = status
+  if (startDate || endDate) {
+    filter.created_at = {}
+    if (startDate) filter.created_at.$gte = new Date(startDate + 'T00:00:00.000Z')
+    if (endDate) filter.created_at.$lte = new Date(endDate + 'T23:59:59.999Z')
+  }
+
+  const skip = (page - 1) * limit
+  const [items, total] = await Promise.all([
+    ConsultantPayment.find(filter)
+      .populate('patient_id', 'name phone')
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    ConsultantPayment.countDocuments(filter)
+  ])
+
+  return {
+    items: items.map(p => ({
+      ...p,
+      id: p._id.toString(),
+      patient_id: p.patient_id ? p.patient_id._id.toString() : null,
+      patient_name: p.patient_id ? p.patient_id.name : '',
+      patient_phone: p.patient_id ? p.patient_id.phone : ''
+    })),
+    total,
+    page,
+    limit,
+    hasMore: skip + items.length < total
+  }
+}
+
+async function getConsultantMonthlyReport(month, year) {
+  const startDate = new Date(year, month - 1, 1)
+  const endDate = new Date(year, month, 0, 23, 59, 59, 999)
+
+  const payments = await ConsultantPayment.find({
+    created_at: { $gte: startDate, $lte: endDate }
+  })
+    .populate('patient_id', 'name')
+    .sort({ consultant_name: 1, created_at: -1 })
+    .lean()
+
+  // Group by consultant
+  const grouped = {}
+  for (const p of payments) {
+    if (!grouped[p.consultant_name]) {
+      grouped[p.consultant_name] = {
+        consultant: p.consultant_name,
+        total_share: 0,
+        total_paid: 0,
+        total_due: 0,
+        count: 0,
+        payments: []
+      }
+    }
+    const g = grouped[p.consultant_name]
+    g.total_share += p.consultant_share || 0
+    g.total_paid += p.amount_paid || 0
+    g.total_due += p.balance_due || 0
+    g.count++
+    g.payments.push({
+      ...p,
+      id: p._id.toString(),
+      patient_name: p.patient_id ? p.patient_id.name : ''
+    })
+  }
+
+  return Object.values(grouped)
+}
+
+async function getConsultantOutstandingDues() {
+  const payments = await ConsultantPayment.find({
+    status: { $in: ['pending', 'partial'] }
+  })
+    .populate('patient_id', 'name phone')
+    .sort({ consultant_name: 1, created_at: -1 })
+    .lean()
+
+  // Group by consultant
+  const grouped = {}
+  for (const p of payments) {
+    if (!grouped[p.consultant_name]) {
+      grouped[p.consultant_name] = {
+        consultant: p.consultant_name,
+        total_due: 0,
+        count: 0,
+        items: []
+      }
+    }
+    const g = grouped[p.consultant_name]
+    g.total_due += p.balance_due || 0
+    g.count++
+    g.items.push({
+      ...p,
+      id: p._id.toString(),
+      patient_name: p.patient_id ? p.patient_id.name : '',
+      patient_phone: p.patient_id ? p.patient_id.phone : ''
+    })
+  }
+
+  return Object.values(grouped)
+}
+
+async function recordConsultantPaymentAmount(id, amount, method = 'cash') {
+  if (!isValidObjectId(id)) return null
+  const payment = await ConsultantPayment.findById(id)
+  if (!payment) return null
+
+  const paymentAmount = toMoney(amount)
+  if (paymentAmount <= 0) badRequest('Payment amount must be greater than zero')
+  if (paymentAmount > payment.balance_due) badRequest('Payment amount cannot exceed balance due')
+
+  payment.amount_paid = Math.round((payment.amount_paid + paymentAmount) * 100) / 100
+  payment.balance_due = Math.max(0, payment.consultant_share - payment.amount_paid)
+  payment.status = payment.amount_paid >= payment.consultant_share ? 'paid' : 'partial'
+  payment.payment_date = new Date()
+  payment.payment_method = normalizePaymentMethod(method)
+
+  await payment.save()
+
+  const doc = payment.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+// ═══════════════════════════════════════════════════════════
+// TREATMENT MASTER (corrections.md §4.1)
+// ═══════════════════════════════════════════════════════════
+async function getAllTreatmentMasters(includeInactive = false) {
+  const filter = includeInactive ? {} : { is_active: true }
+  const items = await TreatmentMaster.find(filter).sort({ category: 1, treatment_name: 1 }).lean()
+  return items.map(t => ({ ...t, id: t._id.toString() }))
+}
+
+async function addTreatmentMaster(data) {
+  const treatmentName = normalizeText(data.treatment_name)
+  if (!treatmentName) badRequest('Treatment name is required')
+
+  // Check duplicate
+  const existing = await TreatmentMaster.findOne({
+    treatment_name: { $regex: `^${treatmentName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+  })
+  if (existing) badRequest(`Treatment "${treatmentName}" already exists`)
+
+  const validCategories = ['general', 'endodontics', 'orthodontics', 'prosthodontics', 'periodontics', 'surgery', 'cosmetic', 'other']
+  const category = validCategories.includes(data.category) ? data.category : 'general'
+
+  const item = new TreatmentMaster({
+    treatment_name: treatmentName,
+    category,
+    standard_cost: toMoney(data.standard_cost, 0, 'Standard cost'),
+    is_active: data.is_active !== false
+  })
+  await item.save()
+  const doc = item.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function updateTreatmentMaster(id, data) {
+  if (!isValidObjectId(id)) return null
+  const item = await TreatmentMaster.findById(id)
+  if (!item) return null
+
+  if (data.treatment_name !== undefined) {
+    const name = normalizeText(data.treatment_name)
+    if (!name) badRequest('Treatment name is required')
+    // Check duplicate (exclude self)
+    const existing = await TreatmentMaster.findOne({
+      _id: { $ne: id },
+      treatment_name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+    })
+    if (existing) badRequest(`Treatment "${name}" already exists`)
+    item.treatment_name = name
+  }
+
+  const validCategories = ['general', 'endodontics', 'orthodontics', 'prosthodontics', 'periodontics', 'surgery', 'cosmetic', 'other']
+  if (data.category !== undefined && validCategories.includes(data.category)) item.category = data.category
+  if (data.standard_cost !== undefined) item.standard_cost = toMoney(data.standard_cost, item.standard_cost, 'Standard cost')
+  if (data.is_active !== undefined) item.is_active = data.is_active === true || data.is_active === 'true'
+
+  await item.save()
+  const doc = item.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function deleteTreatmentMaster(id) {
+  if (!isValidObjectId(id)) return { success: false }
+  // Soft delete by marking inactive
+  await TreatmentMaster.findByIdAndUpdate(id, { $set: { is_active: false } })
+  return { success: true }
+}
+
+async function searchTreatmentMasters(query) {
+  const q = normalizeText(query)
+  if (!q) return getAllTreatmentMasters()
+  const items = await TreatmentMaster.find({
+    is_active: true,
+    treatment_name: { $regex: q, $options: 'i' }
+  }).sort({ treatment_name: 1 }).lean()
+  return items.map(t => ({ ...t, id: t._id.toString() }))
+}
+
 module.exports = {
   init,
   getDbPath,
@@ -1621,9 +2264,16 @@ module.exports = {
   updateAppointmentCallStatus, getPendingCalls,
   getBlockedSlots, blockSlot, unblockSlot,
   getTreatmentsByAppointment, getTreatmentsByPatient, getTreatmentsByBill, addTreatment, updateTreatment, deleteTreatment, updateTreatmentStatus,
+  getUnbilledTreatments, getTreatmentsFiltered,
   recordDiagnosis, getDiagnosisByAppointment, getDiagnosisByPatient, updateDiagnosis,
   createFollowUp, getPatientFollowUps, getPendingFollowUps, completeFollowUp,
-  getBillsByPatient, getBillById, createBill, updateBillPayment, getPaymentsByBill, reversePayment, adjustPayment, getAllBills, searchBills,
+  getBillsByPatient, getBillById, createBill, updateBillPayment, updateBill, getBillEditHistory, deleteBill,
+  getPaymentsByBill, reversePayment, adjustPayment, getAllBills, searchBills,
+  addWalkInAppointment,
+  generatePID,
+  addConsultantPayment, updateConsultantPayment, deleteConsultantPayment,
+  getConsultantPayments, getConsultantMonthlyReport, getConsultantOutstandingDues, recordConsultantPaymentAmount,
+  getAllTreatmentMasters, addTreatmentMaster, updateTreatmentMaster, deleteTreatmentMaster, searchTreatmentMasters,
   getSettings, setSetting,
   getDashboardStats,
   logAudit

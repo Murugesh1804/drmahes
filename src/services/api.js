@@ -134,9 +134,40 @@ export const openConsentForm = (patientId) => {
   return Promise.resolve({ success: true })
 }
 
+export const signExistingConsentForm = (patientId, signature) => request(`/consent/sign/${patientId}`, { method: 'POST', body: JSON.stringify({ signature }) })
+
 // ── Slot Blocking (per-date manual slot management) ────────
 export const getBlockedSlots = (date) => request(`/slots/blocked?date=${encodeURIComponent(date)}`)
 
 export const blockSlot = (date, slot, reason = '') => request('/slots/block', { method: 'POST', body: JSON.stringify({ date, slot, reason }) })
 
 export const unblockSlot = (date, slot) => request('/slots/block', { method: 'DELETE', body: JSON.stringify({ date, slot }) })
+
+// ── Treatment Filters (corrections.md §1.4) ────────────────
+export const getTreatmentsFiltered = (params) => request(`/treatments/filtered?${new URLSearchParams(params)}`)
+
+// ── Unbilled Treatments (corrections.md §1.3) ──────────────
+export const getUnbilledTreatments = (pid) => request(`/treatments/unbilled/${pid}`)
+
+// ── Bill Editing (corrections.md §2.2) ─────────────────────
+export const updateBill = (id, data) => request(`/bills/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const getBillEditHistory = (id) => request(`/bills/${id}/history`)
+
+// ── Walk-In Appointments (corrections.md §3.1) ─────────────
+export const addWalkInAppointment = (data) => request('/appointments/walk-in', { method: 'POST', body: JSON.stringify(data) })
+
+// ── Consultant Payments (corrections.md §2.3) ──────────────
+export const getConsultantPayments = (params = {}) => request(`/consultant-payments?${new URLSearchParams(params)}`)
+export const addConsultantPayment = (data) => request('/consultant-payments', { method: 'POST', body: JSON.stringify(data) })
+export const updateConsultantPayment = (id, data) => request(`/consultant-payments/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const deleteConsultantPayment = (id) => request(`/consultant-payments/${id}`, { method: 'DELETE' })
+export const recordConsultantPaymentAmount = (id, amount, method) => request(`/consultant-payments/${id}/pay`, { method: 'PUT', body: JSON.stringify({ amount, payment_method: method }) })
+export const getConsultantMonthlyReport = (month, year) => request(`/consultant-payments/monthly-report?month=${month}&year=${year}`)
+export const getConsultantOutstandingDues = () => request('/consultant-payments/outstanding')
+
+// ── Treatment Master (corrections.md §4.1) ─────────────────
+export const getAllTreatmentMasters = (all = false) => request(`/treatment-masters${all ? '?all=true' : ''}`)
+export const addTreatmentMaster = (data) => request('/treatment-masters', { method: 'POST', body: JSON.stringify(data) })
+export const updateTreatmentMaster = (id, data) => request(`/treatment-masters/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const deleteTreatmentMaster = (id) => request(`/treatment-masters/${id}`, { method: 'DELETE' })
+export const searchTreatmentMasters = (q) => request(`/treatment-masters/search?q=${encodeURIComponent(q)}`)

@@ -44,8 +44,14 @@ router.post('/:id/cancel', asyncHandler(async (req, res) => {
   ))
 }))
 
+// Walk-in appointment (corrections.md §3.1)
+router.post('/walk-in', asyncHandler(async (req, res) => {
+  res.status(201).json(await queries.addWalkInAppointment(req.body))
+}))
+
 router.delete('/:id', asyncHandler(async (req, res) => {
   res.json(await queries.deleteAppointment(req.params.id))
 }))
 
 module.exports = router
+

@@ -12,6 +12,8 @@ const navItems = [
   { to: '/appointments', icon: Calendar,        label: 'Appointments' },
   { to: '/treatments',   icon: Activity,        label: 'Treatments'   },
   { to: '/billing',      icon: Receipt,         label: 'Billing'      },
+  { to: '/consultants',  icon: Users,           label: 'Consultant Pay' },
+  { to: '/treatments-master', icon: ShieldCheck, label: 'Tx Master' },
 ]
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -38,23 +40,13 @@ export default function Sidebar({ isOpen, onClose }) {
       >
         {/* ── Logo & Clinic Name ─────────────────────────── */}
         <div className="px-4 py-5 border-b border-white/8 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 ring-1 ring-white/10">
-              <img
-                src="/logo.png"
-                className="w-7 h-7 object-contain"
-                alt="Logo"
-                onError={(e) => { e.target.style.display = 'none' }}
-              />
-            </div>
-            <div className="min-w-0">
-              <p className="text-white font-bold text-sm leading-tight line-clamp-1 tracking-tight">
-                {settings?.clinic_name || "Dr. Mahe's"}
-              </p>
-              <p className="text-slate-500 text-[11px] mt-0.5 font-medium line-clamp-1">
-                {settings?.doctor_name || 'Management'}
-              </p>
-            </div>
+          <div className="flex items-center min-w-0">
+            <img
+              src="/logo_black.webp"
+              className="h-15 w-auto object-contain"
+              alt="Logo"
+              onError={(e) => { e.target.style.display = 'none' }}
+            />
           </div>
           {/* Close button — mobile only */}
           <button
