@@ -27,6 +27,8 @@ router.put('/:id', asyncHandler(async (req, res) => {
   res.json(await queries.updatePatient(req.params.id, req.body))
 }))
 
+
+
 // FIX #3.1: Patient archiving endpoints
 router.post('/:id/archive', asyncHandler(async (req, res) => {
   res.json(await queries.archivePatient(req.params.id, req.body.reason || '', req.body.archived_by || 'admin'))

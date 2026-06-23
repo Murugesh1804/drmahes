@@ -6,8 +6,7 @@ import {
   updateAppointmentStatus, deleteAppointment,
   getAllPatients, searchPatients,
   getBlockedSlots, blockSlot, unblockSlot,
-  getPendingCalls, updateCallStatus,
-  addWalkInAppointment
+  getPendingCalls, updateCallStatus
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
@@ -179,10 +178,6 @@ export default function Appointments() {
   const [selectedPatient, setSelectedPatient] = useState(null)
   const [form, setForm] = useState({ scheduled_time: '', reason: '', notes: '' })
   
-  // Walk-in state
-  const [showWalkIn, setShowWalkIn] = useState(false)
-  const [walkInForm, setWalkInForm] = useState({ name: '', phone: '', age: '', gender: 'Other', reason: '', notes: '' })
-  
   const [saving, setSaving] = useState(false)
   
   const [deleteId, setDeleteId] = useState(null)
@@ -244,31 +239,6 @@ export default function Appointments() {
       load()
     } catch (e) {
       notify(e.message || 'Failed to add appointment', 'error')
-    } finally { setSaving(false) }
-  }
-
-  function openWalkIn() {
-    setWalkInForm({ name: '', phone: '', age: '', gender: 'Other', reason: '', notes: '' })
-    setShowWalkIn(true)
-  }
-
-  async function handleWalkIn() {
-    if (!walkInForm.name.trim() || !walkInForm.phone.trim()) {
-      notify('Name and phone are required for walk-in', 'error')
-      return
-    }
-    setSaving(true)
-    try {
-      await addWalkInAppointment({
-        ...walkInForm,
-        scheduled_date: date,
-        scheduled_time: '' // Walk-ins usually don't have a specific scheduled time
-      })
-      notify(`Walk-in registered: ${walkInForm.name}`)
-      setShowWalkIn(false)
-      load()
-    } catch (e) {
-      notify(e.message || 'Failed to register walk-in', 'error')
     } finally { setSaving(false) }
   }
 
@@ -350,9 +320,6 @@ export default function Appointments() {
         >
           <Lock size={13} />
           {showSlotManager ? 'Hide Slots' : 'Manage Slots'}
-        </button>
-        <button id="btn-add-walkin" onClick={openWalkIn} className="btn-secondary text-primary-700 border-primary-600 bg-primary-50">
-          <Plus size={16} /> Walk-In
         </button>
         <button id="btn-add-appt" onClick={openAdd} className="btn-primary">
           <Plus size={16} /> New Appointment
@@ -588,7 +555,6 @@ export default function Appointments() {
                 value={form.scheduled_time}
                 onChange={e => setForm(f => ({ ...f, scheduled_time: e.target.value }))}
               >
-                <option value="">— Walk-in —</option>
                 {TIMES.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
@@ -614,60 +580,6 @@ export default function Appointments() {
         </div>
       </Modal>
 
-      {/* Walk-In Modal */}
-      <Modal
-        open={showWalkIn}
-        onClose={() => setShowWalkIn(false)}
-        title="Walk-In Registration"
-        size="md"
-        footer={
-          <>
-            <button onClick={() => setShowWalkIn(false)} className="btn-secondary">Cancel</button>
-            <button id="btn-save-walkin" onClick={handleWalkIn} disabled={saving} className="btn-primary">
-              {saving ? 'Saving…' : 'Register Walk-In'}
-            </button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div className="bg-primary-50 rounded-2xl px-4 py-3 text-sm text-primary-700 mb-4">
-            <p className="font-semibold">Quick Walk-In Registration</p>
-            <p className="text-xs">Creates a patient record and waitlist appointment instantly.</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="label">Full Name *</label>
-              <input className="input" placeholder="Patient name" value={walkInForm.name} onChange={e => setWalkInForm(f => ({...f, name: e.target.value}))} autoFocus />
-            </div>
-            <div>
-              <label className="label">Phone Number *</label>
-              <input className="input" placeholder="10-digit number" value={walkInForm.phone} onChange={e => setWalkInForm(f => ({...f, phone: e.target.value}))} />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="label">Age</label>
-                <input className="input" type="number" placeholder="Yrs" value={walkInForm.age} onChange={e => setWalkInForm(f => ({...f, age: e.target.value}))} />
-              </div>
-              <div>
-                <label className="label">Gender</label>
-                <select className="select" value={walkInForm.gender} onChange={e => setWalkInForm(f => ({...f, gender: e.target.value}))}>
-                  <option value="Male">M</option>
-                  <option value="Female">F</option>
-                  <option value="Other">O</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-span-2">
-              <label className="label">Reason for Visit</label>
-              <input className="input" placeholder="e.g. Toothache" value={walkInForm.reason} onChange={e => setWalkInForm(f => ({...f, reason: e.target.value}))} />
-            </div>
-            <div className="col-span-2">
-              <label className="label">Initial Notes</label>
-              <textarea className="textarea" rows={2} value={walkInForm.notes} onChange={e => setWalkInForm(f => ({...f, notes: e.target.value}))} />
-            </div>
-          </div>
-        </div>
-      </Modal>
 
       <ConfirmModal
         open={!!deleteId}

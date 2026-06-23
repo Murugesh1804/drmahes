@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Trash2, Search, Activity, Calendar, Filter, X } from 'lucide-react'
 import {
-  getTodayAppointments, getAppointmentsByDate,
-  getTreatmentsByAppointment, addTreatment, deleteTreatment,
+  getAllPatients, searchPatients,
+  getTreatmentsByPatient, addTreatment, deleteTreatment,
   getTreatmentsFiltered, getAllTreatmentMasters,
 } from '../services/api'
 import { useApp } from '../context/AppContext'
@@ -70,10 +70,10 @@ export default function Treatments() {
   const { notify, fmt } = useApp()
   const navigate = useNavigate()
 
-  // Appointment-based view (default)
-  const [date, setDate] = useState(clinicDateString())
-  const [appointments, setAppointments] = useState([])
-  const [selectedAppt, setSelectedAppt] = useState(null)
+  // Patient-based view (default)
+  const [patients, setPatients] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedPatient, setSelectedPatient] = useState(null)
   const [treatments, setTreatments] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
@@ -84,7 +84,7 @@ export default function Treatments() {
   const [treatmentTypes, setTreatmentTypes] = useState(FALLBACK_TREATMENT_TYPES)
 
   // Filter mode
-  const [filterPreset, setFilterPreset] = useState(null)  // null = appointment view, 'today'|'week'|'month'|'custom'
+  const [filterPreset, setFilterPreset] = useState(null)  // null = patient view, 'today'|'week'|'month'|'custom'
   const [customStart, setCustomStart] = useState('')
   const [customEnd, setCustomEnd] = useState('')
   const [filteredTreatments, setFilteredTreatments] = useState([])
@@ -102,34 +102,40 @@ export default function Treatments() {
       .catch(() => {})  // Fallback to hardcoded types
   }, [])
 
-  const loadAppointments = useCallback(async () => {
+  const loadPatients = useCallback(async (q = '') => {
     try {
-      const data = await getAppointmentsByDate(date)
-      const list = data || []
-      setAppointments(list.filter(a => a.status !== 'cancelled'))
-      if (list.length > 0 && !selectedAppt) {
-        setSelectedAppt(list[0])
+      const data = q.trim().length >= 2
+        ? await searchPatients(q, false) // Active patients only
+        : await getAllPatients('', false) // Active patients only
+      setPatients(data || [])
+      if (data && data.length > 0 && !selectedPatient && !q.trim()) {
+        setSelectedPatient(data[0])
       }
     } catch (e) {
       console.error(e)
-      setAppointments([])
+      setPatients([])
     }
-  }, [date, selectedAppt])
+  }, [selectedPatient])
+
+  // Initial load and debounced search
+  useEffect(() => {
+    if (!filterPreset) {
+      const t = setTimeout(() => loadPatients(searchQuery), 250)
+      return () => clearTimeout(t)
+    }
+  }, [loadPatients, searchQuery, filterPreset])
 
   const loadTreatments = useCallback(async () => {
-    if (!selectedAppt) { setTreatments([]); return }
+    if (!selectedPatient) { setTreatments([]); return }
     try {
-      const data = await getTreatmentsByAppointment(selectedAppt.id)
+      const data = await getTreatmentsByPatient(selectedPatient.id)
       setTreatments(data || [])
     } catch (e) {
       console.error(e)
       setTreatments([])
     }
-  }, [selectedAppt])
+  }, [selectedPatient])
 
-  useEffect(() => {
-    if (!filterPreset) loadAppointments()
-  }, [loadAppointments, filterPreset])
   useEffect(() => { loadTreatments() }, [loadTreatments])
 
   // Filter-based loading
@@ -171,7 +177,7 @@ export default function Treatments() {
   }
 
   async function handleAdd() {
-    if (!selectedAppt) { notify('Select an appointment first', 'error'); return }
+    if (!selectedPatient) { notify('Select a patient first', 'error'); return }
     if (!form.treatment_type) { notify('Select treatment type', 'error'); return }
     setSaving(true)
     try {
@@ -180,8 +186,7 @@ export default function Treatments() {
       const calculatedCost = (selectedMaster?.standard_cost || 0) * toothCount
 
       await addTreatment({
-        patient_id: selectedAppt.patient_id,
-        appointment_id: selectedAppt.id,
+        patient_id: selectedPatient.id,
         treatment_type: form.treatment_type,
         tooth_numbers: form.tooth_numbers,
         description: form.description,
@@ -229,15 +234,15 @@ export default function Treatments() {
         <Filter size={16} className="text-slate-400" />
         <span className="text-sm font-semibold text-slate-600 mr-1">View:</span>
 
-        {/* Appointment view (default) */}
+        {/* Patient view (default) */}
         <button
-          onClick={() => { setFilterPreset(null); setSelectedAppt(null) }}
+          onClick={() => { setFilterPreset(null); setSelectedPatient(null) }}
           className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
             !isFilterMode ? 'bg-primary-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }`}
         >
           <Calendar size={13} className="inline mr-1" />
-          By Appointment
+          By Patient
         </button>
 
         <div className="w-px h-6 bg-slate-200" />
@@ -281,7 +286,7 @@ export default function Treatments() {
 
         {isFilterMode && (
           <button
-            onClick={() => { setFilterPreset(null); setSelectedAppt(null) }}
+            onClick={() => { setFilterPreset(null); setSelectedPatient(null) }}
             className="ml-auto btn-ghost text-xs text-slate-400 flex items-center gap-1"
           >
             <X size={13} /> Clear Filter
@@ -359,64 +364,68 @@ export default function Treatments() {
         </div>
       )}
 
-      {/* ───────────── APPOINTMENT VIEW (default) ───────────── */}
+      {/* ───────────── PATIENT VIEW (default) ───────────── */}
       {!isFilterMode && (
         <>
-          {/* Date selector */}
-          <div className="flex items-center gap-3">
-            <label className="label mb-0 flex-shrink-0">Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={e => { setDate(e.target.value); setSelectedAppt(null) }}
-              className="input w-auto"
-              id="tx-date-picker"
-            />
-            <span className="text-sm text-slate-400">{appointments.length} appointment(s)</span>
-          </div>
-
           <div className="grid grid-cols-12 gap-5">
-            {/* Appointment list */}
-            <div className="col-span-4 space-y-2">
-              <h3 className="font-semibold text-slate-700 text-sm">Appointments</h3>
-              {appointments.length === 0 ? (
-                <div className="card text-center py-8 text-slate-400 text-sm">No appointments for this day</div>
-              ) : (
-                appointments.map(a => (
-                  <button
-                    key={a.id}
-                    onClick={() => setSelectedAppt(a)}
-                    id={`appt-btn-${a.id}`}
-                    className={`w-full text-left card-hover transition-all ${
-                      selectedAppt?.id === a.id
-                        ? 'ring-2 ring-primary-400 shadow-md border-primary-200'
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm">
-                        {a.queue_number}
+            {/* Patient list */}
+            <div className="col-span-4 space-y-3 flex flex-col h-[calc(100vh-220px)]">
+              <h3 className="font-semibold text-slate-700 text-sm">Active Patients</h3>
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  className="input pl-9"
+                  placeholder="Search active patients…"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                {patients.length === 0 ? (
+                  <div className="card text-center py-8 text-slate-400 text-sm">No active patients found</div>
+                ) : (
+                  patients.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedPatient(p)}
+                      className={`w-full text-left card-hover transition-all ${
+                        selectedPatient?.id === p.id
+                          ? 'ring-2 ring-primary-400 shadow-md border-primary-200'
+                          : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm">
+                          {p.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-slate-800 truncate">{p.name}</p>
+                          <p className="text-xs text-slate-400">{p.phone}</p>
+                        </div>
+                        {p.pid && (
+                          <div className="flex-shrink-0 self-start">
+                            <span className="bg-primary-100 text-primary-700 text-[10px] px-1.5 py-0.5 rounded-md font-bold">{p.pid}</span>
+                          </div>
+                        )}
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-slate-800 truncate">{a.patient_name}</p>
-                        <p className="text-xs text-slate-400">{a.scheduled_time || 'Walk-in'} · {a.status}</p>
-                        {a.reason && <p className="text-xs text-slate-500 truncate">{a.reason}</p>}
-                      </div>
-                    </div>
-                  </button>
-                ))
-              )}
+                    </button>
+                  ))
+                )}
+              </div>
             </div>
 
             {/* Treatment records */}
             <div className="col-span-8 space-y-4">
-              {selectedAppt ? (
+              {selectedPatient ? (
                 <>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-bold text-slate-800">{selectedAppt.patient_name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-slate-800">{selectedPatient.name}</h3>
+                        {selectedPatient.pid && <span className="bg-primary-100 text-primary-700 text-[10px] px-1.5 py-0.5 rounded-md font-bold">{selectedPatient.pid}</span>}
+                      </div>
                       <button
-                        onClick={() => navigate(`/patients/${selectedAppt.patient_id}`)}
+                        onClick={() => navigate(`/patients/${selectedPatient.id}`)}
                         className="text-xs text-primary-600 hover:underline"
                       >
                         View full profile →
@@ -473,6 +482,7 @@ export default function Treatments() {
                             {t.doctor_notes && (
                               <p className="text-xs text-slate-400 mt-1 italic">{t.doctor_notes}</p>
                             )}
+                            <p className="text-[10px] text-slate-400 mt-1 font-semibold">Recorded on {new Date(t.created_at).toLocaleDateString()}</p>
                           </div>
                           <button
                             id={`btn-del-tx-${t.id}`}
@@ -489,8 +499,8 @@ export default function Treatments() {
               ) : (
                 <div className="card empty-state py-24">
                   <Activity size={40} className="mb-3 opacity-20" />
-                  <p className="font-semibold">Select an appointment</p>
-                  <p className="text-sm mt-1">Choose an appointment from the left to view or add treatments</p>
+                  <p className="font-semibold">Select a patient</p>
+                  <p className="text-sm mt-1">Choose a patient from the left to view or add treatments</p>
                 </div>
               )}
             </div>

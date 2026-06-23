@@ -6,6 +6,7 @@ import Header from './components/Header'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Patients = lazy(() => import('./pages/Patients'))
+const Enquiries = lazy(() => import('./pages/Enquiries'))
 const PatientDetail = lazy(() => import('./pages/PatientDetail'))
 const Appointments = lazy(() => import('./pages/Appointments'))
 const Treatments = lazy(() => import('./pages/Treatments'))
@@ -81,6 +82,7 @@ function AppLayout() {
               <Route path="/"              element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard"     element={<Dashboard />} />
               <Route path="/patients"      element={<Patients />} />
+              <Route path="/enquiries"     element={<Enquiries />} />
               <Route path="/patients/:id"  element={<PatientDetail />} />
               <Route path="/appointments"  element={<Appointments />} />
               <Route path="/treatments"    element={<Treatments />} />

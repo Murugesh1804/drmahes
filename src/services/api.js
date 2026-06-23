@@ -37,7 +37,7 @@ async function request(path, options = {}) {
 }
 
 // ── Patients ───────────────────────────────────────────────
-export const getAllPatients = (qs = '') => request(`/patients${qs}`)
+export const getAllPatients = (qs = '') => request(`/patients${qs ? qs : ''}`)
 
 export const searchPatients = (q) => request(`/patients/search?q=${encodeURIComponent(q)}`)
 
@@ -46,6 +46,19 @@ export const getPatientById = (id) => request(`/patients/${id}`)
 export const addPatient = (data) => request('/patients', { method: 'POST', body: JSON.stringify(data) })
 
 export const updatePatient = (id, data) => request(`/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+
+// ── Enquiries ──────────────────────────────────────────────
+export const getAllEnquiries = (qs = '') => request(`/enquiries${qs ? qs : ''}`)
+
+export const searchEnquiries = (q) => request(`/enquiries?q=${encodeURIComponent(q)}`)
+
+export const addEnquiry = (data) => request('/enquiries', { method: 'POST', body: JSON.stringify(data) })
+
+export const updateEnquiryStatus = (id, status) => request(`/enquiries/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) })
+
+export const deleteEnquiry = (id) => request(`/enquiries/${id}`, { method: 'DELETE' })
+
+
 
 // ── Appointments ───────────────────────────────────────────
 export const getTodayAppointments = () => request('/appointments/today')

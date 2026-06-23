@@ -63,6 +63,9 @@ router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
     patient = await queries.addPatient(patientData)
   } else {
     patient = await queries.updatePatient(patient._id.toString(), patientData)
+    if (!patient.pid) {
+      patient = await queries.generatePatientId(patient.id)
+    }
   }
 
   // Store ONLY the signature image (Option B)

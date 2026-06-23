@@ -2,12 +2,13 @@ import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Calendar, Activity,
   Receipt, ListOrdered, Monitor, Settings, X, LogOut,
-  ShieldCheck
+  ShieldCheck, Inbox
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 
 const navItems = [
   { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard'    },
+  { to: '/enquiries',    icon: Inbox,           label: 'Enquiries'    },
   { to: '/patients',     icon: Users,           label: 'Patients'     },
   { to: '/appointments', icon: Calendar,        label: 'Appointments' },
   { to: '/treatments',   icon: Activity,        label: 'Treatments'   },

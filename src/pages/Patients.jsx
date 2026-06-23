@@ -174,6 +174,11 @@ function PatientCard({ patient, onClick }) {
           )}
         </div>
         <div className="flex-shrink-0 flex flex-col items-end gap-1">
+          {patient.pid && (
+            <span className="bg-primary-100 text-primary-700 text-[10px] px-2 py-0.5 rounded-md font-bold mb-1">
+              {patient.pid}
+            </span>
+          )}
           <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">
             {patient.appointment_count || 0} visits
           </span>

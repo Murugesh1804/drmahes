@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, ConsultantPayment, TreatmentMaster, getDbPath } = require('./db')
+const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, ConsultantPayment, TreatmentMaster, Enquiry, getDbPath } = require('./db')
 
 const CLINIC_TIME_ZONE = process.env.CLINIC_TIME_ZONE || 'Asia/Kolkata'
 const APPOINTMENT_STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
@@ -151,9 +151,10 @@ function sortAppointments(list) {
 // PATIENTS
 // ═══════════════════════════════════════════════════════════
 async function getAllPatients(limit = 20, includeArchived = false) {
+  const matchFilter = includeArchived ? {} : { is_archived: false };
+
   const result = await Patient.aggregate([
-    // FIX #3.1: Exclude archived patients by default
-    { $match: includeArchived ? {} : { is_archived: false } },
+    { $match: matchFilter },
     {
       $lookup: {
         from: 'appointments',
@@ -174,6 +175,7 @@ async function getAllPatients(limit = 20, includeArchived = false) {
         consentFormSaved: 1,
         consentFormPath: 1,
         consentSignedAt: 1,
+        pid: 1,
         is_archived: 1,
         archived_at: 1,
         archived_reason: 1,
@@ -198,6 +200,7 @@ async function searchPatients(query) {
       { phone:     { $regex: query, $options: 'i' } },
       { complaint: { $regex: query, $options: 'i' } },
       { notes:     { $regex: query, $options: 'i' } },
+      { pid:       { $regex: query, $options: 'i' } },
     ]
   } : {}
 
@@ -223,6 +226,10 @@ async function searchPatients(query) {
         consentFormSaved: 1,
         consentFormPath: 1,
         consentSignedAt: 1,
+        pid: 1,
+        is_archived: 1,
+        archived_at: 1,
+        archived_reason: 1,
         created_at: 1,
         updated_at: 1,
         appointment_count: { $size: '$appts' },
@@ -287,12 +294,41 @@ async function addPatient(data) {
     notes: normalizeText(data.notes),
     consentFormSaved: data.consentFormSaved || false,
     consentFormPath: data.consentFormPath || '',
-    consentSignedAt: data.consentSignedAt || null
+    consentSignedAt: data.consentSignedAt || null,
+    registration_source: data.registration_source || 'reception'
   })
+
+  // Auto-generate PID
+  const counterDoc = await Counter.findOneAndUpdate(
+    { key: 'patient_id' },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  )
+  patient.pid = `MD-${counterDoc.seq}`
+
   await patient.save()
   const doc = patient.toObject()
   doc.id = doc._id.toString()
   return doc
+}
+
+async function generatePatientId(id) {
+  if (!isValidObjectId(id)) return null
+  const patient = await Patient.findById(id)
+  if (!patient) return null
+  if (patient.pid) return patient.toObject() // Already has ID
+
+  const doc = await Counter.findOneAndUpdate(
+    { key: 'patient_id' },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  )
+  patient.pid = `MD-${doc.seq}`
+  await patient.save()
+  
+  const docObj = patient.toObject()
+  docObj.id = docObj._id.toString()
+  return docObj
 }
 
 async function updatePatient(id, data) {
@@ -429,6 +465,79 @@ async function unarchivePatient(id) {
   }
 
   return unarchived
+}
+
+// ═══════════════════════════════════════════════════════════
+// ENQUIRIES
+// ═══════════════════════════════════════════════════════════
+
+async function getAllEnquiries(limit = 20) {
+  const result = await Enquiry.find()
+    .sort({ updated_at: -1 })
+    .limit(limit)
+    .lean()
+  return result.map(e => ({ ...e, id: e._id.toString() }))
+}
+
+async function searchEnquiries(query) {
+  const matchFilter = query.trim() ? {
+    $or: [
+      { name:      { $regex: query, $options: 'i' } },
+      { phone:     { $regex: query, $options: 'i' } },
+      { complaint: { $regex: query, $options: 'i' } },
+      { notes:     { $regex: query, $options: 'i' } },
+    ]
+  } : {}
+
+  const result = await Enquiry.find(matchFilter)
+    .sort({ name: 1 })
+    .limit(50)
+    .lean()
+  return result.map(e => ({ ...e, id: e._id.toString() }))
+}
+
+async function addEnquiry(data) {
+  const name = normalizeText(data.name)
+  if (!name) badRequest('Name is required')
+
+  const phone = normalizeText(data.phone)
+
+  const enquiry = new Enquiry({
+    name,
+    phone,
+    age: normalizeAge(data.age),
+    gender: normalizeGender(data.gender),
+    complaint: normalizeText(data.complaint),
+    notes: normalizeText(data.notes),
+    status: data.status || 'pending'
+  })
+
+  await enquiry.save()
+  const doc = enquiry.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function updateEnquiryStatus(id, status) {
+  if (!isValidObjectId(id)) return null
+  if (!['pending', 'converted', 'non-converted'].includes(status)) badRequest('Invalid status')
+
+  const updated = await Enquiry.findByIdAndUpdate(
+    id,
+    { $set: { status } },
+    { new: true, runValidators: true }
+  ).lean()
+
+  if (updated) {
+    updated.id = updated._id.toString()
+  }
+  return updated
+}
+
+async function deleteEnquiry(id) {
+  if (!isValidObjectId(id)) return false
+  const deleted = await Enquiry.findByIdAndDelete(id)
+  return !!deleted
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2270,11 +2379,12 @@ module.exports = {
   getBillsByPatient, getBillById, createBill, updateBillPayment, updateBill, getBillEditHistory, deleteBill,
   getPaymentsByBill, reversePayment, adjustPayment, getAllBills, searchBills,
   addWalkInAppointment,
-  generatePID,
+  generatePatientId,
   addConsultantPayment, updateConsultantPayment, deleteConsultantPayment,
   getConsultantPayments, getConsultantMonthlyReport, getConsultantOutstandingDues, recordConsultantPaymentAmount,
   getAllTreatmentMasters, addTreatmentMaster, updateTreatmentMaster, deleteTreatmentMaster, searchTreatmentMasters,
   getSettings, setSetting,
   getDashboardStats,
-  logAudit
+  logAudit,
+  getAllEnquiries, searchEnquiries, addEnquiry, updateEnquiryStatus, deleteEnquiry
 }

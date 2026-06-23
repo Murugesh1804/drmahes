@@ -525,6 +525,19 @@ async function seedSettings() {
   }
 }
 
+// ── ENQUIRY SCHEMA ─────────────────────────────────────────────────────────
+const enquirySchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true },
+  phone: { type: String, default: '', trim: true },
+  age: { type: Number, default: null },
+  gender: { type: String, enum: ['Male', 'Female', 'Other', null], default: null },
+  complaint: { type: String, default: '' },
+  notes: { type: String, default: '' },
+  status: { type: String, enum: ['pending', 'converted', 'non-converted'], default: 'pending' }
+}, schemaOptions)
+
+const Enquiry = mongoose.model('Enquiry', enquirySchema)
+
 function getDbPath() {
   return MONGODB_URI
 }
@@ -545,5 +558,6 @@ module.exports = {
   FollowUp,
   AuditLog,
   ConsultantPayment,
-  TreatmentMaster
+  TreatmentMaster,
+  Enquiry
 }
