@@ -515,7 +515,11 @@
         }
 
         /* ─── SIGNATURE CANVAS ───────────────────────────────────── */
-        .sig-wrap { margin-bottom: 24px; }
+        .sig-wrap { margin-bottom: 24px; background: var(--bg-card); }
+        .sig-wrap:fullscreen { padding: 24px; display: flex; flex-direction: column; background: var(--bg-card); border: none; overflow: hidden; }
+        .sig-wrap:fullscreen .sig-canvas-wrap { flex: 1; height: auto; }
+        .sig-wrap.fs-fallback { position: fixed; inset: 0; z-index: 9999; padding: 24px; display: flex; flex-direction: column; background: var(--bg-card); }
+        .sig-wrap.fs-fallback .sig-canvas-wrap { flex: 1; height: auto; }
 
         .sig-header {
             display: flex;
@@ -859,7 +863,10 @@
             <div class="sig-wrap">
                 <div class="sig-header">
                     <label class="field-label" style="margin:0;">Patient Signature <span style="color:#ef4444">*</span></label>
-                    <button id="btn-clear-sig" class="btn-clear" type="button">↺ Clear</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="btn-fs-sig" class="btn-clear" type="button" style="color: var(--primary); font-weight: 700;">⛶ Expand</button>
+                        <button id="btn-clear-sig" class="btn-clear" type="button">↺ Clear</button>
+                    </div>
                 </div>
                 <div class="sig-canvas-wrap">
                     <canvas id="sig-canvas"></canvas>
@@ -1069,9 +1076,25 @@
         function initCanvas() {
             if (!ctx) ctx = canvas.getContext('2d');
             const wrap = canvas.parentElement;
+
+            // Save current drawing if any
+            let tempCanvas;
+            if (state.hasSigned) {
+                tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
+            }
+
             canvas.width  = wrap.clientWidth;
             canvas.height = wrap.clientHeight;
             clearCanvas();
+
+            // Restore drawing
+            if (tempCanvas) {
+                ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
+                state.hasSigned = true;
+            }
         }
 
         function clearCanvas() {
@@ -1087,6 +1110,42 @@
         }
 
         el('btn-clear-sig').onclick = clearCanvas;
+
+        el('btn-fs-sig').onclick = () => {
+            const sigWrap = document.querySelector('.sig-wrap');
+            if (!document.fullscreenElement && !sigWrap.classList.contains('fs-fallback')) {
+                if (sigWrap.requestFullscreen) {
+                    sigWrap.requestFullscreen().catch(() => {
+                        sigWrap.classList.add('fs-fallback');
+                        initCanvas();
+                        el('btn-fs-sig').textContent = '✓ Done Signing';
+                    });
+                } else {
+                    sigWrap.classList.add('fs-fallback');
+                    initCanvas();
+                    el('btn-fs-sig').textContent = '✓ Done Signing';
+                }
+            } else {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    sigWrap.classList.remove('fs-fallback');
+                    initCanvas();
+                    el('btn-fs-sig').textContent = '⛶ Expand';
+                }
+            }
+        };
+
+        document.addEventListener('fullscreenchange', () => {
+            const sigWrap = document.querySelector('.sig-wrap');
+            if (document.fullscreenElement === sigWrap) {
+                el('btn-fs-sig').textContent = '✓ Done Signing';
+            } else if (!document.fullscreenElement && sigWrap) {
+                sigWrap.classList.remove('fs-fallback');
+                initCanvas();
+                el('btn-fs-sig').textContent = '⛶ Expand';
+            }
+        });
 
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
