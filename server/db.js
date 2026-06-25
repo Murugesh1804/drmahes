@@ -471,7 +471,7 @@ async function initDatabase() {
   try {
     console.log(`[db] Connecting to MongoDB...`)
     await mongoose.connect(MONGODB_URI, {
-      maxPoolSize: 50,         // Sufficient for concurrent staff members (was 3, causing connection starvation)
+      maxPoolSize: 15,         // Reduced to 15 to conserve RAM on low-spec VPS (was 50)
       serverSelectionTimeoutMS: 10000, // 10s timeout
       socketTimeoutMS: 45000,
       heartbeatFrequencyMS: 30000,

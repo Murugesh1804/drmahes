@@ -158,7 +158,7 @@ app.get('/api/backup/download', (req, res) => {
 const kioskPath = path.join(__dirname, '../kiosk')
 app.use('/kiosk', express.static(kioskPath, {
   maxAge: '7d',
-  etag: true,
+  etag: false, // Save CPU by not hashing static files
   lastModified: true,
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('index.html')) {
@@ -170,7 +170,7 @@ app.use('/kiosk', express.static(kioskPath, {
 const distPath = path.join(__dirname, '../dist')
 app.use(express.static(distPath, {
   maxAge: '7d',          // Cache static assets 7 days
-  etag: true,
+  etag: false,           // Save CPU
   lastModified: true,
   setHeaders: (res, filePath) => {
     // Don't cache index.html — always fresh

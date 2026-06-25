@@ -1791,31 +1791,48 @@ async function searchBills(query, page = 1, limit = 50) {
   if (!searchPattern) return { items: [], total: 0, page, limit, hasMore: false }
 
   const skip = (page - 1) * limit
-  const regex = new RegExp(searchPattern, 'i') // Case-insensitive
-
-  const bills = await Bill.find()
-    .populate('patient_id')
-    .exec()
-    .then(bills => {
-      // Filter by patient name on populated data
-      return bills.filter(b => b.patient_id && regex.test(b.patient_id.name))
-    })
-    .then(filtered => {
-      // Sort by creation date descending, then paginate
-      filtered.sort((a, b) => (b.created_at || 0) - (a.created_at || 0))
-      const paged = filtered.slice(skip, skip + limit)
-      const total = filtered.length
-      return { paged, total }
-    })
-
-  const items = bills.paged.map(b => ({
-    ...b.toObject?.() || b,
+  
+  // Aggregate to join patients and filter by patient name inside MongoDB
+  const pipeline = [
+    {
+      $lookup: {
+        from: 'patients',
+        localField: 'patient_id',
+        foreignField: '_id',
+        as: 'patient'
+      }
+    },
+    { $unwind: { path: '$patient', preserveNullAndEmptyArrays: true } },
+    {
+      $match: {
+        'patient.name': { $regex: searchPattern, $options: 'i' }
+      }
+    }
+  ]
+  
+  const [results, totalCount] = await Promise.all([
+    Bill.aggregate([
+      ...pipeline,
+      { $sort: { created_at: -1 } },
+      { $skip: skip },
+      { $limit: limit }
+    ]),
+    Bill.aggregate([
+      ...pipeline,
+      { $count: 'total' }
+    ])
+  ])
+  
+  const total = totalCount.length > 0 ? totalCount[0].total : 0
+  
+  const items = results.map(b => ({
+    ...b,
     id: b._id.toString(),
-    patient_id: b.patient_id ? b.patient_id._id.toString() : null,
-    patient_name: b.patient_id ? b.patient_id.name : ''
+    patient_id: b.patient ? b.patient._id.toString() : null,
+    patient_name: b.patient ? b.patient.name : ''
   }))
 
-  return { items, total: bills.total, page, limit, hasMore: skip + items.length < bills.total }
+  return { items, total, page, limit, hasMore: skip + items.length < total }
 }
 
 // ═══════════════════════════════════════════════════════════
