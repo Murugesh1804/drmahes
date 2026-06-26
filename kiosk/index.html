@@ -803,7 +803,7 @@
 
                 <!-- Email -->
                 <div>
-                    <label class="field-label" for="f-email">Email Address (optional)</label>
+                    <label class="field-label" for="f-email">Email Address <span style="color:#ef4444">*</span></label>
                     <input id="f-email" class="form-input" type="email" autocomplete="email"
                            inputmode="email" placeholder="your.email@example.com">
                 </div>
@@ -1053,6 +1053,8 @@
 
             if (!state.form.name)      return showError('form', 'Please enter your full name.');
             if (!state.form.phone)     return showError('form', 'Please enter your phone number.');
+            if (!state.form.email)     return showError('form', 'Please enter your email address.');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.form.email)) return showError('form', 'Please enter a valid email address.');
             const cleanPhone = state.form.phone.replace(/[\s\-\+]/g, '');
             if (!/^\d{10,15}$/.test(cleanPhone))
                                        return showError('form', 'Phone number should be 10 to 15 digits.');

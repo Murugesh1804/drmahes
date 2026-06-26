@@ -1340,6 +1340,7 @@ async function getBillsByPatient(patientId) {
     id: b._id.toString(),
     patient_id: b.patient_id ? b.patient_id._id.toString() : null,
     patient_name: b.patient_id ? b.patient_id.name : '',
+    patient_email: b.patient_id ? b.patient_id.email : '',
     appointment_id: b.appointment_id ? b.appointment_id._id.toString() : null,
     appointment_date: b.appointment_id ? b.appointment_id.scheduled_date : null
   }))
@@ -1355,7 +1356,8 @@ async function getBillById(id) {
     id: b._id.toString(),
     patient_id: b.patient_id ? b.patient_id._id.toString() : null,
     patient_name: b.patient_id ? b.patient_id.name : '',
-    patient_phone: b.patient_id ? b.patient_id.phone : ''
+    patient_phone: b.patient_id ? b.patient_id.phone : '',
+    patient_email: b.patient_id ? b.patient_id.email : ''
   }
 }
 
@@ -1445,10 +1447,19 @@ async function createBill(data) {
 
     const resolveCost = (treatmentType) => {
       if (treatmentType.startsWith('Medicine: ')) {
-        const medName = treatmentType.substring(10).trim().toLowerCase()
+        let medStr = treatmentType.substring(10).trim()
+        let qty = 1
+        
+        const qtyMatch = medStr.match(/ \(Qty: (\d+)\)$/i)
+        if (qtyMatch) {
+          qty = parseInt(qtyMatch[1], 10)
+          medStr = medStr.replace(/ \(Qty: \d+\)$/i, '').trim()
+        }
+        
+        const medName = medStr.toLowerCase()
         const matched = medicineMasters.find(m => m.item_name.toLowerCase() === medName)
-        if (!matched) badRequest(`Medicine "${treatmentType.substring(10).trim()}" not found in Medicine Masters`)
-        return matched.standard_cost || 0
+        if (!matched) badRequest(`Medicine "${medStr}" not found in Medicine Masters`)
+        return (matched.standard_cost || 0) * qty
       } else {
         const matched = masters.find(m => m.treatment_name.toLowerCase() === treatmentType.toLowerCase())
         if (!matched) badRequest(`Treatment type "${treatmentType}" not found in Treatment Masters`)
@@ -1857,7 +1868,8 @@ async function getAllBills(page = 1, limit = 50) {
     patient_pid:  b.patient_id ? (b.patient_id.pid || null) : null,
     age:          b.patient_id ? b.patient_id.age : null,
     gender:       b.patient_id ? b.patient_id.gender : null,
-    phone:        b.patient_id ? b.patient_id.phone : ''
+    phone:        b.patient_id ? b.patient_id.phone : '',
+    patient_email: b.patient_id ? b.patient_id.email : ''
   }))
   return { items, total, page, limit, hasMore: skip + items.length < total }
 }
@@ -1913,7 +1925,8 @@ async function searchBills(query, page = 1, limit = 50) {
     patient_pid:  b.patient ? (b.patient.pid || null) : null,
     age:          b.patient ? b.patient.age : null,
     gender:       b.patient ? b.patient.gender : null,
-    phone:        b.patient ? b.patient.phone : ''
+    phone:        b.patient ? b.patient.phone : '',
+    patient_email: b.patient ? b.patient.email : ''
   }))
 
   return { items, total, page, limit, hasMore: skip + items.length < total }

@@ -57,6 +57,7 @@ export default function Billing() {
   const [cartMedSelect, setCartMedSelect] = useState('')
   const [cartMedCost, setCartMedCost] = useState('')
   const [cartMedDesc, setCartMedDesc] = useState('')
+  const [cartMedQty, setCartMedQty] = useState('1')
 
   const [billForm, setBillForm] = useState({
     paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: ''
@@ -207,24 +208,25 @@ export default function Billing() {
     if (!cartMedSelect) { notify('Select a medicine or product', 'error'); return }
     const costNum = parseFloat(cartMedCost) || 0
     if (costNum <= 0) { notify('Selected item has no configured cost', 'error'); return }
+    const qtyNum = parseInt(cartMedQty) || 1
 
     const newItem = {
-      treatment_type: `Medicine: ${cartMedSelect}`,
-      cost: costNum,
+      treatment_type: `Medicine: ${cartMedSelect} (Qty: ${qtyNum})`,
+      cost: costNum * qtyNum,
       tooth_numbers: [],
       description: cartMedDesc.trim(),
       isUnbilled: false
     }
 
     setBillItems([...billItems, newItem])
-    setCartMedSelect(''); setCartMedCost(''); setCartMedDesc('')
+    setCartMedSelect(''); setCartMedCost(''); setCartMedDesc(''); setCartMedQty('1')
   }
 
   function openCreate() {
     setPatSearch(''); setSelPatient(null); setBillItems([])
     setUnbilledTreatments([]); setSelectedUnbilled(new Set())
     setCartSelect(''); setCartCost(''); setCartTooth(''); setCartDesc('')
-    setCartMedSelect(''); setCartMedCost(''); setCartMedDesc('')
+    setCartMedSelect(''); setCartMedCost(''); setCartMedDesc(''); setCartMedQty('1')
     setBillForm({ paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: '', manual_charges: '', medicine_charges: '' })
     setShowCreate(true)
   }
@@ -356,7 +358,7 @@ export default function Billing() {
 
   function openEmail(bill) {
     setActiveBill(bill)
-    setEmailAddr('')
+    setEmailAddr(bill.patient_email || '')
     setShowEmail(true)
   }
 
@@ -596,7 +598,10 @@ export default function Billing() {
                   <div className="col-span-2">
                     <input type="number" className="input text-xs h-9 bg-slate-100" placeholder="Cost" value={cartMedCost} readOnly />
                   </div>
-                  <div className="col-span-4">
+                  <div className="col-span-2">
+                    <input type="number" className="input text-xs h-9" placeholder="Qty" value={cartMedQty} min="1" onChange={e => setCartMedQty(e.target.value)} />
+                  </div>
+                  <div className="col-span-2">
                     <input type="text" className="input text-xs h-9" placeholder="Desc/Dosage" value={cartMedDesc} onChange={e => setCartMedDesc(e.target.value)} />
                   </div>
                   <div className="col-span-2">
