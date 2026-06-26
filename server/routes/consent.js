@@ -6,6 +6,7 @@ const { Patient } = require('../db')
 const queries = require('../queries')
 const asyncHandler = require('../middleware/asyncHandler')
 const rateLimit = require('express-rate-limit')
+const { normalizeText, isValidEmail, validateSignaturePayload } = require('../validation')
 
 function clinicDateString(date = new Date()) {
   const CLINIC_TIME_ZONE = process.env.CLINIC_TIME_ZONE || 'Asia/Kolkata'
@@ -46,17 +47,30 @@ router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'Name, Phone and Signature are required' })
   }
 
-  const cleanPhone = phone.trim()
+  if (!validateSignaturePayload(signature)) {
+    return res.status(400).json({ error: 'Invalid signature payload' })
+  }
+
+  const cleanPhone = normalizeText(phone)
+  const normalizedEmail = email ? normalizeText(email).toLowerCase() : undefined
+  if (normalizedEmail && !isValidEmail(normalizedEmail)) {
+    return res.status(400).json({ error: 'Invalid email address' })
+  }
+
   let patient = await Patient.findOne({ phone: cleanPhone })
+  if (!patient && normalizedEmail) {
+    patient = await Patient.findOne({ email: normalizedEmail })
+  }
 
   const patientData = {
-    name: name.trim(),
+    name: normalizeText(name),
     phone: cleanPhone,
-    email: email ? email.trim() : undefined,
+    email: normalizedEmail,
     age: age ? Number(age) : null,
     gender,
-    complaint,
-    notes: notes || 'Kiosk check-in'
+    complaint: normalizeText(complaint),
+    notes: normalizeText(notes) || 'Kiosk check-in',
+    registration_source: 'kiosk'
   }
 
   if (!patient) {
@@ -117,6 +131,7 @@ router.post('/sign/:patientId', asyncHandler(async (req, res) => {
   const patientId = req.params.patientId
 
   if (!signature) return res.status(400).json({ error: 'Signature is required' })
+  if (!validateSignaturePayload(signature)) return res.status(400).json({ error: 'Invalid signature payload' })
 
   let patient = await Patient.findById(patientId)
   if (!patient) return res.status(404).json({ error: 'Patient not found' })

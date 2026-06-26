@@ -339,10 +339,34 @@ async function updatePatient(id, data) {
   const patient = await Patient.findById(id)
   if (!patient) return null
 
+  const phone = normalizeText(data.phone)
+  const email = normalizeEmail(data.email)
+
+  // FIX #1: Prevent duplicate phone/email on updates
+  if (phone) {
+    const existingPhone = await Patient.findOne({
+      _id: { $ne: id },
+      phone: { $regex: `^${phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+    })
+    if (existingPhone) {
+      badRequest(`Another patient with phone ${phone} already exists (ID: ${existingPhone._id})`)
+    }
+  }
+
+  if (email) {
+    const existingEmail = await Patient.findOne({
+      _id: { $ne: id },
+      email: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+    })
+    if (existingEmail) {
+      badRequest(`Another patient with email ${email} already exists (ID: ${existingEmail._id})`)
+    }
+  }
+
   // FIX #5: Log patient updates
   const hasChanges = name !== patient.name || 
-                    normalizeText(data.phone) !== patient.phone ||
-                    normalizeEmail(data.email) !== patient.email ||
+                    phone !== patient.phone ||
+                    email !== patient.email ||
                     normalizeAge(data.age) !== patient.age ||
                     normalizeGender(data.gender) !== patient.gender
 
@@ -360,8 +384,8 @@ async function updatePatient(id, data) {
       },
       {
         name,
-        phone: normalizeText(data.phone),
-        email: normalizeEmail(data.email),
+        phone,
+        email,
         age: normalizeAge(data.age),
         gender: normalizeGender(data.gender)
       },
@@ -1621,11 +1645,10 @@ async function updateBillPayment(id, data) {
     await logAudit('payment', 'bill', bill._id, before, after, `Payment of ₹${amount} received via ${method}`, session)
 
     // FIX #6: Use atomic decrement instead of recalculating from all bills
-    // Calculate the difference in balance and apply atomically
-    const balanceDifference = newBalance - bill.balance
+    // Balance DECREASES by the amount paid (negative increment)
     await Patient.findByIdAndUpdate(
       bill.patient_id,
-      { $inc: { total_outstanding_balance: balanceDifference } },
+      { $inc: { total_outstanding_balance: -amount } },
       { session }
     )
 
@@ -1649,118 +1672,156 @@ async function getPaymentsByBill(billId) {
 async function reversePayment(paymentId, reason = '', session = null) {
   if (!isValidObjectId(paymentId)) return null
 
-  const payment = await Payment.findById(paymentId).session(session || undefined)
-  if (!payment) return null
-  if (payment.is_reversed) badRequest('Payment already reversed')
+  const isExternalSession = Boolean(session)
+  const dbSession = session || await mongoose.startSession()
+  if (!isExternalSession) dbSession.startTransaction()
 
-  // Mark payment as reversed
-  const reversedPayment = await Payment.findByIdAndUpdate(
-    paymentId,
-    {
-      $set: {
-        is_reversed: true,
-        reversed_at: new Date(),
-        reversal_reason: reason
-      }
-    },
-    { new: true, session: session || undefined }
-  )
+  try {
+    const payment = await Payment.findById(paymentId).session(dbSession)
+    if (!payment) {
+      if (!isExternalSession) await dbSession.endSession()
+      return null
+    }
+    if (payment.is_reversed) badRequest('Payment already reversed')
 
-  // Recalculate bill balance excluding reversed payments
-  const bill = await Bill.findById(payment.bill_id).session(session || undefined)
-  
-  const allPayments = await Payment.find({
-    bill_id: bill._id,
-    is_reversed: false
-  }).session(session || undefined)
+    // Mark payment as reversed
+    const reversedPayment = await Payment.findByIdAndUpdate(
+      paymentId,
+      {
+        $set: {
+          is_reversed: true,
+          reversed_at: new Date(),
+          reversal_reason: reason
+        }
+      },
+      { new: true, session: dbSession }
+    )
 
-  const totalPaid = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0)
-  const newBalance = Math.max(0, bill.total_amount - totalPaid)
-  const newStatus = totalPaid >= bill.total_amount ? 'paid' : totalPaid > 0 ? 'partial' : 'pending'
+    const bill = await Bill.findById(payment.bill_id).session(dbSession)
+    const allPayments = await Payment.find({
+      bill_id: bill._id,
+      is_reversed: false
+    }).session(dbSession)
 
-  const updatedBill = await Bill.findByIdAndUpdate(
-    payment.bill_id,
-    {
-      $set: {
-        paid_amount: totalPaid,
-        balance: newBalance,
-        status: newStatus
-      }
-    },
-    { new: true, session: session || undefined }
-  )
+    const totalPaid = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0)
+    const newBalance = Math.max(0, bill.total_amount - totalPaid)
+    const newStatus = totalPaid >= bill.total_amount ? 'paid' : totalPaid > 0 ? 'partial' : 'pending'
 
-  // Log reversal
-  await logAudit(
-    'payment',
-    'payment',
-    paymentId,
-    { is_reversed: false, amount: payment.amount },
-    { is_reversed: true, amount: payment.amount },
-    `Payment of ₹${payment.amount} reversed. Reason: ${reason}`,
-    session
-  )
+    await Bill.findByIdAndUpdate(
+      payment.bill_id,
+      {
+        $set: {
+          paid_amount: totalPaid,
+          balance: newBalance,
+          status: newStatus
+        }
+      },
+      { session: dbSession }
+    )
 
-  return reversedPayment
+    await Patient.findByIdAndUpdate(
+      bill.patient_id,
+      { $inc: { total_outstanding_balance: payment.amount } },
+      { session: dbSession }
+    )
+
+    // Log reversal
+    await logAudit(
+      'payment',
+      'payment',
+      paymentId,
+      { is_reversed: false, amount: payment.amount },
+      { is_reversed: true, amount: payment.amount },
+      `Payment of ₹${payment.amount} reversed. Reason: ${reason}`,
+      dbSession
+    )
+
+    if (!isExternalSession) await dbSession.commitTransaction()
+    return reversedPayment
+  } catch (err) {
+    if (!isExternalSession) await dbSession.abortTransaction()
+    throw err
+  } finally {
+    if (!isExternalSession) await dbSession.endSession()
+  }
 }
 
 async function adjustPayment(paymentId, newAmount, reason = '', session = null) {
   if (!isValidObjectId(paymentId)) return null
 
-  const payment = await Payment.findById(paymentId).session(session || undefined)
-  if (!payment) return null
-  if (payment.is_reversed) badRequest('Cannot adjust reversed payments')
+  const isExternalSession = Boolean(session)
+  const dbSession = session || await mongoose.startSession()
+  if (!isExternalSession) dbSession.startTransaction()
 
-  const amountDifference = toMoney(newAmount) - payment.amount
+  try {
+    const payment = await Payment.findById(paymentId).session(dbSession)
+    if (!payment) {
+      if (!isExternalSession) await dbSession.endSession()
+      return null
+    }
+    if (payment.is_reversed) badRequest('Cannot adjust reversed payments')
 
-  const adjustedPayment = await Payment.findByIdAndUpdate(
-    paymentId,
-    {
-      $set: {
-        amount: toMoney(newAmount),
-        is_adjustment: true,
-        adjustment_reason: reason
-      }
-    },
-    { new: true, session: session || undefined }
-  )
+    const amountDifference = toMoney(newAmount) - payment.amount
 
-  // Recalculate bill balance
-  const bill = await Bill.findById(payment.bill_id).session(session || undefined)
-  
-  const allPayments = await Payment.find({
-    bill_id: bill._id,
-    is_reversed: false
-  }).session(session || undefined)
+    const adjustedPayment = await Payment.findByIdAndUpdate(
+      paymentId,
+      {
+        $set: {
+          amount: toMoney(newAmount),
+          is_adjustment: true,
+          adjustment_reason: reason
+        }
+      },
+      { new: true, session: dbSession }
+    )
 
-  const totalPaid = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0)
-  const newBalance = Math.max(0, bill.total_amount - totalPaid)
-  const newStatus = totalPaid >= bill.total_amount ? 'paid' : totalPaid > 0 ? 'partial' : 'pending'
+    const bill = await Bill.findById(payment.bill_id).session(dbSession)
+    const allPayments = await Payment.find({
+      bill_id: bill._id,
+      is_reversed: false
+    }).session(dbSession)
 
-  await Bill.findByIdAndUpdate(
-    payment.bill_id,
-    {
-      $set: {
-        paid_amount: totalPaid,
-        balance: newBalance,
-        status: newStatus
-      }
-    },
-    { session: session || undefined }
-  )
+    const totalPaid = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0)
+    const newBalance = Math.max(0, bill.total_amount - totalPaid)
+    const newStatus = totalPaid >= bill.total_amount ? 'paid' : totalPaid > 0 ? 'partial' : 'pending'
 
-  // Log adjustment
-  await logAudit(
-    'adjustment',
-    'payment',
-    paymentId,
-    { amount: payment.amount },
-    { amount: toMoney(newAmount) },
-    `Payment adjusted from ₹${payment.amount} to ₹${toMoney(newAmount)}. Reason: ${reason}`,
-    session
-  )
+    await Bill.findByIdAndUpdate(
+      payment.bill_id,
+      {
+        $set: {
+          paid_amount: totalPaid,
+          balance: newBalance,
+          status: newStatus
+        }
+      },
+      { session: dbSession }
+    )
 
-  return adjustedPayment
+    await Patient.findByIdAndUpdate(
+      bill.patient_id,
+      { $inc: { total_outstanding_balance: amountDifference } },
+      { session: dbSession }
+    )
+
+    // Log adjustment
+    await logAudit(
+      'adjustment',
+      'payment',
+      paymentId,
+      { amount: payment.amount },
+      { amount: toMoney(newAmount) },
+      `Payment adjusted from ₹${payment.amount} to ₹${toMoney(newAmount)}. Reason: ${reason}`,
+      dbSession
+    )
+
+    if (!isExternalSession) await dbSession.commitTransaction()
+    return adjustedPayment
+  } catch (err) {
+    if (!isExternalSession) await dbSession.abortTransaction()
+    throw err
+  } finally {
+    if (!isExternalSession) await dbSession.endSession()
+  }
 }
 
 async function getAllBills(page = 1, limit = 50) {

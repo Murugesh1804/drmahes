@@ -2,13 +2,23 @@ const nodemailer = require('nodemailer')
 const path = require('path')
 
 // Initialize transporter using SMTP config from env variables
+const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com'
+const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10)
+const smtpUser = process.env.SMTP_USER || ''
+const smtpPass = process.env.SMTP_PASS || ''
+const mailFrom = process.env.MAIL_FROM || ''
+
+if (process.env.NODE_ENV === 'production' && (!mailFrom || !smtpUser || !smtpPass)) {
+  throw new Error('[email] MAIL_FROM, SMTP_USER, and SMTP_PASS must be configured in production')
+}
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587', 10),
-  secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpPort === 465, // true for 465, false for other ports
   auth: {
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
+    user: smtpUser,
+    pass: smtpPass,
   },
 })
 

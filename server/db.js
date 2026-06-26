@@ -4,7 +4,13 @@ const path = require('path')
 // Load environment variables from .env file
 require('dotenv').config({ path: path.join(__dirname, '../.env') })
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/dental-clinic'
+const MONGODB_URI = process.env.NODE_ENV === 'production'
+  ? process.env.MONGODB_URI
+  : process.env.MONGODB_URI || 'mongodb://localhost:27017/dental-clinic'
+
+if (process.env.NODE_ENV === 'production' && !MONGODB_URI) {
+  throw new Error('[db] MONGODB_URI must be set in production')
+}
 
 // Configure global schema options to ensure virtuals (like id) are included in toJSON / toObject
 const schemaOptions = {
@@ -497,6 +503,9 @@ async function seedSettings() {
   // Only generate and log fallback password if it doesn't exist yet
   let defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD
   if (!existing && !defaultPassword) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[db] DEFAULT_ADMIN_PASSWORD must be set in production before first startup')
+    }
     const crypto = require('crypto')
     defaultPassword = crypto.randomBytes(8).toString('hex')
     console.warn(`\n⚠️ WARNING: DEFAULT_ADMIN_PASSWORD not set in .env!`)

@@ -11,9 +11,8 @@ const compression = require('compression')
 const rateLimit = require('express-rate-limit')
 const path = require('path')
 const fs = require('fs')
-const bcrypt = require('bcryptjs')
 
-const { initDatabase, Patient, Appointment } = require('./db')
+const { initDatabase } = require('./db')
 const queries = require('./queries')
 const { handleLogin, verifyToken } = require('./auth')
 const { sendAppointmentConfirmation } = require('./email')
@@ -43,7 +42,20 @@ if (process.env.NODE_ENV === 'production') {
 
 // ── SECURITY HEADERS (helmet) ────────────────────────────────────────────────
 app.use(helmet({
-  contentSecurityPolicy: false, // Managed at Nginx level
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:'],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      frameAncestors: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      objectSrc: ["'none'"],
+    }
+  },
   crossOriginEmbedderPolicy: false,
 }))
 
@@ -76,30 +88,33 @@ const globalLimiter = rateLimit({
   message: { error: 'Too many requests. Please try again later.' },
 })
 
-// Auth: 5 login attempts per 15 minutes per IP (brute-force protection)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many login attempts. Please wait 15 minutes.' },
-  skipSuccessfulRequests: true,
-})
-
-// Public Forms: 5 submissions per 60 minutes per IP (spam protection)
-const publicFormLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many submissions. Please try again later.' },
-})
-
 app.use('/api', globalLimiter)
 
 // ── INITIALIZE DB ────────────────────────────────────────────────────────────
-initDatabase().then(db => {
+async function startServer() {
+  const db = await initDatabase()
   queries.init(db)
+  const server = app.listen(PORT, () => {
+    console.log(`[server] Running on port ${PORT} (${process.env.NODE_ENV || 'development'})`)
+    console.log(`[server] JWT auth enabled — all /api routes protected`)
+  })
+
+  function gracefulShutdown(signal) {
+    console.log(`[server] ${signal} received — shutting down gracefully`)
+    server.close(() => {
+      console.log('[server] HTTP server closed')
+      process.exit(0)
+    })
+    setTimeout(() => process.exit(1), 10000)
+  }
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+}
+
+startServer().catch(err => {
+  console.error('[server] Failed to start:', err)
+  process.exit(1)
 })
 
 // Create consent forms directory
@@ -201,26 +216,8 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: status === 500 ? 'Internal server error' : err.message })
 })
 
-// ── START SERVER ──────────────────────────────────────────────────────────────
-const server = app.listen(PORT, () => {
-  console.log(`[server] Running on port ${PORT} (${process.env.NODE_ENV || 'development'})`)
-  console.log(`[server] JWT auth enabled — all /api routes protected`)
-})
-
-// ── GRACEFUL SHUTDOWN (important for low-RAM VPS) ─────────────────────────────
-function gracefulShutdown(signal) {
-  console.log(`[server] ${signal} received — shutting down gracefully`)
-  server.close(() => {
-    console.log('[server] HTTP server closed')
-    process.exit(0)
-  })
-  // Force exit after 10s if connections hang
-  setTimeout(() => process.exit(1), 10000)
-}
-
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
-process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+// ── GRACEFUL SHUTDOWN HANDLERS ─────────────────────────────────────────────
 process.on('uncaughtException', (err) => {
   console.error('[uncaughtException]', err)
-  gracefulShutdown('uncaughtException')
+  process.exit(1)
 })

@@ -4,7 +4,9 @@ const { Patient, Appointment } = require('../db')
 const queries = require('../queries')
 const { sendAppointmentConfirmation } = require('../email')
 const rateLimit = require('express-rate-limit')
+const RateLimitMongo = require('rate-limit-mongo')
 const asyncHandler = require('../middleware/asyncHandler')
+const { isValidDateString, isValidEmail, isValidTimeSlot } = require('../validation')
 
 const publicFormLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -12,6 +14,12 @@ const publicFormLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many submissions. Please try again later.' },
+  store: new RateLimitMongo({
+    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/dental-clinic',
+    collectionName: 'rate-limit-public',
+    expireTimeMs: 60 * 60 * 1000,
+    errorOnInitFailure: true,
+  })
 })
 
 router.get('/health', (req, res) => {
@@ -25,12 +33,24 @@ router.get('/health', (req, res) => {
 router.post('/appointments/website-book', publicFormLimiter, asyncHandler(async (req, res) => {
   const { patientName, patientPhone, patientEmail, service, date, timeSlot } = req.body
 
-  if (!patientName || !patientPhone) {
-    return res.status(400).json({ error: 'Name and Phone are required' })
+  if (!patientName || !patientPhone || !date) {
+    return res.status(400).json({ error: 'Name, Phone and Date are required' })
   }
 
   const phone = patientPhone.trim()
   const email = patientEmail ? patientEmail.trim().toLowerCase() : null
+
+  if (!isValidDateString(date)) {
+    return res.status(400).json({ error: 'Date must be in YYYY-MM-DD format' })
+  }
+
+  if (email && !isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email address' })
+  }
+
+  if (timeSlot && !isValidTimeSlot(timeSlot)) {
+    return res.status(400).json({ error: 'Invalid time slot selected' })
+  }
 
   let patient = await Patient.findOne({ phone })
   if (!patient && email) {
@@ -38,14 +58,16 @@ router.post('/appointments/website-book', publicFormLimiter, asyncHandler(async 
   }
 
   if (!patient) {
-    patient = new Patient({
+    patient = await queries.addPatient({
       name: patientName.trim(),
-      phone: phone,
-      notes: `Registered via website booking (${patientEmail || 'No Email'})`
+      phone,
+      email,
+      notes: `Registered via website booking (${email || 'No Email'})`,
+      registration_source: 'website-booking'
     })
-    await patient.save()
   } else {
     if (!patient.phone && phone) patient.phone = phone
+    if (!patient.email && email) patient.email = email
     await patient.save()
   }
 
@@ -69,7 +91,7 @@ router.post('/appointments/website-book', publicFormLimiter, asyncHandler(async 
   const appt = await queries.addAppointment({
     patient_id: patient._id.toString(),
     scheduled_date: date,
-    scheduled_time: timeSlot,
+    scheduled_time: timeSlot || '',
     reason: service,
     notes: 'Website online booking',
     call_status: 'pending'
