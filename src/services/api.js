@@ -184,3 +184,10 @@ export const addTreatmentMaster = (data) => request('/treatment-masters', { meth
 export const updateTreatmentMaster = (id, data) => request(`/treatment-masters/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 export const deleteTreatmentMaster = (id) => request(`/treatment-masters/${id}`, { method: 'DELETE' })
 export const searchTreatmentMasters = (q) => request(`/treatment-masters/search?q=${encodeURIComponent(q)}`)
+
+// ── Medicine Master ──────────────────────────────────────────
+export const getAllMedicineMasters = (all = false) => request(`/medicine-masters${all ? '?all=true' : ''}`)
+export const addMedicineMaster = (data) => request('/medicine-masters', { method: 'POST', body: JSON.stringify(data) })
+export const updateMedicineMaster = (id, data) => request(`/medicine-masters/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const deleteMedicineMaster = (id) => request(`/medicine-masters/${id}`, { method: 'DELETE' })
+export const searchMedicineMasters = (q) => request(`/medicine-masters/search?q=${encodeURIComponent(q)}`)

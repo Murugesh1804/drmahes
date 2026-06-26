@@ -6,7 +6,7 @@ import {
   getAllPatients, searchPatients,
   getTreatmentsByPatient, getTreatmentsByAppointment, getTreatmentsByBill, getPatientAppointments,
   getPaymentsByBill, searchBills, emailBillInvoice,
-  getUnbilledTreatments, getAllTreatmentMasters
+  getUnbilledTreatments, getAllTreatmentMasters, getAllMedicineMasters
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
@@ -24,8 +24,9 @@ export default function Billing() {
   const [search, setSearch] = useState('')
   const [saving, setSaving] = useState(false)
 
-  // Treatment Master Data
+  // Master Data
   const [treatmentMasters, setTreatmentMasters] = useState([])
+  const [medicineMasters, setMedicineMasters] = useState([])
 
   // Modals visibility
   const [showCreate, setShowCreate] = useState(false)
@@ -45,12 +46,17 @@ export default function Billing() {
   const [unbilledTreatments, setUnbilledTreatments] = useState([])
   const [selectedUnbilled, setSelectedUnbilled] = useState(new Set())
   
-  // Cart Builder State
+  // Cart Builder State (Treatments)
   const [billItems, setBillItems] = useState([])
   const [cartSelect, setCartSelect] = useState('')
   const [cartCost, setCartCost] = useState('')
   const [cartTooth, setCartTooth] = useState('')
   const [cartDesc, setCartDesc] = useState('')
+
+  // Cart Builder State (Medicines)
+  const [cartMedSelect, setCartMedSelect] = useState('')
+  const [cartMedCost, setCartMedCost] = useState('')
+  const [cartMedDesc, setCartMedDesc] = useState('')
 
   const [billForm, setBillForm] = useState({
     paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: ''
@@ -83,11 +89,10 @@ export default function Billing() {
 
   useEffect(() => { load(1) }, [load])
 
-  // Load treatment masters
+  // Load masters
   useEffect(() => {
-    getAllTreatmentMasters().then(data => {
-      setTreatmentMasters(data || [])
-    }).catch(console.error)
+    getAllTreatmentMasters().then(data => setTreatmentMasters(data || [])).catch(console.error)
+    getAllMedicineMasters().then(data => setMedicineMasters(data || [])).catch(console.error)
   }, [])
 
   // Patient search in create modal
@@ -192,10 +197,34 @@ export default function Billing() {
     }
   }
 
+  function handlePredefinedMedChange(name) {
+    setCartMedSelect(name)
+    const matched = medicineMasters.find(m => m.item_name === name)
+    setCartMedCost(matched ? matched.standard_cost.toString() : '')
+  }
+
+  function addMedToCart() {
+    if (!cartMedSelect) { notify('Select a medicine or product', 'error'); return }
+    const costNum = parseFloat(cartMedCost) || 0
+    if (costNum <= 0) { notify('Selected item has no configured cost', 'error'); return }
+
+    const newItem = {
+      treatment_type: `Medicine: ${cartMedSelect}`,
+      cost: costNum,
+      tooth_numbers: [],
+      description: cartMedDesc.trim(),
+      isUnbilled: false
+    }
+
+    setBillItems([...billItems, newItem])
+    setCartMedSelect(''); setCartMedCost(''); setCartMedDesc('')
+  }
+
   function openCreate() {
     setPatSearch(''); setSelPatient(null); setBillItems([])
     setUnbilledTreatments([]); setSelectedUnbilled(new Set())
     setCartSelect(''); setCartCost(''); setCartTooth(''); setCartDesc('')
+    setCartMedSelect(''); setCartMedCost(''); setCartMedDesc('')
     setBillForm({ paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: '', manual_charges: '', medicine_charges: '' })
     setShowCreate(true)
   }
@@ -353,7 +382,17 @@ export default function Billing() {
       const w = window.open('', '_blank')
       w.document.write(html)
       w.document.close()
-      w.print()
+      w.onload = () => {
+        w.focus()
+        w.print()
+      }
+      // Fallback in case onload doesn't fire
+      setTimeout(() => {
+        if (w.document.readyState === 'complete') {
+          w.focus()
+          w.print()
+        }
+      }, 1000)
     }
   }
 
@@ -544,6 +583,24 @@ export default function Billing() {
                   </div>
                   <div className="col-span-2">
                     <button type="button" onClick={addItemToCart} className="w-full btn-primary h-9 text-xs py-0">+ Add</button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-3 mb-4">
+                  <div className="col-span-4">
+                    <select className="select text-xs h-9" value={cartMedSelect} onChange={e => handlePredefinedMedChange(e.target.value)}>
+                      <option value="">— Select Medicine/Product —</option>
+                      {medicineMasters.map(m => <option key={m.id} value={m.item_name}>{m.item_name}</option>)}
+                    </select>
+                  </div>
+                  <div className="col-span-2">
+                    <input type="number" className="input text-xs h-9 bg-slate-100" placeholder="Cost" value={cartMedCost} readOnly />
+                  </div>
+                  <div className="col-span-4">
+                    <input type="text" className="input text-xs h-9" placeholder="Desc/Dosage" value={cartMedDesc} onChange={e => setCartMedDesc(e.target.value)} />
+                  </div>
+                  <div className="col-span-2">
+                    <button type="button" onClick={addMedToCart} className="w-full btn-primary h-9 text-xs py-0 bg-emerald-600 hover:bg-emerald-700 border-emerald-700">+ Add Med</button>
                   </div>
                 </div>
 

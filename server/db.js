@@ -451,6 +451,23 @@ const treatmentMasterSchema = new mongoose.Schema({
 treatmentMasterSchema.index({ treatment_name: 1 })
 treatmentMasterSchema.index({ category: 1, is_active: 1 })
 
+// ── MEDICINE MASTER SCHEMA ──────────────────────────────────────────────────
+const medicineMasterSchema = new mongoose.Schema({
+  item_name: { type: String, required: true, unique: true, trim: true },
+  type: {
+    type: String,
+    enum: ['medicine', 'product'],
+    default: 'medicine'
+  },
+  standard_cost: { type: Number, default: 0, min: 0 },
+  is_active: { type: Boolean, default: true, index: true }
+}, {
+  ...schemaOptions,
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+})
+medicineMasterSchema.index({ item_name: 1 })
+medicineMasterSchema.index({ type: 1, is_active: 1 })
+
 const Patient = mongoose.model('Patient', patientSchema)
 const Appointment = mongoose.model('Appointment', appointmentSchema)
 const Treatment = mongoose.model('Treatment', treatmentSchema)
@@ -465,6 +482,7 @@ const FollowUp = mongoose.model('FollowUp', followUpSchema)
 const AuditLog = mongoose.model('AuditLog', auditLogSchema)
 const ConsultantPayment = mongoose.model('ConsultantPayment', consultantPaymentSchema)
 const TreatmentMaster = mongoose.model('TreatmentMaster', treatmentMasterSchema)
+const MedicineMaster = mongoose.model('MedicineMaster', medicineMasterSchema)
 
 let connected = false
 
@@ -568,5 +586,6 @@ module.exports = {
   AuditLog,
   ConsultantPayment,
   TreatmentMaster,
+  MedicineMaster,
   Enquiry
 }

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, ConsultantPayment, TreatmentMaster, Enquiry, getDbPath } = require('./db')
+const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, ConsultantPayment, TreatmentMaster, MedicineMaster, Enquiry, getDbPath } = require('./db')
 
 const CLINIC_TIME_ZONE = process.env.CLINIC_TIME_ZONE || 'Asia/Kolkata'
 const APPOINTMENT_STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
@@ -1441,6 +1441,20 @@ async function createBill(data) {
   try {
     let subTotal = 0
     const masters = await TreatmentMaster.find({ is_active: true }).session(session).lean()
+    const medicineMasters = await MedicineMaster.find({ is_active: true }).session(session).lean()
+
+    const resolveCost = (treatmentType) => {
+      if (treatmentType.startsWith('Medicine: ')) {
+        const medName = treatmentType.substring(10).trim().toLowerCase()
+        const matched = medicineMasters.find(m => m.item_name.toLowerCase() === medName)
+        if (!matched) badRequest(`Medicine "${treatmentType.substring(10).trim()}" not found in Medicine Masters`)
+        return matched.standard_cost || 0
+      } else {
+        const matched = masters.find(m => m.treatment_name.toLowerCase() === treatmentType.toLowerCase())
+        if (!matched) badRequest(`Treatment type "${treatmentType}" not found in Treatment Masters`)
+        return matched.standard_cost || 0
+      }
+    }
 
     // Fetch and link existing treatments
     if (existingIds.length > 0) {
@@ -1458,8 +1472,13 @@ async function createBill(data) {
       for (const t of existing) {
         const toothNumbers = normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
         const count = toothNumbers.length > 0 ? toothNumbers.length : 1
-        const matchedMaster = masters.find(m => m.treatment_name.toLowerCase() === t.treatment_type.toLowerCase())
-        const costPerTooth = matchedMaster ? matchedMaster.standard_cost : 0
+        let costPerTooth = 0
+        try {
+          costPerTooth = resolveCost(t.treatment_type)
+        } catch (e) {
+          // If a legacy treatment or removed master, fallback to its existing cost instead of erroring out existing treatments
+          costPerTooth = (t.cost || 0) / count
+        }
         const dynamicCost = costPerTooth * count
         subTotal += dynamicCost
         
@@ -1476,11 +1495,7 @@ async function createBill(data) {
         .map(t => {
           const toothNumbers = normalizeToothNumbers(t.tooth_numbers || t.tooth_number)
           const count = toothNumbers.length > 0 ? toothNumbers.length : 1
-          const matchedMaster = masters.find(m => m.treatment_name.toLowerCase() === t.treatment_type.toLowerCase())
-          if (!matchedMaster) {
-            badRequest(`Treatment type "${t.treatment_type}" not found in Treatment Masters`)
-          }
-          const costPerTooth = matchedMaster.standard_cost || 0
+          const costPerTooth = resolveCost(t.treatment_type)
           const dynamicCost = costPerTooth * count
 
           return {
@@ -1838,7 +1853,11 @@ async function getAllBills(page = 1, limit = 50) {
     ...b,
     id: b._id.toString(),
     patient_id: b.patient_id ? b.patient_id._id.toString() : null,
-    patient_name: b.patient_id ? b.patient_id.name : ''
+    patient_name: b.patient_id ? b.patient_id.name : '',
+    patient_pid:  b.patient_id ? (b.patient_id.pid || null) : null,
+    age:          b.patient_id ? b.patient_id.age : null,
+    gender:       b.patient_id ? b.patient_id.gender : null,
+    phone:        b.patient_id ? b.patient_id.phone : ''
   }))
   return { items, total, page, limit, hasMore: skip + items.length < total }
 }
@@ -1889,8 +1908,12 @@ async function searchBills(query, page = 1, limit = 50) {
   const items = results.map(b => ({
     ...b,
     id: b._id.toString(),
-    patient_id: b.patient ? b.patient._id.toString() : null,
-    patient_name: b.patient ? b.patient.name : ''
+    patient_id:  b.patient ? b.patient._id.toString() : null,
+    patient_name: b.patient ? b.patient.name : '',
+    patient_pid:  b.patient ? (b.patient.pid || null) : null,
+    age:          b.patient ? b.patient.age : null,
+    gender:       b.patient ? b.patient.gender : null,
+    phone:        b.patient ? b.patient.phone : ''
   }))
 
   return { items, total, page, limit, hasMore: skip + items.length < total }
@@ -2442,6 +2465,79 @@ async function searchTreatmentMasters(query) {
   return items.map(t => ({ ...t, id: t._id.toString() }))
 }
 
+// MEDICINE MASTER
+// ═══════════════════════════════════════════════════════════
+async function getAllMedicineMasters(includeInactive = false) {
+  const filter = includeInactive ? {} : { is_active: true }
+  const items = await MedicineMaster.find(filter).sort({ type: 1, item_name: 1 }).lean()
+  return items.map(t => ({ ...t, id: t._id.toString() }))
+}
+
+async function addMedicineMaster(data) {
+  const itemName = normalizeText(data.item_name)
+  if (!itemName) badRequest('Item name is required')
+
+  const existing = await MedicineMaster.findOne({
+    item_name: { $regex: `^${itemName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+  })
+  if (existing) badRequest(`Medicine/Product "${itemName}" already exists`)
+
+  const type = data.type === 'product' ? 'product' : 'medicine'
+
+  const item = new MedicineMaster({
+    item_name: itemName,
+    type,
+    standard_cost: toMoney(data.standard_cost, 0, 'Standard cost'),
+    is_active: data.is_active !== false
+  })
+  await item.save()
+  const doc = item.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function updateMedicineMaster(id, data) {
+  if (!isValidObjectId(id)) return null
+  const item = await MedicineMaster.findById(id)
+  if (!item) return null
+
+  if (data.item_name !== undefined) {
+    const name = normalizeText(data.item_name)
+    if (!name) badRequest('Item name is required')
+    const existing = await MedicineMaster.findOne({
+      _id: { $ne: id },
+      item_name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+    })
+    if (existing) badRequest(`Item "${name}" already exists`)
+    item.item_name = name
+  }
+
+  if (data.type !== undefined) item.type = data.type === 'product' ? 'product' : 'medicine'
+  if (data.standard_cost !== undefined) item.standard_cost = toMoney(data.standard_cost, item.standard_cost, 'Standard cost')
+  if (data.is_active !== undefined) item.is_active = data.is_active === true || data.is_active === 'true'
+
+  await item.save()
+  const doc = item.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function deleteMedicineMaster(id) {
+  if (!isValidObjectId(id)) return { success: false }
+  await MedicineMaster.findByIdAndUpdate(id, { $set: { is_active: false } })
+  return { success: true }
+}
+
+async function searchMedicineMasters(query) {
+  const q = normalizeText(query)
+  if (!q) return getAllMedicineMasters()
+  const items = await MedicineMaster.find({
+    is_active: true,
+    item_name: { $regex: q, $options: 'i' }
+  }).sort({ item_name: 1 }).lean()
+  return items.map(t => ({ ...t, id: t._id.toString() }))
+}
+
 module.exports = {
   init,
   getDbPath,
@@ -2461,6 +2557,7 @@ module.exports = {
   addConsultantPayment, updateConsultantPayment, deleteConsultantPayment,
   getConsultantPayments, getConsultantMonthlyReport, getConsultantOutstandingDues, recordConsultantPaymentAmount,
   getAllTreatmentMasters, addTreatmentMaster, updateTreatmentMaster, deleteTreatmentMaster, searchTreatmentMasters,
+  getAllMedicineMasters, addMedicineMaster, updateMedicineMaster, deleteMedicineMaster, searchMedicineMasters,
   getSettings, setSetting,
   getDashboardStats,
   logAudit,

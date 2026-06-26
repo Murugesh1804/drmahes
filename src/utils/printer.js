@@ -1,516 +1,541 @@
 export function generateReceiptHTML(bill, txs = [], settings = {}) {
-  const formatter = new Intl.NumberFormat('en-IN', {
-    style: 'currency', currency: 'INR', minimumFractionDigits: 2
-  })
 
-  const dFormat = new Intl.DateTimeFormat('en-IN', {
-    year: 'numeric', month: 'short', day: '2-digit',
-    hour: '2-digit', minute: '2-digit'
-  }).format(new Date(bill.created_at))
+  // ─── Currency formatter: smart decimals ──────────────────────────────────────
+  const fmt = (amount) => {
+    const n = Number(amount) || 0
+    return '₹' + (Number.isInteger(n)
+      ? n.toLocaleString('en-IN')
+      : n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+  }
 
+  // ─── Date formatting ──────────────────────────────────────────────────────────
+  const dateObj = new Date(bill.created_at)
+  const dateLabel = new Intl.DateTimeFormat('en-IN', {
+    year: 'numeric', month: 'short', day: '2-digit'
+  }).format(dateObj)
+  const timeLabel = new Intl.DateTimeFormat('en-IN', {
+    hour: '2-digit', minute: '2-digit', hour12: true
+  }).format(dateObj)
+
+  // ─── Asset URLs ───────────────────────────────────────────────────────────────
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const letterheadSrc = baseUrl ? `${baseUrl}/${encodeURI('Letter Head.png')}` : '/Letter%20Head.png'
+  const logoSrc = baseUrl ? `${baseUrl}/logo_white.webp` : '/logo_white.webp'
+  const watermarkSrc = baseUrl ? `${baseUrl}/favicon.ico` : '/favicon.ico'
 
-  // Calculate totals
+  // ─── Totals ───────────────────────────────────────────────────────────────────
   const subtotal = bill.total_amount || txs.reduce((sum, t) => sum + t.cost, 0)
-  const discountAmount = bill.discount || 0
-  const taxAmount = bill.tax_amount || 0
-  const finalTotal = (subtotal - discountAmount + taxAmount)
-  const balance = bill.balance || (finalTotal - (bill.paid_amount || 0))
+  const discountAmt = bill.discount || 0
+  const taxAmt = bill.tax_amount || 0
+  const finalTotal = subtotal - discountAmt + taxAmt
+  const paidAmt = bill.paid_amount || 0
+  const balance = bill.balance ?? Math.max(0, finalTotal - paidAmt)
 
-  const txsHtml = txs.map((t, index) => `
-    <tr>
-      <td class="tx-number">${index + 1}</td>
-      <td class="tx-description">
-        <strong>${t.treatment_type}</strong>
-        ${t.tooth_numbers && t.tooth_numbers.length ? `<br><small>Teeth: ${t.tooth_numbers.join(', ')}</small>` : ''}
-        ${t.description ? `<br><small>${t.description}</small>` : ''}
-      </td>
-      <td class="tx-cost">${formatter.format(t.cost)}</td>
-    </tr>
-  `).join('')
+  // ─── Patient ID: use real pid from DB ────────────────────────────────────────
+  const patientIdDisplay = bill.patient_pid || bill.patient_ref || 'N/A'
 
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Invoice ${bill.invoice_number || bill.id}</title>
-      <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
+  // ─── Payment display ──────────────────────────────────────────────────────────
+  const payMethod = bill.payment_method
+    ? bill.payment_method.charAt(0).toUpperCase() + bill.payment_method.slice(1)
+    : 'Cash'
+  const txnId = bill.transaction_id ||
+    (bill.payment_method === 'cash' || !bill.payment_method ? 'Cash Payment' : 'N/A')
 
-        html, body {
-          margin: 0;
-          padding: 0;
-        }
+  // ─── Treatment rows ───────────────────────────────────────────────────────────
+  const txsHtml = txs.length > 0
+    ? txs.map((t, i) => `
+        <tr>
+          <td class="tx-num">${i + 1}</td>
+          <td class="tx-desc">
+            <span class="tx-name">${t.treatment_type}</span>
+            ${t.tooth_numbers && t.tooth_numbers.length
+              ? `<span class="tx-meta">Teeth: ${t.tooth_numbers.join(', ')}</span>` : ''}
+            ${t.description ? `<span class="tx-meta">${t.description}</span>` : ''}
+          </td>
+          <td class="tx-cost">${fmt(t.cost)}</td>
+        </tr>`).join('')
+    : `<tr><td colspan="3" class="tx-empty">No treatments recorded</td></tr>`
 
-        @page {
-          size: A5 portrait;
-          margin: 0;
-        }
+  // ─── SVG icons (beige #B19063) ────────────────────────────────────────────────
+  const iconPhone = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B19063" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.34 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 5.44 5.44l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>`
+  const iconGlobe = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B19063" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`
+  const iconMail = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B19063" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`
+  const iconPin = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B19063" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`
 
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: white;
-          color: #333;
-          line-height: 1.45;
-          margin: 0;
-          padding: 0;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice ${bill.invoice_number || bill.id}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<style>
 
-        @media print {
-          body {
-            background: white;
-            margin: 0;
-            padding: 0;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-        }
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+@page { size: A5 portrait; margin: 0; }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .invoice {
-          width: 148mm;
-          height: 210mm;
-          position: relative;
-          background: #fff;
-          margin: 0 auto;
-          overflow: hidden;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
+html, body {
+  background: #d0d0d0;
+  font-family: 'Inter', Arial, sans-serif;
+  font-weight: 400;
+  color: #222;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
 
-        .letterhead-bg {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 148mm;
-          height: 210mm;
-          object-fit: cover;
-          z-index: 0;
-          opacity: 1;
-        }
+@media print { html, body { background: white; } }
 
-        /* Content area - only the white writable space */
-        .invoice-content {
-          position: absolute;
-          top: 35mm;
-          left: 12mm;
-          right: 12mm;
-          bottom: 30mm;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          background: transparent;
-          z-index: 1;
-        }
+/* ── Page shell ─────────────────────────────────────────────────────────── */
+.page {
+  width: 148mm;
+  height: 210mm;
+  position: relative;
+  overflow: hidden;
+  background: white;
+  margin: 0 auto;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
 
-        /* Invoice header section */
-        .invoice-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          padding-bottom: 8px;
-          border-bottom: 1px solid #ddd;
-          margin-bottom: 10px;
-          flex-shrink: 0;
-        }
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.header {
+  height: 28mm;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 7mm 0 5mm; /* point 1: push logo down slightly */
+}
 
-        .invoice-header-left h2 {
-          font-size: 20px;
-          font-weight: 700;
-          color: #121212;
-          margin-bottom: 4px;
-        }
+.logo-full {
+  width: 60mm;
+  height: auto;
+  object-fit: contain;
+}
 
-        .invoice-header-left p {
-          font-size: 13px;
-          color: #444;
-        }
+/* ── Gold divider lines ──────────────────────────────────────────────────── */
+.header-line, .footer-line { height: 2px; background: #B19063; }
 
-        .invoice-header-right {
-          text-align: right;
-        }
+/* ── Content area ────────────────────────────────────────────────────────── */
+.content {
+  position: relative;
+  height: 154mm;
+  padding: 4mm 10mm 4mm 10mm;
+  overflow: hidden;
+}
 
-        .invoice-header-right .label {
-          font-size: 10px;
-          text-transform: uppercase;
-          color: #444;
-          font-weight: 700;
-          letter-spacing: 0.5px;
-        }
+/* ── Watermark ───────────────────────────────────────────────────────────── */
+.watermark {
+  position: absolute;
+  left: 50%; top: 56%; /* point 9: shift down so it doesn't overlap patient info */
+  transform: translate(-50%, -50%);
+  width: 90mm;
+  opacity: 0.045;
+  z-index: 0;
+  pointer-events: none;
+}
 
-        .invoice-header-right .value {
-          font-size: 16px;
-          font-weight: 700;
-          color: #121212;
-        }
+/* ── Invoice wrapper ─────────────────────────────────────────────────────── */
+.invoice { position: relative; z-index: 10; }
 
-        /* Patient info section */
-        .patient-info {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 10px;
-          padding: 8px 0;
-          margin-bottom: 10px;
-          flex-shrink: 0;
-          font-size: 11px;
-        }
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  line-height: 1.6;
+}
 
-        .patient-info-item {
-          display: flex;
-          flex-direction: column;
-        }
+.footer-top {
+  padding: 12px 30px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9pt;
+  color: #000000ff;
+}
 
-        .patient-info-item label {
-          font-size: 9px;
-          text-transform: uppercase;
-          color: #444;
-          font-weight: 700;
-          letter-spacing: 0.3px;
-          margin-bottom: 2px;
-        }
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 
-        .patient-info-item span {
-          font-size: 11px;
-          color: #222;
-          font-weight: 700;
-        }
+.footer-bottom {
+  text-align: center;
+  font-size: 9pt;
+  color: #000000ff;
+  padding-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
 
-        /* Treatment table */
-        .treatments-section {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          min-height: 0;
-          margin-bottom: 10px;
-        }
+/* ═══════════════════════════════════════
+   INVOICE CONTENT
+═══════════════════════════════════════ */
 
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 10px;
-          flex: 1;
-        }
+/* ── Invoice header ──────────────────────────────────────────────────────── */
+.inv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
 
-        thead {
-          background: #f8f8f8;
-        }
+.inv-header-left {
+  display: flex;
+  flex-direction: column;
+}
 
-        thead tr {
-          border-bottom: 1px solid #333;
-        }
+.inv-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #B19063; /* Beige accent */
+  letter-spacing: 0.5px;
+  line-height: 1;
+  text-transform: uppercase;
+}
 
-        thead th {
-          padding: 5px 4px;
-          text-align: left;
-          font-weight: 700;
-          color: #121212;
-          font-size: 9px;
-          text-transform: uppercase;
-          letter-spacing: 0.35px;
-        }
+.inv-subtitle {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #777;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
-        thead th:first-child {
-          width: 20px;
-        }
+.inv-meta-grid {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-        thead th:last-child {
-          text-align: right;
-          width: 45px;
-        }
+.meta-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 
-        tbody tr {
-          border-bottom: 1px solid #eee;
-        }
+.meta-lbl {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #888;
+  margin-bottom: 2px;
+}
 
-        tbody tr:last-child {
-          border-bottom: none;
-        }
+.meta-val {
+  font-size: 11px;
+  font-weight: 600;
+  color: #222;
+}
 
-        td {
-          padding: 4px 4px;
-          vertical-align: top;
-          color: #333;
-        }
+.meta-val.bold {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #222;
+}
 
-        .tx-number {
-          text-align: center;
-          font-weight: 700;
-          color: #121212;
-          font-size: 10px;
-        }
+.meta-val.time {
+  font-size: 10px;
+  font-weight: 500;
+  color: #666;
+}
 
-        .tx-description {
-          font-size: 10px;
-          color: #333;
-        }
+.meta-divider {
+  width: 1px;
+  height: 20px;
+  background: #E0E0E0;
+}
 
-        .tx-description strong {
-          font-weight: 700;
-          color: #121212;
-          display: block;
-          font-size: 10px;
-        }
+/* ── Divider ─────────────────────────────────────────────────────────────── */
+.divider { height: 1px; background: #D9D9D9; margin: 6px 0; }
 
-        .tx-description small {
-          display: block;
-          font-size: 9px;
-          color: #555;
-          margin-top: 1px;
-          font-style: italic;
-        }
+/* ── Patient details — two-column label/value table ──────────────────────── */
+.pat-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2px;
+}
 
-        .tx-cost {
-          text-align: right;
-          font-weight: 700;
-          color: #121212;
-          font-size: 10px;
-          width: 45px;
-        }
+.pat-table td {
+  padding: 3px 6px 3px 0;
+  vertical-align: middle;
+  font-size: 12px;
+  line-height: 1.4;
+}
 
-        /* Totals section */
-        .totals {
-          display: flex;
-          justify-content: flex-end;
-          padding: 7px 0;
-          margin-bottom: 10px;
-          flex-shrink: 0;
-          font-size: 10px;
-        }
+.pat-table td.lbl {
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #777; /* point 12: darkened from #999 for print readability */
+  white-space: nowrap;
+  width: 85px;
+  padding-right: 8px;
+}
 
-        .totals-box {
-          width: 48%;
-        }
+.pat-table td.val {
+  font-size: 12px;
+  font-weight: 600;
+  color: #222;
+}
 
-        .total-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 4px 0;
-          font-size: 10px;
-          color: #333;
-          border-bottom: none;
-        }
+.pat-table td:nth-child(3) {
+  padding-left: 12px;
+}
 
-        .total-row label {
-          font-weight: 700;
-          color: #333;
-        }
+/* half-width columns for side-by-side pairs */
+.pat-table td.lbl-half { width: 75px; }
+.pat-table td.val-half { }
 
-        .total-row.final {
-          border-top: 1px solid #121212;
-          padding-top: 5px;
-          margin-top: 3px;
-          font-weight: 800;
-          font-size: 11px;
-          color: #121212;
-        }
+/* ── Treatment table ─────────────────────────────────────────────────────── */
+.tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2px;
+}
 
-        .total-row.paid {
-          color: #2e7d32;
-          font-weight: 700;
-        }
+.tx-table thead tr { border-bottom: 1.5px solid #333; }
 
-        .total-row.balance {
-          color: #d32f2f;
-          font-weight: 700;
-        }
+.tx-table thead th {
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #222;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
 
-        /* Payment info section */
-        .payment-info {
-          display: flex;
-          justify-content: space-between;
-          padding: 7px 0;
-          margin-bottom: 10px;
-          flex-shrink: 0;
-          font-size: 10px;
-          border-bottom: 1px solid #ddd;
-        }
+.tx-table thead th:first-child { width: 26px; text-align: center; }
+.tx-table thead th:last-child  { text-align: right; padding-right: 18px; width: 72px; }
 
-        .payment-info div {
-          flex: 1;
-        }
+.tx-table tbody tr { border-bottom: 1px solid #E8E8E8; }
+.tx-table tbody tr:last-child { border-bottom: none; }
 
-        .payment-info label {
-          font-weight: 700;
-          color: #333;
-          font-size: 10px;
-        }
+.tx-table td {
+  padding: 6px 8px;
+  vertical-align: top;
+  color: #222;
+}
 
-        .payment-info span {
-          font-size: 10px;
-          color: #333;
-          margin-left: 4px;
-        }
+.tx-num { text-align: center; font-size: 11px; font-weight: 600; color: #666; }
 
-        /* Signature section */
-        .signature-area {
-          display: flex;
-          justify-content: space-between;
-          gap: 15px;
-          padding-top: 6px;
-          flex-shrink: 0;
-        }
+.tx-name { display: block; font-size: 12px; font-weight: 600; color: #222; }
 
-        .signature-box {
-          flex: 1;
-          text-align: center;
-          font-size: 9px;
-        }
+.tx-meta { display: block; font-size: 10px; color: #999; font-style: italic; margin-top: 2px; }
 
-        .signature-line {
-          height: 24px;
-          border-top: 1px solid #333;
-          margin-bottom: 3px;
-        }
+.tx-cost {
+  text-align: right;
+  padding-right: 18px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #222;
+  white-space: nowrap;
+}
 
-        .signature-box span {
-          display: block;
-          font-size: 9px;
-          color: #333;
-          font-weight: 700;
-        }
+.tx-empty { text-align: center; color: #bbb; padding: 14px 0; font-size: 11px; }
 
-        @media (max-width: 600px) {
-          .invoice {
-            width: 100%;
-            height: auto;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="invoice">
-        <img class="letterhead-bg" src="${letterheadSrc}" alt="Letterhead">
-        <div class="invoice-content">
-          
-          <!-- Invoice Header with Number & Date -->
-          <div class="invoice-header">
-            <div class="invoice-header-left">
-              <h2>Invoice</h2>
-              <p>Patient Receipt & Bill</p>
-            </div>
-            <div class="invoice-header-right">
-              <div class="label">Invoice No</div>
-              <div class="value">${bill.invoice_number || bill.id}</div>
-              <div class="label" style="margin-top: 2px;">Date</div>
-              <div class="value">${dFormat}</div>
-            </div>
+/* ── Totals ──────────────────────────────────────────────────────────────── */
+.totals-wrap { display: flex; justify-content: flex-end; margin-top: 4px; }
+.totals-box  { width: 44%; } /* point 5: 52%→44% for better balance */
+
+.t-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.t-row .t-lbl { font-weight: 500; color: #666; }
+
+.t-row .t-val {
+  font-weight: 600;
+  color: #222;
+  text-align: right;
+  min-width: 72px;
+  padding-right: 18px; /* point 11: consistent right margin across all amounts */
+}
+
+.t-row.final { border-top: 1.5px solid #222; margin-top: 4px; padding-top: 6px; }
+.t-row.final .t-lbl { font-size: 13px; font-weight: 700; color: #222; }
+.t-row.final .t-val { font-size: 17px; font-weight: 800; color: #222; }
+
+.t-row.paid  .t-lbl { color: #222; font-weight: 600; }
+.t-row.paid  .t-val { color: #222; font-weight: 700; }
+
+.t-row.bal   .t-lbl { color: #c0392b; font-weight: 600; }
+.t-row.bal   .t-val { color: #c0392b; font-weight: 700; }
+
+/* ── Payment info — colon-aligned using table ────────────────────────────── */
+/* point 7: labels and values start at exact same horizontal position */
+.pay-info { font-size: 12px; margin-top: 4px; }
+.pay-info table { border-collapse: collapse; }
+.pay-info td { padding: 2px 0; vertical-align: top; }
+.pay-info td.pi-lbl {
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  padding-right: 6px;
+  width: 130px; /* fixed so all values start at same x */
+}
+.pay-info td.pi-val { font-weight: 400; color: #555; }
+
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <img class="logo-full" src="${logoSrc}" alt="Dr. Mahe's Dentistry">
+  </div>
+  <div class="header-line"></div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <img class="watermark" src="${watermarkSrc}" alt="">
+
+    <div class="invoice">
+
+      <!-- Invoice header -->
+      <div class="inv-header">
+        <div class="inv-header-left">
+          <div class="inv-title">Invoice</div>
+          <div class="inv-subtitle">Patient Receipt &amp; Medical Bill</div>
+        </div>
+        <div class="inv-meta-grid">
+          <div class="meta-block">
+            <div class="meta-lbl">Invoice No</div>
+            <div class="meta-val bold">${bill.invoice_number || bill.id}</div>
           </div>
-
-          <!-- Patient Information -->
-          <div class="patient-info">
-            <div class="patient-info-item">
-              <label>Patient Name</label>
-              <span>${bill.patient_name || '-'}</span>
-            </div>
-            <div class="patient-info-item">
-              <label>Patient ID</label>
-              <span>${bill.patient_id || '-'}</span>
-            </div>
-            <div class="patient-info-item">
-              <label>Age / Gender</label>
-              <span>${bill.age || '-'} / ${bill.gender || '-'}</span>
-            </div>
-            <div class="patient-info-item">
-              <label>Phone</label>
-              <span>${bill.phone || '-'}</span>
-            </div>
-            <div class="patient-info-item">
-              <label>Doctor</label>
-              <span>${bill.doctor_name || '-'}</span>
-            </div>
-            <div class="patient-info-item">
-              <label>Visit Date</label>
-              <span>${dFormat.split(',')[0]}</span>
-            </div>
+          <div class="meta-divider"></div>
+          <div class="meta-block">
+            <div class="meta-lbl">Date</div>
+            <div class="meta-val">${dateLabel}</div>
           </div>
-
-          <!-- Treatment Table -->
-          <div class="treatments-section">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Treatment</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${txsHtml}
-              </tbody>
-            </table>
+          <div class="meta-divider"></div>
+          <div class="meta-block">
+            <div class="meta-lbl">Time</div>
+            <div class="meta-val time">${timeLabel}</div>
           </div>
-
-          <!-- Bill Totals -->
-          <div class="totals">
-            <div class="totals-box">
-              <div class="total-row">
-                <label>Subtotal:</label>
-                <span>${formatter.format(subtotal)}</span>
-              </div>
-              ${discountAmount > 0 ? `
-                <div class="total-row">
-                  <label>Discount:</label>
-                  <span>−${formatter.format(discountAmount)}</span>
-                </div>
-              ` : ''}
-              ${taxAmount > 0 ? `
-                <div class="total-row">
-                  <label>Tax:</label>
-                  <span>+${formatter.format(taxAmount)}</span>
-                </div>
-              ` : ''}
-              <div class="total-row final">
-                <label>Total:</label>
-                <span>${formatter.format(finalTotal)}</span>
-              </div>
-              <div class="total-row paid">
-                <label>Paid:</label>
-                <span>${formatter.format(bill.paid_amount || 0)}</span>
-              </div>
-              ${balance > 0 ? `
-                <div class="total-row balance">
-                  <label>Balance Due:</label>
-                  <span>${formatter.format(balance)}</span>
-                </div>
-              ` : ''}
-            </div>
-          </div>
-
-          <!-- Payment Information -->
-          <div class="payment-info">
-            <div>
-              <label>Payment Method:</label>
-              <span>${bill.payment_method ? bill.payment_method.charAt(0).toUpperCase() + bill.payment_method.slice(1) : 'Cash'}</span>
-            </div>
-            <div>
-              <label>Transaction ID:</label>
-              <span>${bill.transaction_id || '-'}</span>
-            </div>
-          </div>
-
-          <!-- Signature Area -->
-          <div class="signature-area">
-            <div class="signature-box">
-              <div class="signature-line"></div>
-              <span>Patient Signature</span>
-            </div>
-            <div class="signature-box">
-              <div class="signature-line"></div>
-              <span>Authorized Signature</span>
-            </div>
-          </div>
-
         </div>
       </div>
-    </body>
-    </html>
-  `
+
+      <div class="divider"></div>
+
+      <!-- Patient details — clean two-column table, no doctor -->
+      <table class="pat-table">
+        <tr>
+          <td class="lbl">Patient Name</td>
+          <td class="val">${bill.patient_name || '—'}</td>
+          <td class="lbl">Patient ID</td>
+          <td class="val">${patientIdDisplay}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Phone</td>
+          <td class="val">${bill.phone || '—'}</td>
+          <td class="lbl">Age / Gender</td>
+          <td class="val">${bill.age || '—'} / ${bill.gender || '—'}</td>
+        </tr>
+      </table>
+
+      <div class="divider"></div>
+
+      <!-- Treatment table -->
+      <table class="tx-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Treatment / Procedure</th>
+            <th style="text-align:right; padding-right:18px;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${txsHtml}
+        </tbody>
+      </table>
+
+      <!-- Totals -->
+      <div class="totals-wrap">
+        <div class="totals-box">
+          <div class="t-row">
+            <span class="t-lbl">Subtotal</span>
+            <span class="t-val">${fmt(subtotal)}</span>
+          </div>
+          ${discountAmt > 0 ? `
+          <div class="t-row">
+            <span class="t-lbl">Discount</span>
+            <span class="t-val" style="color:#1a7f45;">−${fmt(discountAmt)}</span>
+          </div>` : ''}
+          ${taxAmt > 0 ? `
+          <div class="t-row">
+            <span class="t-lbl">Tax / GST</span>
+            <span class="t-val">+${fmt(taxAmt)}</span>
+          </div>` : ''}
+          <div class="t-row final">
+            <span class="t-lbl">Total</span>
+            <span class="t-val">${fmt(finalTotal)}</span>
+          </div>
+          <div class="t-row paid">
+            <span class="t-lbl">Paid</span>
+            <span class="t-val">${fmt(paidAmt)}</span>
+          </div>
+          ${balance > 0 ? `
+          <div class="t-row bal">
+            <span class="t-lbl">Balance Due</span>
+            <span class="t-val">${fmt(balance)}</span>
+          </div>` : `
+          <div class="t-row" style="padding-top:3px;">
+            <span class="t-lbl" style="color:#1a7f45;font-weight:600;">✓ Fully Settled</span>
+            <span class="t-val" style="color:#1a7f45;font-size:11px;"> </span>
+          </div>`}
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Payment info — table layout for perfect colon alignment -->
+      <div class="pay-info">
+        <table>
+          <tr>
+            <td class="pi-lbl">Payment Method :</td>
+            <td class="pi-val">${payMethod}</td>
+          </tr>
+          <tr>
+            <td class="pi-lbl">Transaction ID :</td>
+            <td class="pi-val">${txnId}</td>
+          </tr>
+        </table>
+      </div>
+
+    </div><!-- /invoice -->
+  </div><!-- /content -->
+
+  <!-- FOOTER with SVG icons in beige -->
+  <div class="footer">
+    <div class="footer-line"></div>
+    <div class="footer-top">
+      <div class="footer-item">${iconPhone} +91 9342803217</div>
+      <div class="footer-item">${iconGlobe} drmahesdentistry.in</div>
+      <div class="footer-item">${iconMail} smile@drmahesdentistry.in</div>
+    </div>
+    <div class="footer-bottom">
+      ${iconPin} 1st Floor, Kundrathur Main Rd, Jaya Nagar, Porur, Chennai - 600116
+    </div>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>`
 }

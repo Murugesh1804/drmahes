@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<style>
+@page{
+    size:A5 portrait;
+    margin:0;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Inter,Arial,sans-serif;
+    background:white;
+}
+
+.page{
+
+    width:148mm;
+    height:210mm;
+
+    position:relative;
+
+    overflow:hidden;
+
+    background:white;
+}
+
+
+/* ===========================
+HEADER
+=========================== */
+
+.header{
+    height:28mm;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:6mm 0 4mm;
+}
+
+.logo-full{
+    width:60mm;      /* Adjust if needed */
+    height:auto;
+    object-fit:contain;
+}
+
+.clinic{
+
+    text-align:left;
+}
+
+.clinic h1{
+
+    font-size:18pt;
+
+    font-weight:600;
+
+    font-family:Georgia,serif;
+}
+
+.clinic p{
+
+    margin-top:2px;
+
+    font-size:10pt;
+
+    color:#B19063;
+
+    font-weight:600;
+}
+
+
+/* Divider */
+
+.header-line{
+
+    height:2px;
+
+    background:#B19063;
+}
+
+
+/* ===========================
+CONTENT
+=========================== */
+
+.content{
+
+    position:relative;
+
+    height:154mm;
+
+    padding:18mm 10mm;
+
+}
+
+
+/* watermark */
+
+.watermark{
+
+    position:absolute;
+
+    left:50%;
+
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    width:90mm;
+
+    opacity:.05;
+
+    z-index:0;
+}
+
+
+/* Dynamic invoice goes here */
+
+.invoice{
+
+    position:relative;
+
+    z-index:10;
+}
+
+
+/* ===========================
+FOOTER
+=========================== */
+
+.footer{
+
+    position:absolute;
+
+    bottom:0;
+
+    width:100%;
+}
+
+.footer-line{
+
+    height:2px;
+
+    background:#B19063;
+}
+
+.footer-top{
+
+    padding:8px 12px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    font-size:10pt;
+}
+
+.footer-item{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:6px;
+}
+
+.footer-bottom{
+
+    text-align:center;
+
+    font-size:10pt;
+
+    padding-bottom:10px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+<!-- Header -->
+<div class="header">
+    <img class="logo-full" src="/public/logo_white.webp" alt="Dr. Mahe's Dentistry">
+</div>
+
+<div class="header-line"></div>
+
+
+    <!-- Main Content -->
+
+    <div class="content">
+
+        <!-- watermark -->
+
+        <img class="watermark" src="logo.png">
+
+        <!-- printer.js injects here -->
+
+        <div class="invoice">
+
+            <!-- YOUR BILL HTML -->
+
+        </div>
+
+    </div>
+
+
+    <!-- Footer -->
+
+    <div class="footer">
+
+        <div class="footer-line"></div>
+
+        <div class="footer-top">
+
+            <div class="footer-item">
+                ☎ +91 9342803217
+            </div>
+
+            <div class="footer-item">
+                🌐 drmahesdentistry.in
+            </div>
+
+            <div class="footer-item">
+                ✉ smile@drmahesdentistry.in
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+
+            📍 1st Floor, Kundrathur Main Rd,
+            Jaya Nagar, Porur,
+            Chennai - 600116
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
