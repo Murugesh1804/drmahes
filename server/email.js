@@ -449,7 +449,160 @@ async function sendInvoiceEmail(toEmail, bill, treatments = []) {
   }
 }
 
+/**
+ * Sends a 2FA OTP code to the clinic admin email.
+ *
+ * @param {string} toEmail   - Admin email address to receive the code
+ * @param {string} otpCode   - 6-digit OTP string
+ */
+async function sendOtpEmail(toEmail, otpCode) {
+  const mailOptions = {
+    from: process.env.MAIL_FROM,
+    to: toEmail.trim(),
+    subject: `🔐 Your Portal Login Code: ${otpCode}`,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Login Code</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0b1222;
+      color: #e2e8f0;
+    }
+    .wrapper {
+      max-width: 520px;
+      margin: 40px auto;
+      background: linear-gradient(145deg, #0f1e38, #0b1222);
+      border: 1px solid #1e3a5f;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      padding: 32px 40px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      margin-top: 6px;
+    }
+    .body {
+      padding: 40px;
+      text-align: center;
+    }
+    .body p.intro {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .otp-box {
+      display: inline-block;
+      background: #0a1628;
+      border: 2px solid #0d9488;
+      border-radius: 16px;
+      padding: 24px 48px;
+      margin-bottom: 28px;
+    }
+    .otp-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #0d9488;
+      margin-bottom: 10px;
+    }
+    .otp-code {
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: 10px;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+    }
+    .expiry-note {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 32px;
+    }
+    .expiry-note strong {
+      color: #f59e0b;
+    }
+    .security-note {
+      background: #0a1628;
+      border: 1px solid #1e3a5f;
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .security-note strong {
+      color: #94a3b8;
+    }
+    .footer {
+      padding: 20px 40px;
+      border-top: 1px solid #1e3a5f;
+      text-align: center;
+      font-size: 11px;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>🦷 Dr. Mahe's Dentistry</h1>
+      <p>Clinical Management System — Secure Login</p>
+    </div>
+    <div class="body">
+      <p class="intro">
+        A login was attempted on your CMS portal.<br>
+        Use the code below to complete your sign-in.
+      </p>
+      <div class="otp-box">
+        <div class="otp-label">Your Login Code</div>
+        <div class="otp-code">${otpCode}</div>
+      </div>
+      <p class="expiry-note">
+        This code expires in <strong>5 minutes</strong>. Do not share it with anyone.
+      </p>
+      <div class="security-note">
+        <strong>⚠️ Security Notice:</strong> If you did not attempt to log in, someone else may have your portal password.
+        Please change your CMS password immediately in Settings.
+      </div>
+    </div>
+    <div class="footer">
+      This is an automated security message from Dr. Mahe's Dentistry CMS · Do not reply
+    </div>
+  </div>
+</body>
+</html>`,
+  }
+
+  try {
+    const info = await transporter.sendMail(mailOptions)
+    console.log('[email] OTP email sent:', info.messageId)
+    return { success: true, messageId: info.messageId }
+  } catch (err) {
+    console.error('[email] Failed to send OTP email:', err.message)
+    throw err // Re-throw so auth.js can catch and return 500
+  }
+}
+
 module.exports = {
   sendAppointmentConfirmation,
-  sendInvoiceEmail
+  sendInvoiceEmail,
+  sendOtpEmail,
 }

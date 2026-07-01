@@ -10,6 +10,7 @@ const FIELDS = [
   { key: 'clinic_address', label: 'Clinic Address', placeholder: '123, Main Street…',   type: 'text'  },
   { key: 'currency',       label: 'Currency Symbol',placeholder: '₹',                   type: 'text'  },
   { key: 'cms_password',   label: 'CMS Portal Password', placeholder: 'admin123',       type: 'password' },
+  { key: 'admin_email',    label: '2FA OTP Email',  placeholder: 'your@email.com — receives login codes', type: 'email' },
 ]
 
 export default function Settings() {

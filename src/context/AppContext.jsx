@@ -31,9 +31,8 @@ export function AppProvider({ children }) {
   }, [])
 
   /**
-   * Login via server API — POST /api/auth/login
-   * Returns true on success, false on failure.
-   * Stores JWT in sessionStorage for API calls.
+   * 2FA Step 1: POST /api/auth/login
+   * Validates password. On success returns { step: 'otp', sessionId }.
    */
   const login = useCallback(async (password) => {
     try {
@@ -49,6 +48,34 @@ export function AppProvider({ children }) {
           throw new Error('Too many attempts. Please wait 15 minutes.')
         }
         throw new Error(data.error || 'Invalid password')
+      }
+
+      // Returns { step: 'otp', sessionId, expiresIn }
+      const data = await res.json()
+      return { success: true, ...data }
+    } catch (err) {
+      return { success: false, error: err.message }
+    }
+  }, [])
+
+  /**
+   * 2FA Step 2: POST /api/auth/verify-otp
+   * Validates OTP. On success stores JWT and marks authenticated.
+   */
+  const verifyOtp = useCallback(async (sessionId, otp) => {
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, otp }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        if (res.status === 429) {
+          throw new Error('Too many OTP attempts. Please wait 15 minutes.')
+        }
+        throw new Error(data.error || 'Invalid OTP')
       }
 
       const { token } = await res.json()
@@ -90,7 +117,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       settings, loadSettings,
       notify, fmt,
-      isAuthenticated, login, logout, onTokenExpired,
+      isAuthenticated, login, verifyOtp, logout, onTokenExpired,
     }}>
       {children}
       {notification && (
