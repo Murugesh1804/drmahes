@@ -439,7 +439,7 @@ const treatmentMasterSchema = new mongoose.Schema({
   treatment_name: { type: String, required: true, unique: true, trim: true },
   category: {
     type: String,
-    enum: ['general', 'endodontics', 'orthodontics', 'prosthodontics', 'periodontics', 'surgery', 'cosmetic', 'restorative', 'other'],
+    enum: ['general', 'endodontics', 'orthodontics', 'prosthodontics', 'periodontics', 'surgery', 'oral_surgery', 'implantology', 'cosmetic', 'restorative', 'other'],
     default: 'general'
   },
   standard_cost: { type: Number, default: 0, min: 0 },

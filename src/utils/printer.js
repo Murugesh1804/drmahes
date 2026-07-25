@@ -23,12 +23,16 @@ export function generateReceiptHTML(bill, txs = [], settings = {}) {
   const watermarkSrc = baseUrl ? `${baseUrl}/favicon.ico` : '/favicon.ico'
 
   // ─── Totals ───────────────────────────────────────────────────────────────────
-  const subtotal = bill.total_amount || txs.reduce((sum, t) => sum + t.cost, 0)
+  // bill.total_amount is the authoritative final total stored by the server
+  // (treatments + manual/medicine charges − discount + tax). Use it directly.
   const discountAmt = bill.discount || 0
   const taxAmt = bill.tax_amount || 0
-  const finalTotal = subtotal - discountAmt + taxAmt
+  const finalTotal = bill.total_amount || 0
+  // Subtotal for display: work backwards from final total to show the breakdown
+  const subtotal = finalTotal - taxAmt + discountAmt
   const paidAmt = bill.paid_amount || 0
   const balance = bill.balance ?? Math.max(0, finalTotal - paidAmt)
+
 
   // ─── Patient ID: use real pid from DB ────────────────────────────────────────
   const patientIdDisplay = bill.patient_pid || bill.patient_ref || 'N/A'

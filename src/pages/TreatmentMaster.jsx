@@ -11,8 +11,9 @@ import Modal from '../components/Modal'
 import ConfirmModal from '../components/ConfirmModal'
 
 const CATEGORIES = [
-  'general', 'endodontics', 'orthodontics', 'prosthodontics', 
-  'periodontics', 'surgery', 'cosmetic', 'other'
+  'general', 'endodontics', 'orthodontics', 'prosthodontics',
+  'periodontics', 'surgery', 'oral_surgery', 'implantology',
+  'cosmetic', 'restorative', 'other'
 ]
 
 const EMPTY_FORM = {
