@@ -62,11 +62,13 @@ export default function Billing() {
   const [billForm, setBillForm] = useState({
     paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: ''
   })
+  const [discountMode, setDiscountMode] = useState('flat') // 'flat' | 'percent'
 
   // --- Edit Bill State ---
   const [editForm, setEditForm] = useState({
     discount: '', tax_percent: '', notes: '', change_description: ''
   })
+  const [editDiscountMode, setEditDiscountMode] = useState('flat') // 'flat' | 'percent'
   const [editHistory, setEditHistory] = useState([])
 
   // --- Payment / Other State ---
@@ -228,6 +230,7 @@ export default function Billing() {
     setCartSelect(''); setCartCost(''); setCartTooth(''); setCartDesc('')
     setCartMedSelect(''); setCartMedCost(''); setCartMedDesc(''); setCartMedQty('1')
     setBillForm({ paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: '', manual_charges: '', medicine_charges: '' })
+    setDiscountMode('flat')
     setShowCreate(true)
   }
 
@@ -241,6 +244,7 @@ export default function Billing() {
       manual_charges: bill.manual_charges || 0,
       medicine_charges: bill.medicine_charges || 0
     })
+    setEditDiscountMode('flat')
     setShowEdit(true)
     getBillEditHistory(bill.id).then(h => setEditHistory(h || [])).catch(console.error)
   }
@@ -248,9 +252,13 @@ export default function Billing() {
   const calculatedTotal = billItems.reduce((sum, item) => sum + item.cost, 0)
   const manualCharges = parseFloat(billForm.manual_charges) || 0
   const medicineCharges = parseFloat(billForm.medicine_charges) || 0
-  const discountAmount = parseFloat(billForm.discount) || 0
+  const preDiscountTotal = calculatedTotal + manualCharges + medicineCharges
+  const discountInput = parseFloat(billForm.discount) || 0
+  const discountAmount = discountMode === 'percent'
+    ? Math.round(preDiscountTotal * (Math.min(100, discountInput) / 100) * 100) / 100
+    : discountInput
   const taxPercent = Math.min(100, Math.max(0, parseFloat(billForm.tax_percent) || 0))
-  const baseTotal = calculatedTotal + manualCharges + medicineCharges - discountAmount
+  const baseTotal = preDiscountTotal - discountAmount
   const taxAmount = Math.round(baseTotal * (taxPercent / 100) * 100) / 100
   const finalTotal = Math.round((baseTotal + taxAmount) * 100) / 100
   const paidNow = parseFloat(billForm.paid_amount) || 0
@@ -645,8 +653,31 @@ export default function Billing() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="label">Discount (₹)</label>
-                      <input type="number" className="input" placeholder="0" value={billForm.discount} onChange={e => setBillForm({ ...billForm, discount: e.target.value })} />
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="label mb-0">Discount</label>
+                        <span className="inline-flex rounded-lg border border-slate-200 overflow-hidden text-[11px] font-bold">
+                          <button type="button"
+                            onClick={() => setDiscountMode('flat')}
+                            className={`px-2 py-0.5 transition-colors ${discountMode === 'flat' ? 'bg-primary-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'}`}
+                          >₹</button>
+                          <button type="button"
+                            onClick={() => setDiscountMode('percent')}
+                            className={`px-2 py-0.5 transition-colors ${discountMode === 'percent' ? 'bg-primary-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'}`}
+                          >%</button>
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input type="number" className="input pr-8" placeholder="0"
+                          min="0" max={discountMode === 'percent' ? 100 : undefined}
+                          value={billForm.discount}
+                          onChange={e => setBillForm({ ...billForm, discount: e.target.value })} />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">
+                          {discountMode === 'percent' ? '%' : '₹'}
+                        </span>
+                      </div>
+                      {discountMode === 'percent' && discountInput > 0 && (
+                        <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">= {fmt(discountAmount)} off</p>
+                      )}
                     </div>
                     <div>
                       <label className="label">Tax/GST (%)</label>
@@ -744,8 +775,41 @@ export default function Billing() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Discount (₹)</label>
-              <input type="number" className="input" value={editForm.discount} onChange={e => setEditForm({...editForm, discount: e.target.value})} />
+              <div className="flex items-center justify-between mb-1">
+                <label className="label mb-0">Discount</label>
+                <span className="inline-flex rounded-lg border border-slate-200 overflow-hidden text-[11px] font-bold">
+                  <button type="button"
+                    onClick={() => setEditDiscountMode('flat')}
+                    className={`px-2 py-0.5 transition-colors ${editDiscountMode === 'flat' ? 'bg-primary-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'}`}
+                  >₹</button>
+                  <button type="button"
+                    onClick={() => setEditDiscountMode('percent')}
+                    className={`px-2 py-0.5 transition-colors ${editDiscountMode === 'percent' ? 'bg-primary-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'}`}
+                  >%</button>
+                </span>
+              </div>
+              <div className="relative">
+                <input type="number" className="input pr-8"
+                  min="0" max={editDiscountMode === 'percent' ? 100 : undefined}
+                  value={editForm.discount}
+                  onChange={e => {
+                    const raw = parseFloat(e.target.value) || 0
+                    if (editDiscountMode === 'percent') {
+                      // Store the flat equivalent in editForm.discount for submission
+                      const editSubtotal = (activeBill?.total_amount || 0) + (activeBill?.discount || 0) - (activeBill?.tax_amount || 0)
+                      const flatAmt = Math.round(editSubtotal * (Math.min(100, raw) / 100) * 100) / 100
+                      setEditForm({...editForm, discount: flatAmt, _discountPct: raw})
+                    } else {
+                      setEditForm({...editForm, discount: e.target.value, _discountPct: ''})
+                    }
+                  }} />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">
+                  {editDiscountMode === 'percent' ? '%' : '₹'}
+                </span>
+              </div>
+              {editDiscountMode === 'percent' && editForm._discountPct > 0 && (
+                <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">= {fmt(editForm.discount)} off</p>
+              )}
             </div>
             <div>
               <label className="label">Tax (%)</label>
