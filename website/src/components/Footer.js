@@ -9,7 +9,7 @@ export default function Footer() {
             <img src="/assets/logo_black.webp" width={848} height={294} alt="Dr. Mahe's Dentistry" className="logo-img" />
           </div>
           <p className="footer-desc">
-            Modern dental care centred on precision, patient comfort and full transparency. Implants, endodontics, orthodontics and cosmetic dentistry — by Dr. Maheswari in Porur, Chennai.
+            Modern dental care centred on precision, patient comfort and full transparency. Implants, endodontics, orthodontics and pediatric dentistry — by Dr. Maheswari in Porur, Chennai.
           </p>
         </div>
         <div className="footer-col">

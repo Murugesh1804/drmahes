@@ -22,7 +22,7 @@ export const metadata = {
     default: "Dr. Mahe's Dentistry — Advanced Dental Care, Porur, Chennai",
     template: "%s | Dr. Mahe's Dentistry",
   },
-  description: "Visit Dr. Mahe's Dentistry in Porur, Chennai. Dr. Maheswari offers expert dental implants, painless root canals, braces, cosmetic dentistry and oral surgery with advanced dental care. Book today!",
+  description: "Visit Dr. Mahe's Dentistry in Porur, Chennai. Dr. Maheswari offers expert dental implants, painless root canals, braces, pediatric dentistry and oral surgery with advanced dental care. Book today!",
   keywords: ["dentist porur chennai", "dental clinic porur", "dr maheswari dentist", "dental implants chennai", "root canal porur", "orthodontics braces chennai", "best dentist in porur", "pediatric dentist chennai"],
   authors: [{ name: "Dr. Maheswari", url: "https://drmahesdentistry.com/about" }],
   creator: "Dr. Maheswari",

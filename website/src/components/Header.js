@@ -33,7 +33,7 @@ export default function Header() {
         <div className="container nav-container">
           <Link href="/" className="logo">
             <img
-              src="/assets/logo_white.webp"
+              src="/assets/logo_new.webp"
               width={927}
               height={269}
               alt="Dr. Mahe's Dentistry"

@@ -74,7 +74,7 @@ export default function About() {
                 <div className="spec-row"><div className="spec-dot"></div>Root Canal Treatment (Endodontics)</div>
                 <div className="spec-row"><div className="spec-dot"></div>Dental Implants &amp; Oral Surgery</div>
                 <div className="spec-row"><div className="spec-dot"></div>Orthodontics — Metal &amp; Ceramic Braces</div>
-                <div className="spec-row"><div className="spec-dot"></div>Cosmetic Dentistry &amp; Smile Makeovers</div>
+                <div className="spec-row"><div className="spec-dot"></div>Pediatric Dentistry (Pedodontics) &amp; Child Care</div>
                 <div className="spec-row"><div className="spec-dot"></div>Crowns, Veneers &amp; Restorations</div>
                 <div className="spec-row"><div className="spec-dot"></div>Kids &amp; Family Dental Care</div>
               </div>
