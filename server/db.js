@@ -37,14 +37,12 @@ const patientSchema = new mongoose.Schema({
   phone: { 
     type: String, 
     default: '', 
-    index: true,
     trim: true,
     lowercase: true
   },
   email: { 
     type: String, 
     default: '', 
-    index: true,
     trim: true,
     lowercase: true
   },
@@ -58,7 +56,7 @@ const patientSchema = new mongoose.Schema({
   consentSignedAt: { type: Date, default: null },
   total_outstanding_balance: { type: Number, default: 0 },
   // PID Generation (corrections.md §3.2)
-  pid: { type: String, unique: true, sparse: true, index: true },
+  pid: { type: String, unique: true, sparse: true },
   registration_source: {
     type: String,
     enum: ['kiosk', 'reception', 'website-booking', 'walk-in', null],
@@ -444,7 +442,6 @@ const treatmentMasterSchema = new mongoose.Schema({
   ...schemaOptions,
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 })
-treatmentMasterSchema.index({ treatment_name: 1 })
 treatmentMasterSchema.index({ category: 1, is_active: 1 })
 
 // ── MEDICINE MASTER SCHEMA ──────────────────────────────────────────────────
@@ -461,7 +458,6 @@ const medicineMasterSchema = new mongoose.Schema({
   ...schemaOptions,
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 })
-medicineMasterSchema.index({ item_name: 1 })
 medicineMasterSchema.index({ type: 1, is_active: 1 })
 
 const Patient = mongoose.model('Patient', patientSchema)
