@@ -100,7 +100,7 @@ export default function Settings() {
       {/* Preview */}
       {(values.clinic_name || values.doctor_name) && (
         <div className="card bg-slate-800 text-white">
-          <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">Receipt Preview</p>
+          <p className="text-slate-400 text-xs font-semibold mb-3">Receipt Preview</p>
           <div className="text-center space-y-1 py-3 border-y border-slate-700">
             <p className="text-xl font-black">{values.clinic_name || 'Clinic Name'}</p>
             <p className="text-slate-300">{values.doctor_name || ''}</p>

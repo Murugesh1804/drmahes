@@ -194,7 +194,7 @@ export default function ConsultantPayments() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-slate-100 rounded-2xl p-1 w-fit">
+      <div className="flex gap-1 bg-slate-100 rounded-xl p-1 w-fit">
         {[
           { key: 'all', label: 'All Payments' },
           { key: 'outstanding', label: 'Outstanding Dues' },

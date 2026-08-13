@@ -147,7 +147,7 @@ function SlotManager({ date, appointments }) {
               title={isBooked ? 'Has a real appointment' : isBlocked ? 'Click to unblock' : 'Click to block'}
             >
               <span className="font-bold text-sm">{slot}</span>
-              <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider opacity-70">
+              <span className="flex items-center gap-1 text-[10px] font-semibold opacity-70">
                 {isToggling ? '…' : icon}
                 {isToggling ? 'Saving' : label}
               </span>
@@ -357,7 +357,7 @@ export default function Appointments() {
             <div key={a.id} className={`card ${STATUS_BG[a.status]} flex flex-col sm:flex-row sm:items-center justify-between gap-4`}>
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 {/* Queue number */}
-                <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center font-bold text-lg text-slate-700 flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center font-bold text-lg text-slate-700 flex-shrink-0">
                   {a.queue_number}
                 </div>
 
@@ -501,7 +501,7 @@ export default function Appointments() {
         }
       >
         <div className="space-y-4">
-          <div className="bg-primary-50 rounded-2xl px-4 py-3 text-sm text-primary-700 font-semibold">
+          <div className="bg-primary-50 rounded-xl px-4 py-3 text-sm text-primary-700 font-semibold">
             📅 {fmtDate(date)}
           </div>
 

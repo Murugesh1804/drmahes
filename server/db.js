@@ -71,12 +71,8 @@ const patientSchema = new mongoose.Schema({
   archived_reason: { type: String, default: '' }
 }, schemaOptions)
 
-// FIX #1: Add unique constraints for duplicate prevention
-patientSchema.index({ phone: 1 }, { 
-  unique: true, 
-  sparse: true,
-  collation: { locale: 'en', strength: 2 }
-})
+// Allow family members (parent/children) to share phone numbers
+patientSchema.index({ phone: 1 })
 
 patientSchema.index({ email: 1 }, { 
   unique: true, 
@@ -502,6 +498,13 @@ async function initDatabase() {
     })
     connected = true
     console.log('[db] MongoDB connected successfully.')
+
+    // Drop legacy unique constraint on phone if present, allowing shared family numbers
+    try {
+      await Patient.collection.dropIndex('phone_1')
+    } catch (e) {
+      // Ignore error if index does not exist
+    }
 
     await seedSettings()
   } catch (err) {

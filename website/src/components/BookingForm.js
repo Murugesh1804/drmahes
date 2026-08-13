@@ -158,7 +158,7 @@ export default function BookingForm() {
             ))}
           </div>
           <div className="wizard-footer" style={{ justifyContent: 'flex-end' }}>
-            <button className="btn btn-primary" onClick={goNext}>Continue ➔</button>
+            <button className="btn btn-primary" onClick={goNext}>Continue</button>
           </div>
         </div>
       )}
@@ -201,7 +201,7 @@ export default function BookingForm() {
           </div>
           <div className="wizard-footer">
             <button className="btn btn-secondary" onClick={goBack}>Back</button>
-            <button className="btn btn-primary" onClick={goNext}>Continue ➔</button>
+            <button className="btn btn-primary" onClick={goNext}>Continue</button>
           </div>
         </div>
       )}

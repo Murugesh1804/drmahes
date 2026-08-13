@@ -152,7 +152,7 @@ function PatientCard({ patient, onClick }) {
   return (
     <div className="card-hover" onClick={onClick} id={`patient-card-${patient.id}`}>
       <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center font-bold text-lg flex-shrink-0`}>
+        <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center font-bold text-lg flex-shrink-0`}>
           {initials}
         </div>
         <div className="flex-1 min-w-0">

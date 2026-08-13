@@ -81,15 +81,6 @@ export default function Home() {
               <img src="/assets/clinic.webp" width={1024} height={1024} alt="Dr. Mahe's Dentistry — modern reception area, Porur Chennai"
                 className="hero-img" />
             </div>
-            <div className="hero-float-card">
-              <div className="hero-float-card-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ width: 16, height: 16, strokeWidth: 2.5, color: 'var(--accent)', display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }}>
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                Patient Comfort First
-              </div>
-              <div className="hero-float-card-desc">Modern equipment, personalised care and complete transparency in every treatment plan.</div>
-            </div>
           </div>
         </div>
       </section>
@@ -98,10 +89,10 @@ export default function Home() {
       <div className="marquee" aria-hidden="true">
         <div className="marquee-content">
           <div className="marquee-text">
-            <span className="dot">✦</span> Advanced Sterilization <span className="dot">✦</span> Painless Root Canals <span className="dot">✦</span> Pediatric Dentistry <span className="dot">✦</span> Premium Implants <span className="dot">✦</span> Digital X-Rays <span className="dot">✦</span> Orthodontics &amp; Braces <span className="dot">✦</span> Child Dental Care <span className="dot">✦</span> Oral Surgery
+            <span className="dot">·</span> Advanced Sterilization <span className="dot">·</span> Painless Root Canals <span className="dot">·</span> Pediatric Dentistry <span className="dot">·</span> Premium Implants <span className="dot">·</span> Digital X-Rays <span className="dot">·</span> Orthodontics &amp; Braces <span className="dot">·</span> Child Dental Care <span className="dot">·</span> Oral Surgery
           </div>
           <div className="marquee-text">
-            <span className="dot">✦</span> Advanced Sterilization <span className="dot">✦</span> Painless Root Canals <span className="dot">✦</span> Pediatric Dentistry <span className="dot">✦</span> Premium Implants <span className="dot">✦</span> Digital X-Rays <span className="dot">✦</span> Orthodontics &amp; Braces <span className="dot">✦</span> Child Dental Care <span className="dot">✦</span> Oral Surgery
+            <span className="dot">·</span> Advanced Sterilization <span className="dot">·</span> Painless Root Canals <span className="dot">·</span> Pediatric Dentistry <span className="dot">·</span> Premium Implants <span className="dot">·</span> Digital X-Rays <span className="dot">·</span> Orthodontics &amp; Braces <span className="dot">·</span> Child Dental Care <span className="dot">·</span> Oral Surgery
           </div>
         </div>
       </div>
@@ -125,13 +116,13 @@ export default function Home() {
                   <div className="tx-icon">{tx.icon}</div>
                   <h3 className="tx-name">{tx.name}</h3>
                   <div className="tx-desc">{tx.desc}</div>
-                  <Link href={tx.page} className="tx-link">Learn More ➔</Link>
+                  <Link href={tx.page} className="tx-link">Learn More</Link>
                 </div>
               </div>
             ))}
           </div>
           <div style={{ textAlign: 'center', marginTop: 44 }} data-animate>
-            <Link href="/treatments" className="btn btn-secondary">View All Treatments →</Link>
+            <Link href="/treatments" className="btn btn-secondary">View All Treatments</Link>
           </div>
         </div>
       </section>

@@ -549,7 +549,7 @@ export default function Billing() {
               {/* Unbilled Treatments Selection */}
               {unbilledTreatments.length > 0 && (
                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
+                  <p className="text-xs font-semibold text-amber-700 flex items-center gap-1.5">
                     <ShoppingBag size={14} /> Unbilled Completed Treatments
                   </p>
                   <div className="space-y-2">
@@ -573,8 +573,8 @@ export default function Billing() {
               )}
 
               {/* Cart Builder */}
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Add Custom Items</p>
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <p className="text-xs font-semibold text-slate-500 mb-3">Add Custom Items</p>
                 <div className="grid grid-cols-12 gap-3 mb-4">
                   <div className="col-span-4">
                     <select className="select text-xs h-9" value={cartSelect} onChange={e => handlePredefinedChange(e.target.value)}>
@@ -639,7 +639,7 @@ export default function Billing() {
               </div>
 
               {/* Totals & Payment */}
-              <div className="grid grid-cols-2 gap-6 bg-primary-50/30 p-5 rounded-2xl border border-primary-100">
+              <div className="grid grid-cols-2 gap-6 bg-primary-50/30 p-5 rounded-xl border border-primary-100">
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>

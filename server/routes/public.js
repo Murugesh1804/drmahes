@@ -52,10 +52,11 @@ router.post('/appointments/website-book', publicFormLimiter, asyncHandler(async 
     return res.status(400).json({ error: 'Invalid time slot selected' })
   }
 
-  let patient = await Patient.findOne({ phone })
-  if (!patient && email) {
-    patient = await Patient.findOne({ email })
-  }
+  const trimmedName = patientName.trim()
+  let patient = await Patient.findOne({
+    phone,
+    name: { $regex: `^${trimmedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+  })
 
   if (!patient) {
     patient = await queries.addPatient({

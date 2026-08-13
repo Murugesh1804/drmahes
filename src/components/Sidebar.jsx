@@ -61,7 +61,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* ── Navigation ─────────────────────────────────── */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-3 mb-3">
+          <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide px-3 mb-3">
             Main Menu
           </p>
           {navItems.map(({ to, icon: Icon, label }) => (
@@ -81,7 +81,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* ── Bottom Actions ──────────────────────────────── */}
         <div className="px-3 pb-5 border-t border-white/8 pt-3 space-y-0.5">
-          <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-3 mb-2">
+          <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide px-3 mb-2">
             System
           </p>
           <NavLink

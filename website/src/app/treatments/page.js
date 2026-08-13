@@ -68,7 +68,7 @@ export default function Treatments() {
                   <div className="tx-icon">{tx.icon}</div>
                   <h3 className="tx-name">{tx.name}</h3>
                   <div className="tx-desc">{tx.desc}</div>
-                  <Link href={tx.page} className="tx-link">Learn More ➔</Link>
+                  <Link href={tx.page} className="tx-link">Learn More</Link>
                 </div>
               </div>
             ))}

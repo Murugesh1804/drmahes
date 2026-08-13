@@ -263,13 +263,15 @@ async function addPatient(data) {
   const phone = normalizeText(data.phone)
   const email = normalizeEmail(data.email)
 
-  // FIX #1: Check for duplicate phone
-  if (phone) {
-    const existingPhone = await Patient.findOne({ 
-      phone: { $regex: `^${phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } 
+  // Allow multiple family members (parent/children) to share the same phone number.
+  // Only reject if a patient with the EXACT SAME name AND phone already exists.
+  if (phone && name) {
+    const existingSameNameAndPhone = await Patient.findOne({ 
+      phone: { $regex: `^${phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' },
+      name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
     })
-    if (existingPhone) {
-      badRequest(`Patient with phone ${phone} already exists (ID: ${existingPhone._id})`)
+    if (existingSameNameAndPhone) {
+      badRequest(`Patient "${name}" with phone ${phone} already exists (ID: ${existingSameNameAndPhone._id})`)
     }
   }
 
@@ -342,14 +344,16 @@ async function updatePatient(id, data) {
   const phone = normalizeText(data.phone)
   const email = normalizeEmail(data.email)
 
-  // FIX #1: Prevent duplicate phone/email on updates
-  if (phone) {
-    const existingPhone = await Patient.findOne({
+  // Allow multiple family members (parent/children) to share the same phone number.
+  // Only reject if ANOTHER patient with the EXACT SAME name AND phone already exists.
+  if (phone && name) {
+    const existingSameNameAndPhone = await Patient.findOne({
       _id: { $ne: id },
-      phone: { $regex: `^${phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+      phone: { $regex: `^${phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' },
+      name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
     })
-    if (existingPhone) {
-      badRequest(`Another patient with phone ${phone} already exists (ID: ${existingPhone._id})`)
+    if (existingSameNameAndPhone) {
+      badRequest(`Another patient named "${name}" with phone ${phone} already exists (ID: ${existingSameNameAndPhone._id})`)
     }
   }
 
@@ -2152,9 +2156,10 @@ async function addWalkInAppointment(data) {
   const phone = normalizeText(data.phone)
   if (!phone) badRequest('Phone number is required')
 
-  // Find or create patient
+  // Find existing patient by both phone and name (so parent and child don't overwrite each other)
   let patient = await Patient.findOne({
-    phone: { $regex: `^${phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+    phone: { $regex: `^${phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' },
+    name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
   })
 
   if (!patient) {

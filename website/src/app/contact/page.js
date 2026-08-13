@@ -100,7 +100,7 @@ export default function Contact() {
               <div className="loc-card">
                 <div className="loc-label">Phone &amp; WhatsApp</div>
                 <div className="loc-main"><a href="tel:+919342803217" style={{ color: 'var(--text-primary)' }}>+91 93428 03217</a></div>
-                <div className="loc-sub"><a href="https://wa.me/919342803217" target="_blank" rel="noopener noreferrer">Chat on WhatsApp →</a></div>
+                <div className="loc-sub"><a href="https://wa.me/919342803217" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a></div>
               </div>
               <div className="loc-card">
                 <div className="loc-label">Clinic Hours</div>
@@ -108,7 +108,7 @@ export default function Contact() {
                 <div className="loc-sub">10:00 AM – 10:00 PM<br /><span style={{ color: 'var(--accent)' }}>Sunday: Based on appointments</span></div>
               </div>
               <a href="https://www.google.com/maps/search/?api=1&query=Dr.+Mahe%27s+Dentistry,+Jaya+Nagar,+Porur" target="_blank" rel="noopener noreferrer" className="directions-btn">
-                ↗ &nbsp;Get Directions on Google Maps
+                Get Directions on Google Maps
               </a>
             </div>
             <div>

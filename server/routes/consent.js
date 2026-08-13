@@ -57,10 +57,11 @@ router.post('/', kioskLimiter, asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'Invalid email address' })
   }
 
-  let patient = await Patient.findOne({ phone: cleanPhone })
-  if (!patient && normalizedEmail) {
-    patient = await Patient.findOne({ email: normalizedEmail })
-  }
+  const cleanName = normalizeText(name)
+  let patient = await Patient.findOne({
+    phone: cleanPhone,
+    name: { $regex: `^${cleanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+  })
 
   const patientData = {
     name: normalizeText(name),

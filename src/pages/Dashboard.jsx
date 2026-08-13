@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, Calendar, CheckCircle2, Clock, TrendingUp,
-  AlertCircle, Plus, Banknote
+  AlertCircle, Plus, Banknote, UserPlus, CalendarPlus, FileText, Monitor
 } from 'lucide-react'
 import { getDashboardStats, getTodayAppointments, updateAppointmentStatus } from '../services/api'
 import { useApp } from '../context/AppContext'
@@ -75,7 +75,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="card flex items-center gap-4">
-              <div className="skeleton w-11 h-11 rounded-2xl flex-shrink-0" />
+              <div className="skeleton w-11 h-11 rounded-xl flex-shrink-0" />
               <div className="space-y-2 flex-1">
                 <div className="skeleton h-6 w-16 rounded-lg" />
                 <div className="skeleton h-3 w-24 rounded-md" />
@@ -233,7 +233,7 @@ export default function Dashboard() {
                             onClick={() => handleStatus(a.id, 'done')}
                             className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded-lg font-semibold transition-colors"
                           >
-                            Done ✓
+                            Done
                           </button>
                         )}
                       </div>
@@ -249,21 +249,21 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Add Patient',      icon: '👤', to: '/patients',     color: 'from-blue-500 to-blue-600', id: 'quick-add-patient' },
-          { label: 'New Appointment',  icon: '📅', to: '/appointments', color: 'from-violet-500 to-violet-600', id: 'quick-new-appt' },
-          { label: 'Create Bill',      icon: '🧾', to: '/billing',      color: 'from-emerald-500 to-emerald-600', id: 'quick-billing' },
-          { label: 'Open Kiosk',       icon: '🖥️', to: '/kiosk',       color: 'from-teal-500 to-teal-600', id: 'quick-kiosk' },
-        ].map(({ label, icon, to, color, id }) => (
+          { label: 'Add Patient',      icon: UserPlus,     to: '/patients',     color: 'bg-blue-50 text-blue-600', id: 'quick-add-patient' },
+          { label: 'New Appointment',  icon: CalendarPlus, to: '/appointments', color: 'bg-violet-50 text-violet-600', id: 'quick-new-appt' },
+          { label: 'Create Bill',      icon: FileText,     to: '/billing',      color: 'bg-emerald-50 text-emerald-600', id: 'quick-billing' },
+          { label: 'Open Kiosk',       icon: Monitor,      to: '/kiosk',        color: 'bg-teal-50 text-teal-600', id: 'quick-kiosk' },
+        ].map(({ label, icon: Icon, to, color, id }) => (
           <button
             key={to}
             id={id}
             onClick={() => navigate(to)}
-            className={`bg-gradient-to-br ${color} text-white rounded-2xl p-4 text-left
-              hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]
-              transition-all duration-150 cursor-pointer`}
+            className="card-hover flex items-center gap-3 text-left"
           >
-            <span className="text-2xl">{icon}</span>
-            <p className="font-semibold text-sm mt-2">{label}</p>
+            <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center flex-shrink-0`}>
+              <Icon size={18} />
+            </div>
+            <p className="font-semibold text-sm text-slate-700">{label}</p>
           </button>
         ))}
       </div>
