@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Edit2, Phone, MapPin, Calendar, Activity,
-  Receipt, Plus, Trash2, User
+  Receipt, Plus, Trash2, User, FileText
 } from 'lucide-react'
 import {
   getPatientById, updatePatient,
@@ -21,6 +21,7 @@ const TABS = [
   { key: 'appointments', label: 'Appointments', icon: Calendar },
   { key: 'treatments',   label: 'Treatments',   icon: Activity },
   { key: 'bills',        label: 'Bills',         icon: Receipt  },
+  { key: 'notes',        label: 'Doctor Notes',  icon: FileText }
 ]
 
 const STATUS_COLORS = {
@@ -86,6 +87,17 @@ export default function PatientDetail() {
       load()
     } catch (e) {
       notify(e.message || 'Failed to update patient', 'error')
+    } finally { setSaving(false) }
+  }
+
+  async function handleSaveNotes() {
+    setSaving(true)
+    try {
+      await updatePatient(id, { ...form, age: form.age ? Number(form.age) : null })
+      notify('Doctor notes saved successfully')
+      load()
+    } catch (e) {
+      notify(e.message || 'Failed to save notes', 'error')
     } finally { setSaving(false) }
   }
 
@@ -317,6 +329,27 @@ export default function PatientDetail() {
               </tbody>
             </table>
           )}
+        </div>
+      )}
+
+      {tab === 'notes' && (
+        <div className="card space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-bold text-slate-800">Doctor Notes</h3>
+            <button
+              onClick={handleSaveNotes}
+              disabled={saving}
+              className="btn-primary py-1.5 px-4 text-sm"
+            >
+              {saving ? 'Saving…' : 'Save Notes'}
+            </button>
+          </div>
+          <textarea
+            className="textarea w-full min-h-[200px]"
+            placeholder="Type clinical notes, observations, or treatment plans here..."
+            value={form.notes}
+            onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
+          />
         </div>
       )}
 

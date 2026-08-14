@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Calendar, Activity,
   Receipt, ListOrdered, Monitor, Settings, X, LogOut,
-  ShieldCheck, Inbox
+  ShieldCheck, Inbox, TrendingUp
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 
@@ -13,6 +13,7 @@ const navItems = [
   { to: '/appointments', icon: Calendar,        label: 'Appointments' },
   { to: '/treatments',   icon: Activity,        label: 'Treatments'   },
   { to: '/billing',      icon: Receipt,         label: 'Billing'      },
+  { to: '/revenue',      icon: TrendingUp,      label: 'Revenue'      },
   { to: '/consultants',  icon: Users,           label: 'Consultant Pay' },
   { to: '/treatments-master', icon: ShieldCheck, label: 'Tx Master' },
 ]

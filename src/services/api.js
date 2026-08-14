@@ -109,6 +109,9 @@ export const emailBillInvoice = (id, email) => request(`/bills/${id}/email`, { m
 // ── Dashboard ──────────────────────────────────────────────
 export const getDashboardStats = () => request('/dashboard/stats')
 
+// ── Revenue ────────────────────────────────────────────────
+export const getRevenueInsights = () => request('/revenue/insights')
+
 // ── Settings ───────────────────────────────────────────────
 export const getSettings = () => request('/settings')
 

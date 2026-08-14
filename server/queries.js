@@ -150,8 +150,30 @@ function sortAppointments(list) {
 // ═══════════════════════════════════════════════════════════
 // PATIENTS
 // ═══════════════════════════════════════════════════════════
-async function getAllPatients(limit = 20, includeArchived = false) {
-  const matchFilter = includeArchived ? {} : { is_archived: false };
+async function getAllPatients(limit = 20, includeArchived = false, period = 'all') {
+  let createdFilter = {}
+  if (period !== 'all') {
+    const now = new Date()
+    let start
+    if (period === 'day') {
+      start = new Date(now.setHours(0,0,0,0))
+    } else if (period === 'week') {
+      const d = new Date()
+      const day = d.getDay()
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+      start = new Date(d.setDate(diff))
+      start.setHours(0,0,0,0)
+    } else if (period === 'month') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1)
+    }
+    if (start) {
+      createdFilter = { created_at: { $gte: start } }
+    }
+  }
+  const matchFilter = {
+    ...(includeArchived ? {} : { is_archived: false }),
+    ...createdFilter
+  }
 
   const result = await Patient.aggregate([
     { $match: matchFilter },
@@ -1989,6 +2011,86 @@ async function getDashboardStats() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// REVENUE INSIGHTS
+// ═══════════════════════════════════════════════════════════
+async function getRevenueInsights() {
+  const [
+    allBills,
+    monthlyRevenueData,
+    paymentMethodsData,
+    topTreatmentsData
+  ] = await Promise.all([
+    Bill.find().select('paid_amount total_amount balance').lean(),
+    Bill.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$created_at" } },
+          revenue: { $sum: "$paid_amount" },
+          billed: { $sum: "$total_amount" }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]),
+    Bill.aggregate([
+      {
+        $group: {
+          _id: "$payment_method",
+          revenue: { $sum: "$paid_amount" }
+        }
+      },
+      { $sort: { revenue: -1 } }
+    ]),
+    Treatment.aggregate([
+      { $match: { cost: { $gt: 0 }, status: { $ne: 'cancelled' } } },
+      {
+        $group: {
+          _id: "$treatment_type",
+          revenue: { $sum: "$cost" },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 10 }
+    ])
+  ])
+
+  const totalRevenue = allBills.reduce((sum, b) => sum + (b.paid_amount || 0), 0)
+  const totalBilled = allBills.reduce((sum, b) => sum + (b.total_amount || 0), 0)
+  const pendingBalance = allBills.reduce((sum, b) => sum + (b.balance || 0), 0)
+
+  const monthlyTrends = monthlyRevenueData.map(d => {
+    if (!d._id) return { month: 'Unknown', revenue: d.revenue, billed: d.billed }
+    const [year, month] = d._id.split('-')
+    const date = new Date(year, month - 1, 1)
+    return {
+      month: date.toLocaleString('default', { month: 'short', year: 'numeric' }),
+      revenue: d.revenue,
+      billed: d.billed
+    }
+  })
+
+  const paymentMethods = paymentMethodsData.map(d => ({
+    method: d._id || 'unknown',
+    revenue: d.revenue
+  }))
+
+  const topTreatments = topTreatmentsData.map(d => ({
+    treatment: d._id || 'unknown',
+    revenue: d.revenue,
+    count: d.count
+  }))
+
+  return {
+    totalRevenue,
+    totalBilled,
+    pendingBalance,
+    monthlyTrends,
+    paymentMethods,
+    topTreatments
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 // PID GENERATION (corrections.md §3.2)
 // ═══════════════════════════════════════════════════════════
 async function generatePID() {
@@ -2577,7 +2679,7 @@ module.exports = {
   getAllTreatmentMasters, addTreatmentMaster, updateTreatmentMaster, deleteTreatmentMaster, searchTreatmentMasters,
   getAllMedicineMasters, addMedicineMaster, updateMedicineMaster, deleteMedicineMaster, searchMedicineMasters,
   getSettings, setSetting,
-  getDashboardStats,
+  getDashboardStats, getRevenueInsights,
   logAudit,
   getAllEnquiries, searchEnquiries, addEnquiry, updateEnquiryStatus, deleteEnquiry
 }

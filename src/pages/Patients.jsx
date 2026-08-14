@@ -17,19 +17,20 @@ export default function Patients() {
   const { notify } = useApp()
   const [patients, setPatients] = useState([])
   const [query, setQuery] = useState('')
+  const [period, setPeriod] = useState('all')
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const searchRef = useRef()
 
-  const load = useCallback(async (q = '') => {
+  const load = useCallback(async (q = '', p = 'all') => {
     const data = q.trim().length >= 2
       ? await searchPatients(q)
-      : await getAllPatients()
+      : await getAllPatients(`?period=${p}`)
     setPatients(data || [])
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(query, period) }, [load, period])
 
   useEffect(() => {
     const handleOpenAdd = () => setShowAdd(true)
@@ -39,9 +40,9 @@ export default function Patients() {
 
   // Debounced search
   useEffect(() => {
-    const t = setTimeout(() => load(query), 250)
+    const t = setTimeout(() => load(query, period), 250)
     return () => clearTimeout(t)
-  }, [query, load])
+  }, [query, period, load])
 
   function openAdd() {
     setForm(EMPTY_FORM)
@@ -55,7 +56,7 @@ export default function Patients() {
       const p = await addPatient({ ...form, age: form.age ? Number(form.age) : null })
       notify(`${p.name} added successfully`)
       setShowAdd(false)
-      load(query)
+      load(query, period)
     } catch (e) {
       notify(e.message || 'Failed to add patient', 'error')
     } finally {
@@ -68,27 +69,41 @@ export default function Patients() {
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Toolbar */}
-      <div className="flex items-center gap-3">
-        <div className="search-wrap">
-          <Search size={16} className="search-icon" />
-          <input
-            id="patient-search"
-            ref={searchRef}
-            className="search-input"
-            placeholder="Search by name or phone…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            autoFocus
-          />
-          {query && (
-            <button
-              onClick={() => setQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            >
-              <X size={14} />
-            </button>
-          )}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="search-wrap flex-1 sm:max-w-xs">
+            <Search size={16} className="search-icon" />
+            <input
+              id="patient-search"
+              ref={searchRef}
+              className="search-input"
+              placeholder="Search by name or phone…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              autoFocus
+            />
+            {query && (
+              <button
+                onClick={() => setQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          
+          <select 
+            value={period} 
+            onChange={(e) => setPeriod(e.target.value)}
+            className="input max-w-[140px] text-sm"
+          >
+            <option value="all">All Patients</option>
+            <option value="day">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
         </div>
+        
         <button id="btn-add-patient" onClick={openAdd} className="btn-primary flex-shrink-0">
           <Plus size={16} /> Add Patient
         </button>
