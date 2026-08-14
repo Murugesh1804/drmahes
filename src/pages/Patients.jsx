@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Plus, User, Phone, Calendar, ChevronRight, X } from 'lucide-react'
+import { Search, Plus, User, Phone, Calendar, ChevronRight, X, Download } from 'lucide-react'
 import { getAllPatients, searchPatients, addPatient } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
@@ -21,6 +21,7 @@ export default function Patients() {
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const searchRef = useRef()
 
   const load = useCallback(async (q = '', p = 'all') => {
@@ -66,6 +67,35 @@ export default function Patients() {
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
+  async function handleDownloadCSV() {
+    try {
+      setDownloading(true)
+      const allPatients = await getAllPatients('?period=all')
+      if (!allPatients || allPatients.length === 0) {
+        notify('No patients found to download', 'info')
+        return
+      }
+      
+      const headers = ['Full Name', 'Phone Number']
+      const rows = allPatients.map(p => `"${(p.name || '').replace(/"/g, '""')}","${(p.phone || '').replace(/"/g, '""')}"`)
+      const csvContent = [headers.join(','), ...rows].join('\n')
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'patients.csv')
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      notify('Failed to download CSV', 'error')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Toolbar */}
@@ -104,9 +134,14 @@ export default function Patients() {
           </select>
         </div>
         
-        <button id="btn-add-patient" onClick={openAdd} className="btn-primary flex-shrink-0">
-          <Plus size={16} /> Add Patient
-        </button>
+        <div className="flex gap-2 flex-shrink-0">
+          <button onClick={handleDownloadCSV} disabled={downloading} className="btn-secondary flex-shrink-0">
+            <Download size={16} /> {downloading ? 'Wait...' : 'CSV'}
+          </button>
+          <button id="btn-add-patient" onClick={openAdd} className="btn-primary flex-shrink-0">
+            <Plus size={16} /> Add Patient
+          </button>
+        </div>
       </div>
 
       {/* Count */}

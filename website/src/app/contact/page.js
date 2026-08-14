@@ -113,9 +113,7 @@ export default function Contact() {
             </div>
             <div>
               <div className="map-frame">
-                <iframe src="https://maps.google.com/maps?q=1st+floor,+Kundrathur+Main+Rd,+Jaya+Nagar,+Porur,+Chennai,+Tamil+Nadu+600116&output=embed&z=15"
-                  allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"
-                  title="Dr. Mahe's Dentistry location — Porur Chennai"></iframe>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2814.0430245310026!2d80.1553665!3d13.0341781!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a526141e51f5325%3A0x79ef9453aca1f7da!2sDr.Mahe's%20Dentistry!5e1!3m2!1sen!2sin!4v1786706601053!5m2!1sen!2sin" width="600" height="450" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="strict-origin-when-cross-origin"></iframe>
               </div>
             </div>
           </div>
