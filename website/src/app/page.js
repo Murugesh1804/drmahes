@@ -99,25 +99,45 @@ export default function Home() {
 
       {/* ─── COMPREHENSIVE CARE OVERVIEW ─── */}
       <section className="comprehensive-care section-padding">
-        <div className="container" data-animate>
-          <div className="section-header" style={{ marginBottom: '2rem' }}>
-            <span className="section-badge">Comprehensive Care</span>
-            <h2 className="section-title">Complete Dental Care in Porur</h2>
+        <div className="container">
+          <div className="section-header" data-animate>
+            <span className="section-badge">Comprehensive Excellence</span>
+            <h2 className="section-title">Complete Family &amp; Advanced Dental Care in Porur</h2>
+            <p className="section-desc">
+              From foundational oral hygiene to complex aesthetic rehabilitations, we offer end-to-end dental solutions designed around precision, safety, and long-term wellness.
+            </p>
           </div>
-          <div className="care-text" style={{ columnCount: 2, columnGap: '3rem', fontSize: '1.05rem', lineHeight: '1.7' }}>
-            <p style={{ marginBottom: '1rem' }}>
-              At Dr. Mahe's Dentistry, we believe that a healthy smile is the foundation of overall well-being.
-              Located in the heart of Porur, Chennai, our clinic is equipped to handle everything from routine
-              teeth cleaning and preventive dental services to full-mouth rehabilitation. Whether you need
-              painless root canal treatment to save a damaged tooth or permanent dental implants to restore
-              missing teeth, our experienced team provides comprehensive solutions tailored to your unique needs.
-            </p>
-            <p>
-              We also specialize in cosmetic dentistry, offering premium crowns, fillings, and veneers to
-              enhance your natural smile. For our younger patients, our dedicated pediatric dentistry services
-              ensure that children build healthy oral habits early on in a friendly, stress-free environment.
-              Our goal is to be your lifelong partner in maintaining optimal oral health for the entire family.
-            </p>
+
+          <div className="values-grid" data-animate>
+            <div className="value-card">
+              <div className="value-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+              <h3 className="value-title">Preventive &amp; Hygiene Care</h3>
+              <p className="value-desc">
+                Comprehensive dental examinations, digital radiography, scaling, and professional teeth cleaning to preserve your natural dental structure and prevent periodontal disease.
+              </p>
+            </div>
+
+            <div className="value-card">
+              <div className="value-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <h3 className="value-title">Restorative &amp; Endodontics</h3>
+              <p className="value-desc">
+                Painless single-sitting root canals, dental implants, high-durability tooth fillings, and wisdom tooth extractions using advanced micro-endodontic instruments.
+              </p>
+            </div>
+
+            <div className="value-card">
+              <div className="value-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              </div>
+              <h3 className="value-title">Cosmetics &amp; Child Care</h3>
+              <p className="value-desc">
+                Custom zirconia crowns, porcelain veneers, teeth whitening, clear aligners, and specialized pediatric dentistry for children in a gentle, stress-free setting.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -187,65 +207,158 @@ export default function Home() {
       </section>
 
       {/* ─── PHILOSOPHY ─── */}
-      <section className="philosophy-section section-padding" style={{ backgroundColor: 'var(--surface-color)' }}>
+      <section className="philosophy-section section-padding">
         <div className="container" data-animate>
-          <div className="section-header">
-            <span className="section-badge">Our Approach</span>
-            <h2 className="section-title">Patient Comfort First Philosophy</h2>
-          </div>
-          <div className="philosophy-content" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', fontSize: '1.1rem', lineHeight: '1.8' }}>
-            <p style={{ marginBottom: '1rem' }}>
-              We understand that visiting the dentist can sometimes be an anxious experience. That is why our entire practice is built around a "Patient Comfort First" philosophy. From the moment you walk into our clinic in Porur, you will be greeted by a calming atmosphere designed to put you at ease.
-            </p>
-            <p>
-              We use advanced local anesthesia techniques, state-of-the-art diagnostic tools like digital X-rays, and ergonomic dental chairs to ensure every procedure—whether it's a simple tooth filling or an intricate oral surgery—is as painless and efficient as possible. We take the time to listen to your concerns, explain all treatment options transparently, and proceed at a pace you are completely comfortable with.
-            </p>
+          <div className="philosophy-banner">
+            <div className="section-header" style={{ marginBottom: 24, textAlign: 'left' }}>
+              <span className="section-badge" style={{ backgroundColor: 'rgba(196,176,151,0.2)', color: 'var(--accent)' }}>Our Core Philosophy</span>
+              <h2 className="section-title" style={{ color: '#FFFFFF' }}>Patient Comfort First</h2>
+              <p className="section-desc" style={{ color: '#AAAAAA', maxWidth: '640px', marginLeft: 0 }}>
+                Dental care should never be a source of stress or discomfort. At Dr. Mahe's Dentistry in Porur, every aspect of your visit is crafted to ensure a serene, painless, and transparent treatment experience.
+              </p>
+            </div>
+
+            <div className="philosophy-grid">
+              <div className="philosophy-pill-card">
+                <div className="philosophy-pill-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h4 className="philosophy-pill-title">Gentle Anesthesia</h4>
+                <p className="philosophy-pill-desc">Modern pain-free numbing techniques for seamless, stress-free procedures.</p>
+              </div>
+
+              <div className="philosophy-pill-card">
+                <div className="philosophy-pill-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <h4 className="philosophy-pill-title">Strict Sterilization</h4>
+                <p className="philosophy-pill-desc">Hospital-grade autoclave protocols &amp; strict infection control standards.</p>
+              </div>
+
+              <div className="philosophy-pill-card">
+                <div className="philosophy-pill-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <h4 className="philosophy-pill-title">Clear Counseling</h4>
+                <p className="philosophy-pill-desc">Transparent treatment plans, honest pricing, and detailed post-care guidance.</p>
+              </div>
+
+              <div className="philosophy-pill-card">
+                <div className="philosophy-pill-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <h4 className="philosophy-pill-title">Ergonomic Ambience</h4>
+                <p className="philosophy-pill-desc">Relaxing treatment bays designed to make your dental visits genuinely calming.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ─── FAQS ─── */}
-      <section className="faq-section section-padding">
-        <div className="container" data-animate>
-          <div className="section-header">
-            <span className="section-badge">Questions?</span>
+      <section className="faqs-section section-padding" id="faqs">
+        <div className="container">
+          <div className="section-header" data-animate>
+            <span className="section-badge">Patient Clarity</span>
             <h2 className="section-title">Frequently Asked Questions</h2>
+            <p className="section-desc">Got questions about treatments, timelines, or comfort? Find clear answers below.</p>
           </div>
-          <div className="faq-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '3rem' }}>
-            <div className="faq-item">
-              <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Do root canals hurt?</h4>
-              <p>With modern anesthesia and rotary endodontics, root canal treatments at our clinic are virtually painless and often completed in a single sitting.</p>
-            </div>
-            <div className="faq-item">
-              <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>How long do dental implants last?</h4>
-              <p>With proper care and oral hygiene, high-quality titanium dental implants can last a lifetime, providing a permanent solution for missing teeth.</p>
-            </div>
-            <div className="faq-item">
-              <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>When should I bring my child for their first dental visit?</h4>
-              <p>We recommend scheduling your child's first visit by their first birthday or when their first tooth erupts to establish a baseline for preventive care.</p>
-            </div>
-            <div className="faq-item">
-              <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Do you offer cosmetic dentistry?</h4>
-              <p>Yes, we offer a range of cosmetic treatments including teeth whitening, veneers, and aesthetic crowns to help you achieve your perfect smile.</p>
-            </div>
+
+          <div className="faqs-list" data-animate>
+            <details className="faq-item">
+              <summary className="faq-btn">
+                <span>Are root canal treatments painless at your clinic?</span>
+                <span className="faq-icon">+</span>
+              </summary>
+              <div className="faq-answer">
+                Yes, absolutely. With modern digital X-rays, localized computerized anesthesia, and high-precision rotary endodontic tools, root canal treatments at Dr. Mahe's Dentistry are comfortable, efficient, and typically completed in a single sitting without discomfort.
+              </div>
+            </details>
+
+            <details className="faq-item">
+              <summary className="faq-btn">
+                <span>How long do dental implants last?</span>
+                <span className="faq-icon">+</span>
+              </summary>
+              <div className="faq-answer">
+                Dental implants are engineered to be a lifetime solution for missing teeth. Crafted from bio-compatible titanium that fuses directly with jawbone, they function, feel, and look like natural teeth. With routine oral hygiene and periodic dental check-ups, implants can last indefinitely.
+              </div>
+            </details>
+
+            <details className="faq-item">
+              <summary className="faq-btn">
+                <span>When should my child first visit a pediatric dentist?</span>
+                <span className="faq-icon">+</span>
+              </summary>
+              <div className="faq-answer">
+                We recommend bringing your child for their initial dental check-up by their first birthday or when their first tooth emerges. Early visits establish a friendly relationship with the dentist and help detect initial cavity risks or bite alignment issues early on.
+              </div>
+            </details>
+
+            <details className="faq-item">
+              <summary className="faq-btn">
+                <span>What cosmetic options do you offer for restoring damaged teeth?</span>
+                <span className="faq-icon">+</span>
+              </summary>
+              <div className="faq-answer">
+                We offer a full range of aesthetic restorative options including custom ultra-thin porcelain veneers, premium zirconia crowns, composite tooth-colored fillings, and professional teeth whitening designed to give you a bright, flawless, natural-looking smile.
+              </div>
+            </details>
+
+            <details className="faq-item">
+              <summary className="faq-btn">
+                <span>Where is the clinic located and what are your consulting hours?</span>
+                <span className="faq-icon">+</span>
+              </summary>
+              <div className="faq-answer">
+                Dr. Mahe's Dentistry is conveniently located on Kundrathur Main Road in Porur, Chennai. We are open Monday through Saturday from 10:00 AM to 10:00 PM, allowing flexible evening consultations for working professionals and families.
+              </div>
+            </details>
           </div>
         </div>
       </section>
 
       {/* ─── SOCIAL SHARING ─── */}
-      <section className="social-share-section section-padding" style={{ borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
+      <section className="social-share-section section-padding">
         <div className="container" data-animate>
-          <h4 style={{ marginBottom: '1rem', fontWeight: '500', fontSize: '1.2rem' }}>Share our services with family and friends</h4>
-          <div className="social-buttons" style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=https://drmahesdentistry.com" target="_blank" rel="noopener noreferrer" className="btn" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#1877F2', color: 'white', borderRadius: '4px' }}>
-              Share on Facebook
-            </a>
-            <a href="https://twitter.com/intent/tweet?url=https://drmahesdentistry.com&text=Check%20out%20Dr.%20Mahe's%20Dentistry%20in%20Porur!" target="_blank" rel="noopener noreferrer" className="btn" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#1DA1F2', color: 'white', borderRadius: '4px' }}>
-              Share on Twitter
-            </a>
-            <a href="https://api.whatsapp.com/send?text=Check%20out%20Dr.%20Mahe's%20Dentistry%20in%20Porur!%20https://drmahesdentistry.com" target="_blank" rel="noopener noreferrer" className="btn" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#25D366', color: 'white', borderRadius: '4px' }}>
-              Share on WhatsApp
-            </a>
+          <div className="social-share-box">
+            <span className="section-badge">Spread The Word</span>
+            <h3 style={{ fontSize: '1.6rem', fontWeight: '700', marginTop: 8 }}>Recommend Dr. Mahe's Dentistry</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginTop: 6 }}>
+              Know someone in Porur, Chennai looking for expert dental care? Share our clinic details with your network.
+            </p>
+            <div className="social-buttons">
+              <a
+                href="https://www.facebook.com/sharer/sharer.php?u=https://drmahesdentistry.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-btn"
+                aria-label="Share on Facebook"
+              >
+                <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                Facebook
+              </a>
+              <a
+                href="https://twitter.com/intent/tweet?url=https://drmahesdentistry.com&text=Check%20out%20Dr.%20Mahe's%20Dentistry%20in%20Porur,%20Chennai!"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-btn"
+                aria-label="Share on Twitter"
+              >
+                <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                X (Twitter)
+              </a>
+              <a
+                href="https://api.whatsapp.com/send?text=Check%20out%20Dr.%20Mahe's%20Dentistry%20in%20Porur!%20https://drmahesdentistry.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-btn"
+                aria-label="Share on WhatsApp"
+              >
+                <svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       </section>
