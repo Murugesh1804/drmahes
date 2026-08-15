@@ -97,6 +97,31 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ─── COMPREHENSIVE CARE OVERVIEW ─── */}
+      <section className="comprehensive-care section-padding">
+        <div className="container" data-animate>
+          <div className="section-header" style={{ marginBottom: '2rem' }}>
+            <span className="section-badge">Comprehensive Care</span>
+            <h2 className="section-title">Complete Dental Care in Porur</h2>
+          </div>
+          <div className="care-text" style={{ columnCount: 2, columnGap: '3rem', fontSize: '1.05rem', lineHeight: '1.7' }}>
+            <p style={{ marginBottom: '1rem' }}>
+              At Dr. Mahe's Dentistry, we believe that a healthy smile is the foundation of overall well-being.
+              Located in the heart of Porur, Chennai, our clinic is equipped to handle everything from routine
+              teeth cleaning and preventive dental services to full-mouth rehabilitation. Whether you need
+              painless root canal treatment to save a damaged tooth or permanent dental implants to restore
+              missing teeth, our experienced team provides comprehensive solutions tailored to your unique needs.
+            </p>
+            <p>
+              We also specialize in cosmetic dentistry, offering premium crowns, fillings, and veneers to
+              enhance your natural smile. For our younger patients, our dedicated pediatric dentistry services
+              ensure that children build healthy oral habits early on in a friendly, stress-free environment.
+              Our goal is to be your lifelong partner in maintaining optimal oral health for the entire family.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ─── TREATMENTS ─── */}
       <section className="treatments-section section-padding" id="treatments">
         <div className="container">
@@ -116,7 +141,7 @@ export default function Home() {
                   <div className="tx-icon">{tx.icon}</div>
                   <h3 className="tx-name">{tx.name}</h3>
                   <div className="tx-desc">{tx.desc}</div>
-                  <Link href={tx.page} className="tx-link">Learn More</Link>
+                  <Link href={tx.page} className="tx-link">Explore {tx.name}</Link>
                 </div>
               </div>
             ))}
@@ -157,6 +182,70 @@ export default function Home() {
               </div>
               <Link href="/about" className="btn btn-primary">Learn More About Dr. Maheswari</Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PHILOSOPHY ─── */}
+      <section className="philosophy-section section-padding" style={{ backgroundColor: 'var(--surface-color)' }}>
+        <div className="container" data-animate>
+          <div className="section-header">
+            <span className="section-badge">Our Approach</span>
+            <h2 className="section-title">Patient Comfort First Philosophy</h2>
+          </div>
+          <div className="philosophy-content" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', fontSize: '1.1rem', lineHeight: '1.8' }}>
+            <p style={{ marginBottom: '1rem' }}>
+              We understand that visiting the dentist can sometimes be an anxious experience. That is why our entire practice is built around a "Patient Comfort First" philosophy. From the moment you walk into our clinic in Porur, you will be greeted by a calming atmosphere designed to put you at ease.
+            </p>
+            <p>
+              We use advanced local anesthesia techniques, state-of-the-art diagnostic tools like digital X-rays, and ergonomic dental chairs to ensure every procedure—whether it's a simple tooth filling or an intricate oral surgery—is as painless and efficient as possible. We take the time to listen to your concerns, explain all treatment options transparently, and proceed at a pace you are completely comfortable with.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FAQS ─── */}
+      <section className="faq-section section-padding">
+        <div className="container" data-animate>
+          <div className="section-header">
+            <span className="section-badge">Questions?</span>
+            <h2 className="section-title">Frequently Asked Questions</h2>
+          </div>
+          <div className="faq-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '3rem' }}>
+            <div className="faq-item">
+              <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Do root canals hurt?</h4>
+              <p>With modern anesthesia and rotary endodontics, root canal treatments at our clinic are virtually painless and often completed in a single sitting.</p>
+            </div>
+            <div className="faq-item">
+              <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>How long do dental implants last?</h4>
+              <p>With proper care and oral hygiene, high-quality titanium dental implants can last a lifetime, providing a permanent solution for missing teeth.</p>
+            </div>
+            <div className="faq-item">
+              <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>When should I bring my child for their first dental visit?</h4>
+              <p>We recommend scheduling your child's first visit by their first birthday or when their first tooth erupts to establish a baseline for preventive care.</p>
+            </div>
+            <div className="faq-item">
+              <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Do you offer cosmetic dentistry?</h4>
+              <p>Yes, we offer a range of cosmetic treatments including teeth whitening, veneers, and aesthetic crowns to help you achieve your perfect smile.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SOCIAL SHARING ─── */}
+      <section className="social-share-section section-padding" style={{ borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
+        <div className="container" data-animate>
+          <h4 style={{ marginBottom: '1rem', fontWeight: '500', fontSize: '1.2rem' }}>Share our services with family and friends</h4>
+          <div className="social-buttons" style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://drmahesdentistry.com" target="_blank" rel="noopener noreferrer" className="btn" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#1877F2', color: 'white', borderRadius: '4px' }}>
+              Share on Facebook
+            </a>
+            <a href="https://twitter.com/intent/tweet?url=https://drmahesdentistry.com&text=Check%20out%20Dr.%20Mahe's%20Dentistry%20in%20Porur!" target="_blank" rel="noopener noreferrer" className="btn" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#1DA1F2', color: 'white', borderRadius: '4px' }}>
+              Share on Twitter
+            </a>
+            <a href="https://api.whatsapp.com/send?text=Check%20out%20Dr.%20Mahe's%20Dentistry%20in%20Porur!%20https://drmahesdentistry.com" target="_blank" rel="noopener noreferrer" className="btn" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#25D366', color: 'white', borderRadius: '4px' }}>
+              Share on WhatsApp
+            </a>
           </div>
         </div>
       </section>
