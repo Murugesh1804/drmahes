@@ -150,7 +150,25 @@ function sortAppointments(list) {
 // ═══════════════════════════════════════════════════════════
 // PATIENTS
 // ═══════════════════════════════════════════════════════════
-async function getAllPatients(limit = 20, includeArchived = false, period = 'all') {
+async function getAllPatients(optionsOrLimit = 20, includeArchivedParam = false, periodParam = 'all') {
+  let limit = 20
+  let page = 1
+  let includeArchived = false
+  let period = 'all'
+  let isPaginated = false
+
+  if (typeof optionsOrLimit === 'object' && optionsOrLimit !== null) {
+    page = Math.max(1, parseInt(optionsOrLimit.page) || 1)
+    limit = parseInt(optionsOrLimit.limit) || 20
+    includeArchived = Boolean(optionsOrLimit.includeArchived)
+    period = optionsOrLimit.period || 'all'
+    isPaginated = Boolean(optionsOrLimit.paginated || optionsOrLimit.page)
+  } else {
+    limit = typeof optionsOrLimit === 'number' ? optionsOrLimit : 20
+    includeArchived = includeArchivedParam
+    period = periodParam || 'all'
+  }
+
   let createdFilter = {}
   if (period !== 'all') {
     const now = new Date()
@@ -175,7 +193,7 @@ async function getAllPatients(limit = 20, includeArchived = false, period = 'all
     ...createdFilter
   }
 
-  const result = await Patient.aggregate([
+  const pipeline = [
     { $match: matchFilter },
     {
       $lookup: {
@@ -189,6 +207,7 @@ async function getAllPatients(limit = 20, includeArchived = false, period = 'all
       $project: {
         name: 1,
         phone: 1,
+        email: 1,
         age: 1,
         gender: 1,
         address: 1,
@@ -207,12 +226,33 @@ async function getAllPatients(limit = 20, includeArchived = false, period = 'all
         last_visit: { $max: '$appts.scheduled_date' }
       }
     },
-    { $sort: { updated_at: -1 } },
-    { $limit: limit }
-  ])
+    { $sort: { updated_at: -1 } }
+  ]
 
-  // Convert mongoose _id to virtual id for compatibility with the React app
-  return result.map(p => ({ ...p, id: p._id.toString() }))
+  if (isPaginated && limit > 0) {
+    const skip = (page - 1) * limit
+    const [itemsResult, countResult] = await Promise.all([
+      Patient.aggregate([...pipeline, { $skip: skip }, { $limit: limit }]),
+      Patient.countDocuments(matchFilter)
+    ])
+    const items = itemsResult.map(p => ({ ...p, id: p._id.toString() }))
+    return {
+      items,
+      total: countResult,
+      page,
+      limit,
+      totalPages: Math.ceil(countResult / limit) || 1,
+      hasMore: skip + items.length < countResult
+    }
+  }
+
+  if (limit > 0) {
+    pipeline.push({ $limit: limit })
+  }
+
+  const result = await Patient.aggregate(pipeline)
+  const items = result.map(p => ({ ...p, id: p._id.toString() }))
+  return items
 }
 
 async function searchPatients(query) {
@@ -588,6 +628,31 @@ async function deleteEnquiry(id) {
   if (!isValidObjectId(id)) return false
   const deleted = await Enquiry.findByIdAndDelete(id)
   return !!deleted
+}
+
+async function convertEnquiryToPatient(id) {
+  if (!isValidObjectId(id)) return null
+  const enquiry = await Enquiry.findById(id)
+  if (!enquiry) return null
+
+  // Create new patient using enquiry details
+  const patient = await addPatient({
+    name: enquiry.name,
+    phone: enquiry.phone || '',
+    age: enquiry.age || null,
+    gender: enquiry.gender || 'Male',
+    complaint: enquiry.complaint || '',
+    notes: enquiry.notes ? `[From Enquiry] ${enquiry.notes}` : '',
+    registration_source: 'enquiry'
+  })
+
+  enquiry.status = 'converted'
+  await enquiry.save()
+
+  return {
+    patient,
+    enquiry: { ...enquiry.toObject(), id: enquiry._id.toString() }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1971,12 +2036,52 @@ async function setSetting(key, value) {
   return { key, value }
 }
 
+async function setSettingsBulk(settingsObj) {
+  const entries = Object.entries(settingsObj || {})
+  const updates = entries.map(([key, value]) => ({
+    updateOne: {
+      filter: { key },
+      update: { $set: { value } },
+      upsert: true
+    }
+  }))
+  if (updates.length > 0) {
+    await Setting.bulkWrite(updates)
+  }
+  return getSettings()
+}
+
 // ═══════════════════════════════════════════════════════════
 // DASHBOARD STATS
 // ═══════════════════════════════════════════════════════════
-async function getDashboardStats() {
-  const today = clinicDateString()
-  const range = clinicDayRange(today)
+async function getDashboardStats(period = 'today', dateParam = null) {
+  let targetDate = clinicDateString()
+  let range = clinicDayRange(targetDate)
+
+  if (period === 'yesterday') {
+    const d = new Date()
+    d.setDate(d.getDate() - 1)
+    targetDate = clinicDateString(d)
+    range = clinicDayRange(targetDate)
+  } else if (period === 'week') {
+    const d = new Date()
+    const day = d.getDay()
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+    const monday = new Date(d.setDate(diff))
+    const startStr = clinicDateString(monday)
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    const endStr = clinicDateString(sunday)
+    const startRange = clinicDayRange(startStr)
+    const endRange = clinicDayRange(endStr)
+    range = { start: startRange.start, end: endRange.end }
+    targetDate = `${startStr} to ${endStr}`
+  } else if (dateParam) {
+    targetDate = dateParam
+    range = clinicDayRange(targetDate)
+  }
+
+  const isRange = period === 'week'
 
   const [
     totalPatients,
@@ -1987,11 +2092,11 @@ async function getDashboardStats() {
     billsToday,
     pendingBills
   ] = await Promise.all([
-    Patient.countDocuments(),
-    Appointment.countDocuments({ scheduled_date: today }),
-    Appointment.countDocuments({ scheduled_date: today, status: 'waiting' }),
-    Appointment.countDocuments({ scheduled_date: today, status: 'in-progress' }),
-    Appointment.countDocuments({ scheduled_date: today, status: 'done' }),
+    Patient.countDocuments({ is_archived: false }),
+    isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end } }) : Appointment.countDocuments({ scheduled_date: targetDate }),
+    isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end }, status: 'waiting' }) : Appointment.countDocuments({ scheduled_date: targetDate, status: 'waiting' }),
+    isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end }, status: 'in-progress' }) : Appointment.countDocuments({ scheduled_date: targetDate, status: 'in-progress' }),
+    isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end }, status: 'done' }) : Appointment.countDocuments({ scheduled_date: targetDate, status: 'done' }),
     Bill.find({ created_at: { $gte: range.start, $lte: range.end } }).select('paid_amount').lean(),
     Bill.find({ status: { $ne: 'paid' } }).select('balance').lean()
   ])
@@ -2006,22 +2111,54 @@ async function getDashboardStats() {
     todayInProgress,
     todayDone,
     todayRevenue,
-    pendingBalance
+    pendingBalance,
+    period,
+    targetDate
   }
 }
 
 // ═══════════════════════════════════════════════════════════
 // REVENUE INSIGHTS
 // ═══════════════════════════════════════════════════════════
-async function getRevenueInsights() {
+async function getRevenueInsights(options = {}) {
+  let billMatch = {}
+  let txMatch = { cost: { $gt: 0 }, status: { $ne: 'cancelled' } }
+
+  const { startDate, endDate, period } = options || {}
+  let start = null
+  let end = null
+
+  if (startDate && endDate) {
+    start = new Date(startDate + 'T00:00:00')
+    end = new Date(endDate + 'T23:59:59.999')
+  } else if (period === 'month') {
+    const now = new Date()
+    start = new Date(now.getFullYear(), now.getMonth(), 1)
+    end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+  } else if (period === 'year') {
+    const now = new Date()
+    start = new Date(now.getFullYear(), 0, 1)
+    end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999)
+  } else if (period === '30days') {
+    const now = new Date()
+    end = new Date()
+    start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  }
+
+  if (start && end) {
+    billMatch = { created_at: { $gte: start, $lte: end } }
+    txMatch.created_at = { $gte: start, $lte: end }
+  }
+
   const [
     allBills,
     monthlyRevenueData,
     paymentMethodsData,
     topTreatmentsData
   ] = await Promise.all([
-    Bill.find().select('paid_amount total_amount balance').lean(),
+    Bill.find(billMatch).select('paid_amount total_amount balance created_at').lean(),
     Bill.aggregate([
+      ...(Object.keys(billMatch).length > 0 ? [{ $match: billMatch }] : []),
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m", date: "$created_at" } },
@@ -2032,6 +2169,7 @@ async function getRevenueInsights() {
       { $sort: { _id: 1 } }
     ]),
     Bill.aggregate([
+      ...(Object.keys(billMatch).length > 0 ? [{ $match: billMatch }] : []),
       {
         $group: {
           _id: "$payment_method",
@@ -2041,7 +2179,7 @@ async function getRevenueInsights() {
       { $sort: { revenue: -1 } }
     ]),
     Treatment.aggregate([
-      { $match: { cost: { $gt: 0 }, status: { $ne: 'cancelled' } } },
+      { $match: txMatch },
       {
         $group: {
           _id: "$treatment_type",
@@ -2080,13 +2218,41 @@ async function getRevenueInsights() {
     count: d.count
   }))
 
+  const billCount = allBills.length
+  const avgBillValue = billCount > 0 ? totalBilled / billCount : 0
+  const collectionRate = totalBilled > 0 ? (totalRevenue / totalBilled) * 100 : 0
+
+  // Peak revenue month
+  const peakMonth = monthlyTrends.length > 0
+    ? monthlyTrends.reduce((max, m) => m.revenue > max.revenue ? m : max, monthlyTrends[0])
+    : null
+
+  // Average monthly revenue (over months with data)
+  const avgMonthlyRevenue = monthlyTrends.length > 0
+    ? monthlyTrends.reduce((sum, m) => sum + m.revenue, 0) / monthlyTrends.length
+    : 0
+
+  // Month-over-month growth (last 2 months)
+  let monthOverMonthGrowth = null
+  if (monthlyTrends.length >= 2) {
+    const prev = monthlyTrends[monthlyTrends.length - 2].revenue
+    const curr = monthlyTrends[monthlyTrends.length - 1].revenue
+    monthOverMonthGrowth = prev > 0 ? ((curr - prev) / prev) * 100 : null
+  }
+
   return {
     totalRevenue,
     totalBilled,
     pendingBalance,
     monthlyTrends,
     paymentMethods,
-    topTreatments
+    topTreatments,
+    billCount,
+    avgBillValue,
+    collectionRate,
+    peakMonth,
+    avgMonthlyRevenue,
+    monthOverMonthGrowth
   }
 }
 
@@ -2678,8 +2844,8 @@ module.exports = {
   getConsultantPayments, getConsultantMonthlyReport, getConsultantOutstandingDues, recordConsultantPaymentAmount,
   getAllTreatmentMasters, addTreatmentMaster, updateTreatmentMaster, deleteTreatmentMaster, searchTreatmentMasters,
   getAllMedicineMasters, addMedicineMaster, updateMedicineMaster, deleteMedicineMaster, searchMedicineMasters,
-  getSettings, setSetting,
+  getSettings, setSetting, setSettingsBulk,
   getDashboardStats, getRevenueInsights,
   logAudit,
-  getAllEnquiries, searchEnquiries, addEnquiry, updateEnquiryStatus, deleteEnquiry
+  getAllEnquiries, searchEnquiries, addEnquiry, updateEnquiryStatus, deleteEnquiry, convertEnquiryToPatient
 }

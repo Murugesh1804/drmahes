@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, Calendar, CheckCircle2, Clock, TrendingUp,
@@ -33,15 +33,19 @@ const DEFAULT_STATS = {
 export default function Dashboard() {
   const { fmt, notify } = useApp()
   const navigate = useNavigate()
+  const [period, setPeriod] = useState('today') // 'today' | 'yesterday' | 'week'
   const [stats, setStats] = useState(DEFAULT_STATS)
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
 
-  async function load() {
+  const load = useCallback(async (p = period) => {
     try {
-      const [s, a] = await Promise.all([getDashboardStats(), getTodayAppointments()])
+      const s = await getDashboardStats(`?period=${p}`)
       setStats(s || DEFAULT_STATS)
-      setAppointments((a || []).slice(0, 8))
+
+      const a = await getTodayAppointments()
+      const activeAppts = (a || []).filter(item => item.status !== 'cancelled').slice(0, 8)
+      setAppointments(activeAppts)
     } catch (e) {
       console.error(e)
       setStats(DEFAULT_STATS)
@@ -49,21 +53,21 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [period])
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load(period) }, [load, period])
 
   // Auto-refresh stats every 60 seconds
   useEffect(() => {
-    const t = setInterval(load, 60000)
+    const t = setInterval(() => load(period), 60000)
     return () => clearInterval(t)
-  }, [])
+  }, [load, period])
 
   async function handleStatus(id, status) {
     try {
       await updateAppointmentStatus(id, status)
       notify(`Status updated to ${STATUS_LABELS[status]}`)
-      load()
+      load(period)
     } catch (e) {
       notify('Failed to update status', 'error')
     }
@@ -105,6 +109,36 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Dashboard Top Header & Period Filter */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-slate-800">Clinic Overview</h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+          {[
+            { key: 'today', label: 'Today' },
+            { key: 'yesterday', label: 'Yesterday' },
+            { key: 'week', label: 'This Week' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setPeriod(key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                period === key
+                  ? 'bg-white text-primary-700 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -117,19 +151,19 @@ export default function Dashboard() {
           icon={<Calendar size={22} />}
           color="bg-violet-50 text-violet-600"
           value={stats.todayTotal}
-          label="Today's Appointments"
+          label={period === 'today' ? "Today's Appointments" : period === 'yesterday' ? "Yesterday's Appointments" : "Week's Appointments"}
         />
         <StatCard
           icon={<CheckCircle2 size={22} />}
           color="bg-emerald-50 text-emerald-600"
           value={stats.todayDone}
-          label="Completed Today"
+          label={period === 'today' ? "Completed Today" : "Completed"}
         />
         <StatCard
           icon={<Banknote size={22} />}
           color="bg-teal-50 text-teal-600"
           value={fmt(stats.todayRevenue)}
-          label="Today's Revenue"
+          label={period === 'today' ? "Today's Revenue" : period === 'yesterday' ? "Yesterday's Revenue" : "Week's Revenue"}
           large
         />
       </div>
@@ -161,10 +195,8 @@ export default function Dashboard() {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="font-bold text-slate-800 text-base">Today's Appointments</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
+            <h2 className="font-bold text-slate-800 text-base">Today's Schedule</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Active queue &amp; ongoing patient consultations</p>
           </div>
           <button
             id="btn-add-appt"

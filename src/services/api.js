@@ -22,9 +22,13 @@ async function request(path, options = {}) {
 
   const response = await fetch(url, { ...options, headers })
 
-  // Token expired or invalid — trigger auto-logout
+  // Token expired or invalid — trigger auto-logout only if a token was sent
   if (response.status === 401) {
-    window.dispatchEvent(new CustomEvent('cms:session-expired'))
+    if (token) {
+      sessionStorage.removeItem('cms_token')
+      sessionStorage.removeItem('cms_auth')
+      window.dispatchEvent(new CustomEvent('cms:session-expired'))
+    }
     const data = await response.json().catch(() => ({}))
     throw new Error(data.error || 'Session expired')
   }
@@ -56,6 +60,8 @@ export const addEnquiry = (data) => request('/enquiries', { method: 'POST', body
 
 export const updateEnquiryStatus = (id, status) => request(`/enquiries/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) })
 
+export const convertEnquiryToPatient = (id) => request(`/enquiries/${id}/convert`, { method: 'POST' })
+
 export const deleteEnquiry = (id) => request(`/enquiries/${id}`, { method: 'DELETE' })
 
 
@@ -72,6 +78,8 @@ export const addAppointment = (data) => request('/appointments', { method: 'POST
 export const updateAppointment = (id, data) => request(`/appointments/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 
 export const updateAppointmentStatus = (id, status) => request(`/appointments/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) })
+
+export const cancelAppointment = (id, reason = 'other', cancelled_by = 'staff') => request(`/appointments/${id}/cancel`, { method: 'POST', body: JSON.stringify({ reason, cancelled_by }) })
 
 export const updateCallStatus = (id, status) => request(`/appointments/${id}/call-status`, { method: 'PUT', body: JSON.stringify({ status }) })
 
@@ -107,15 +115,17 @@ export const getPaymentsByBill = (id) => request(`/bills/${id}/payments`)
 export const emailBillInvoice = (id, email) => request(`/bills/${id}/email`, { method: 'POST', body: JSON.stringify({ email }) })
 
 // ── Dashboard ──────────────────────────────────────────────
-export const getDashboardStats = () => request('/dashboard/stats')
+export const getDashboardStats = (qs = '') => request(`/dashboard/stats${qs ? (qs.startsWith('?') ? qs : '?' + qs) : ''}`)
 
 // ── Revenue ────────────────────────────────────────────────
-export const getRevenueInsights = () => request('/revenue/insights')
+export const getRevenueInsights = (qs = '') => request(`/revenue/insights${qs ? (qs.startsWith('?') ? qs : '?' + qs) : ''}`)
 
 // ── Settings ───────────────────────────────────────────────
 export const getSettings = () => request('/settings')
 
 export const setSetting = (key, val) => request(`/settings/${key}`, { method: 'PUT', body: JSON.stringify({ value: val }) })
+
+export const saveSettingsBulk = (settings) => request('/settings', { method: 'PATCH', body: JSON.stringify({ settings }) })
 
 // ── Backup ─────────────────────────────────────────────────
 export const createBackup = async () => request('/backup/download')

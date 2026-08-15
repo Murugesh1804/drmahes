@@ -10,6 +10,7 @@ import {
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
+import ConfirmModal from '../components/ConfirmModal'
 import { generateReceiptHTML } from '../utils/printer'
 
 const BILL_COLORS = { paid: 'badge-paid', partial: 'badge-partial', pending: 'badge-pending' }
@@ -71,6 +72,8 @@ export default function Billing() {
   const [editDiscountMode, setEditDiscountMode] = useState('flat') // 'flat' | 'percent'
   const [editHistory, setEditHistory] = useState([])
 
+  const [showCloseWarning, setShowCloseWarning] = useState(false)
+
   // --- Payment / Other State ---
   const [payAmount, setPayAmount] = useState('')
   const [payMethod, setPayMethod] = useState('cash')
@@ -91,6 +94,25 @@ export default function Billing() {
   }, [search])
 
   useEffect(() => { load(1) }, [load])
+
+  function handleAttemptCloseCreate() {
+    const hasCart = billItems.length > 0 || selPatient !== null || Boolean(billForm.paid_amount)
+    if (hasCart) {
+      setShowCloseWarning(true)
+    } else {
+      setShowCreate(false)
+    }
+  }
+
+  function handleConfirmCloseCreate() {
+    setShowCloseWarning(false)
+    setShowCreate(false)
+    setBillItems([])
+    setSelPatient(null)
+    setUnbilledTreatments([])
+    setSelectedUnbilled(new Set())
+    setBillForm({ paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: '' })
+  }
 
   // Load masters
   useEffect(() => {
@@ -406,8 +428,6 @@ export default function Billing() {
     }
   }
 
-  const filtered = bills.filter(b => b && (!search || (b.patient_name || '').toLowerCase().includes(search.toLowerCase())))
-
   return (
     <div className="space-y-5 animate-fade-in text-slate-800">
       {/* Header bar */}
@@ -432,7 +452,7 @@ export default function Billing() {
           />
         </div>
 
-        {filtered.length === 0 ? (
+        {bills.length === 0 ? (
           <div className="empty-state py-16">
             <p className="font-semibold text-slate-500">No invoices found</p>
           </div>
@@ -452,7 +472,7 @@ export default function Billing() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(b => (
+                {bills.map(b => (
                   <tr key={b.id}>
                     <td className="text-slate-500 font-mono text-xs">{b.invoice_number || `...${b.id.slice(-6)}`}</td>
                     <td>
@@ -507,10 +527,10 @@ export default function Billing() {
       </div>
 
       {/* CREATE BILL MODAL */}
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Create Patient Invoice" size="lg"
+      <Modal open={showCreate} onClose={handleAttemptCloseCreate} title="Create Patient Invoice" size="lg"
         footer={
           <div className="flex gap-3">
-            <button onClick={() => setShowCreate(false)} className="btn-secondary">Cancel</button>
+            <button onClick={handleAttemptCloseCreate} className="btn-secondary">Cancel</button>
             <button id="btn-save-bill" onClick={handleCreate} disabled={saving || !selPatient || billItems.length === 0} className="btn-primary">
               {saving ? 'Saving…' : 'Generate Invoice ✓'}
             </button>
@@ -896,6 +916,16 @@ export default function Billing() {
           </div>
         </div>
       </Modal>
+
+      {/* Discard Unsaved Changes Warning */}
+      <ConfirmModal
+        open={showCloseWarning}
+        onClose={() => setShowCloseWarning(false)}
+        onConfirm={handleConfirmCloseCreate}
+        title="Discard Unsaved Invoice?"
+        message="You have added items or patient information to this bill. Closing now will discard these items. Are you sure?"
+        confirmText="Discard Invoice"
+      />
     </div>
   )
 }

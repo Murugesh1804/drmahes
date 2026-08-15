@@ -93,7 +93,7 @@ export default function PatientDetail() {
   async function handleSaveNotes() {
     setSaving(true)
     try {
-      await updatePatient(id, { ...form, age: form.age ? Number(form.age) : null })
+      await updatePatient(id, { notes: form.notes })
       notify('Doctor notes saved successfully')
       load()
     } catch (e) {
@@ -239,11 +239,13 @@ export default function PatientDetail() {
           >
             <Icon size={14} />
             {label}
-            <span className={`text-xs rounded-full px-1.5 py-0.5 ${tab === key ? 'bg-primary-100 text-primary-700' : 'bg-slate-200 text-slate-500'}`}>
-              {key === 'appointments' ? appointments.length
-               : key === 'treatments' ? treatments.length
-               : bills.length}
-            </span>
+            {key !== 'notes' && (
+              <span className={`text-xs rounded-full px-1.5 py-0.5 ${tab === key ? 'bg-primary-100 text-primary-700' : 'bg-slate-200 text-slate-500'}`}>
+                {key === 'appointments' ? appointments.length
+                 : key === 'treatments' ? treatments.length
+                 : bills.length}
+              </span>
+            )}
           </button>
         ))}
       </div>

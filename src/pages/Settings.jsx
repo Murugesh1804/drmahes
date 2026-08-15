@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Save, HardDrive, Loader } from 'lucide-react'
-import { getSettings, setSetting, createBackup } from '../services/api'
+import { getSettings, saveSettingsBulk, createBackup } from '../services/api'
 import { useApp } from '../context/AppContext'
 
 const FIELDS = [
@@ -9,8 +9,8 @@ const FIELDS = [
   { key: 'clinic_phone',   label: 'Clinic Phone',   placeholder: '98765 43210',         type: 'text'  },
   { key: 'clinic_address', label: 'Clinic Address', placeholder: '123, Main Street…',   type: 'text'  },
   { key: 'currency',       label: 'Currency Symbol',placeholder: '₹',                   type: 'text'  },
-  { key: 'cms_password',   label: 'CMS Portal Password', placeholder: 'admin123',       type: 'password' },
-  { key: 'admin_email',    label: '2FA OTP Email',  placeholder: 'your@email.com — receives login codes', type: 'email' },
+  { key: 'cms_password',   label: 'CMS Portal Password', placeholder: 'Enter new password to change', type: 'password' },
+  { key: 'admin_email',    label: 'Notification & Alert Email', placeholder: 'your@email.com — receives alerts & reports', type: 'email' },
 ]
 
 export default function Settings() {
@@ -29,13 +29,17 @@ export default function Settings() {
   async function handleSave() {
     setSaving(true)
     try {
-      for (const [k, v] of Object.entries(values)) {
-        if (v === '••••••••') continue
-        await setSetting(k, v)
+      const payload = { ...values }
+      if (payload.cms_password === '••••••••') {
+        delete payload.cms_password
       }
+      const updated = await saveSettingsBulk(payload)
+      setValues(updated || values)
       await loadSettings()
       notify('Settings saved successfully')
       setDirty(false)
+    } catch (e) {
+      notify(e.message || 'Failed to save settings', 'error')
     } finally { setSaving(false) }
   }
 

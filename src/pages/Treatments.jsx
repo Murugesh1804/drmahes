@@ -8,6 +8,7 @@ import {
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
+import ConfirmModal from '../components/ConfirmModal'
 import { clinicDateString, fmtDate } from '../utils/date'
 
 const FALLBACK_TREATMENT_TYPES = [
@@ -90,6 +91,8 @@ export default function Treatments() {
   const [filteredTreatments, setFilteredTreatments] = useState([])
   const [filterLoading, setFilterLoading] = useState(false)
 
+  const [deleteTxId, setDeleteTxId] = useState(null)
+
   // Load treatment masters for the type dropdown
   useEffect(() => {
     getAllTreatmentMasters()
@@ -107,15 +110,13 @@ export default function Treatments() {
       const data = q.trim().length >= 2
         ? await searchPatients(q, false) // Active patients only
         : await getAllPatients('', false) // Active patients only
-      setPatients(data || [])
-      if (data && data.length > 0 && !selectedPatient && !q.trim()) {
-        setSelectedPatient(data[0])
-      }
+      const items = Array.isArray(data) ? data : (data?.items || [])
+      setPatients(items)
     } catch (e) {
       console.error(e)
       setPatients([])
     }
-  }, [selectedPatient])
+  }, [])
 
   // Initial load and debounced search
   useEffect(() => {
@@ -204,15 +205,17 @@ export default function Treatments() {
     } finally { setSaving(false) }
   }
 
-  async function handleDelete(id) {
-    if (!confirm('Delete this treatment?')) return
+  async function handleDeleteConfirm() {
+    if (!deleteTxId) return
     try {
-      await deleteTreatment(id)
+      await deleteTreatment(deleteTxId)
       notify('Treatment deleted')
       loadTreatments()
     } catch (e) {
       console.error(e)
       notify(e.message || 'Failed to delete treatment', 'error')
+    } finally {
+      setDeleteTxId(null)
     }
   }
 
@@ -486,8 +489,9 @@ export default function Treatments() {
                           </div>
                           <button
                             id={`btn-del-tx-${t.id}`}
-                            onClick={() => handleDelete(t.id)}
+                            onClick={() => setDeleteTxId(t.id)}
                             className="btn-icon text-slate-300 hover:text-red-500"
+                            title="Delete Treatment"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -603,6 +607,15 @@ export default function Treatments() {
           </div>
         </div>
       </Modal>
+
+      <ConfirmModal
+        open={!!deleteTxId}
+        onClose={() => setDeleteTxId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Treatment"
+        message="Are you sure you want to delete this treatment record? This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   )
 }

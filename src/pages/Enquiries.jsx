@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Plus, User, Phone, X, Check, Trash2 } from 'lucide-react'
-import { getAllEnquiries, searchEnquiries, addEnquiry, updateEnquiryStatus, deleteEnquiry } from '../services/api'
+import { Search, Plus, User, Phone, X, Check, Trash2, UserPlus } from 'lucide-react'
+import { getAllEnquiries, searchEnquiries, addEnquiry, updateEnquiryStatus, deleteEnquiry, convertEnquiryToPatient } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
+import ConfirmModal from '../components/ConfirmModal'
 import { PatientForm } from './Patients'
 
 const EMPTY_FORM = {
@@ -17,6 +18,8 @@ export default function Enquiries() {
   const [enquiries, setEnquiries] = useState([])
   const [query, setQuery] = useState('')
   const [processing, setProcessing] = useState(null)
+  const [convertingId, setConvertingId] = useState(null)
+  const [deleteEnquiryId, setDeleteEnquiryId] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
@@ -51,18 +54,35 @@ export default function Enquiries() {
     }
   }
 
-  async function handleDelete(id, e) {
-    e.stopPropagation()
-    if (!window.confirm('Are you sure you want to delete this enquiry?')) return
-    setProcessing(id)
+  async function handleConvert(enquiry, e) {
+    if (e) e.stopPropagation()
+    setConvertingId(enquiry.id)
     try {
-      await deleteEnquiry(id)
+      const res = await convertEnquiryToPatient(enquiry.id)
+      notify(`${enquiry.name} converted to registered patient!`)
+      load(query)
+      if (res?.patient?.id) {
+        navigate(`/patients/${res.patient.id}`)
+      }
+    } catch (err) {
+      notify(err.message || 'Failed to convert enquiry', 'error')
+    } finally {
+      setConvertingId(null)
+    }
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteEnquiryId) return
+    setProcessing(deleteEnquiryId)
+    try {
+      await deleteEnquiry(deleteEnquiryId)
       notify('Enquiry deleted')
       load(query)
     } catch (e) {
       notify(e.message || 'Failed to delete enquiry', 'error')
     } finally {
       setProcessing(null)
+      setDeleteEnquiryId(null)
     }
   }
 
@@ -137,10 +157,15 @@ export default function Enquiries() {
             <EnquiryCard 
               key={p.id} 
               patient={p} 
-              onClick={() => {}} // No navigation since it's just an enquiry
+              onClick={() => {}}
               onStatus={(status, e) => handleStatus(p.id, status, e)}
-              onDelete={(e) => handleDelete(p.id, e)}
+              onConvert={(enq, e) => handleConvert(enq, e)}
+              onDelete={(e) => {
+                e.stopPropagation()
+                setDeleteEnquiryId(p.id)
+              }}
               isProcessing={processing === p.id}
+              isConverting={convertingId === p.id}
             />
           ))}
         </div>
@@ -163,11 +188,20 @@ export default function Enquiries() {
       >
         <PatientForm form={form} set={set} />
       </Modal>
+
+      <ConfirmModal
+        open={!!deleteEnquiryId}
+        onClose={() => setDeleteEnquiryId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Enquiry"
+        message="Are you sure you want to delete this enquiry? This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   )
 }
 
-function EnquiryCard({ patient, onClick, onStatus, onDelete, isProcessing }) {
+function EnquiryCard({ patient, onClick, onStatus, onConvert, onDelete, isProcessing, isConverting }) {
   const initials = patient.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
   const colors = ['bg-blue-100 text-blue-700', 'bg-violet-100 text-violet-700',
                   'bg-teal-100 text-teal-700', 'bg-orange-100 text-orange-700']
@@ -214,35 +248,49 @@ function EnquiryCard({ patient, onClick, onStatus, onDelete, isProcessing }) {
       </div>
       
       {/* Actions */}
-      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-        {patient.status !== 'converted' && (
+      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+        <div>
+          {patient.status !== 'converted' && (
+            <button
+              onClick={(e) => onConvert(patient, e)}
+              disabled={isProcessing || isConverting}
+              className="btn-secondary text-xs py-1 px-2.5 rounded-lg text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100 flex items-center gap-1 font-semibold transition-all"
+              title="Convert to Registered Patient"
+            >
+              <UserPlus size={13} /> {isConverting ? 'Converting…' : 'Convert to Patient'}
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {patient.status !== 'converted' && (
+            <button
+              onClick={(e) => onStatus('converted', e)}
+              disabled={isProcessing || isConverting}
+              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors"
+              title="Mark as converted"
+            >
+              <Check size={16} />
+            </button>
+          )}
+          {patient.status !== 'non-converted' && (
+            <button
+              onClick={(e) => onStatus('non-converted', e)}
+              disabled={isProcessing || isConverting}
+              className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors"
+              title="Mark as non-converted"
+            >
+              <X size={16} />
+            </button>
+          )}
           <button
-            onClick={(e) => onStatus('converted', e)}
-            disabled={isProcessing}
-            className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors"
-            title="Mark as converted"
+            onClick={onDelete}
+            disabled={isProcessing || isConverting}
+            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors ml-1"
+            title="Delete enquiry"
           >
-            <Check size={16} />
+            <Trash2 size={16} />
           </button>
-        )}
-        {patient.status !== 'non-converted' && (
-          <button
-            onClick={(e) => onStatus('non-converted', e)}
-            disabled={isProcessing}
-            className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors"
-            title="Mark as non-converted"
-          >
-            <X size={16} />
-          </button>
-        )}
-        <button
-          onClick={onDelete}
-          disabled={isProcessing}
-          className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors ml-2"
-          title="Delete enquiry"
-        >
-          <Trash2 size={16} />
-        </button>
+        </div>
       </div>
     </div>
   )

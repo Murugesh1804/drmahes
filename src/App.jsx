@@ -18,11 +18,9 @@ const Settings = lazy(() => import('./pages/Settings'))
 const Login = lazy(() => import('./pages/Login'))
 
 function AppLayout() {
-  const { loadSettings, isAuthenticated, onTokenExpired } = useApp()
+  const { isAuthenticated, onTokenExpired } = useApp()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-
-  useEffect(() => { loadSettings() }, [loadSettings])
 
   // Listen for JWT expiry events from api.js
   useEffect(() => {
@@ -77,7 +75,7 @@ function AppLayout() {
 
       <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ background: '#f7f5f0' }}>
           <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading...</div>}>
             <Routes>
               <Route path="/"              element={<Navigate to="/dashboard" replace />} />

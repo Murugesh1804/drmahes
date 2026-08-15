@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { getSettings } from '../services/api'
 
 const AppContext = createContext(null)
@@ -19,6 +19,7 @@ export function AppProvider({ children }) {
   })
 
   const loadSettings = useCallback(async () => {
+    if (!sessionStorage.getItem('cms_token')) return
     try {
       const s = await getSettings()
       if (s && typeof s === 'object') {
@@ -29,6 +30,13 @@ export function AppProvider({ children }) {
       console.error('Failed to load settings:', e)
     }
   }, [])
+
+  // Auto-load settings when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadSettings()
+    }
+  }, [isAuthenticated, loadSettings])
 
   /**
    * POST /api/auth/login — password-only, issues JWT directly
@@ -53,11 +61,12 @@ export function AppProvider({ children }) {
       sessionStorage.setItem('cms_token', token)
       sessionStorage.setItem('cms_auth', 'true')
       setIsAuthenticated(true)
+      loadSettings()
       return { success: true }
     } catch (err) {
       return { success: false, error: err.message }
     }
-  }, [])
+  }, [loadSettings])
 
   const logout = useCallback(() => {
     sessionStorage.removeItem('cms_token')
@@ -69,9 +78,13 @@ export function AppProvider({ children }) {
   const onTokenExpired = useCallback(() => {
     sessionStorage.removeItem('cms_token')
     sessionStorage.removeItem('cms_auth')
-    setIsAuthenticated(false)
-    setNotification({ message: 'Session expired. Please log in again.', type: 'error', id: Date.now() })
-    setTimeout(() => setNotification(null), 3500)
+    setIsAuthenticated(prev => {
+      if (prev) {
+        setNotification({ message: 'Session expired. Please log in again.', type: 'error', id: Date.now() })
+        setTimeout(() => setNotification(null), 3500)
+      }
+      return false
+    })
   }, [])
 
   const notify = useCallback((message, type = 'success') => {
@@ -84,6 +97,22 @@ export function AppProvider({ children }) {
     [settings?.currency]
   )
 
+  const getToastStyle = (type) => {
+    switch (type) {
+      case 'error':
+        return { bg: 'bg-rose-600', icon: '✕' }
+      case 'warning':
+        return { bg: 'bg-amber-600', icon: '⚠️' }
+      case 'info':
+        return { bg: 'bg-blue-600', icon: 'ℹ️' }
+      case 'success':
+      default:
+        return { bg: 'bg-emerald-600', icon: '✓' }
+    }
+  }
+
+  const toastStyle = notification ? getToastStyle(notification.type) : null
+
   return (
     <AppContext.Provider value={{
       settings, loadSettings,
@@ -91,15 +120,14 @@ export function AppProvider({ children }) {
       isAuthenticated, login, logout, onTokenExpired,
     }}>
       {children}
-      {notification && (
+      {notification && toastStyle && (
         <div
           key={notification.id}
           className={`fixed bottom-6 right-6 z-[99999] px-5 py-3.5 rounded-2xl shadow-xl
             text-white font-semibold text-sm flex items-center gap-2
-            transition-all duration-300 animate-slide-in
-            ${notification.type === 'success' ? 'bg-emerald-600' : 'bg-red-500'}`}
+            transition-all duration-300 animate-slide-in ${toastStyle.bg}`}
         >
-          {notification.type === 'success' ? '✓' : '✕'} {notification.message}
+          <span>{toastStyle.icon}</span> {notification.message}
         </div>
       )}
     </AppContext.Provider>

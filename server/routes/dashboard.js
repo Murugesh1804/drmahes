@@ -4,7 +4,9 @@ const queries = require('../queries')
 const asyncHandler = require('../middleware/asyncHandler')
 
 router.get('/stats', asyncHandler(async (req, res) => {
-  res.json(await queries.getDashboardStats())
+  const period = req.query.period || 'today'
+  const date = req.query.date || null
+  res.json(await queries.getDashboardStats(period, date))
 }))
 
 module.exports = router

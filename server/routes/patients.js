@@ -4,10 +4,19 @@ const queries = require('../queries')
 const asyncHandler = require('../middleware/asyncHandler')
 
 router.get('/', asyncHandler(async (req, res) => {
-  const limit = req.query.limit ? parseInt(req.query.limit) : 20
+  const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1
+  const limit = req.query.limit !== undefined ? parseInt(req.query.limit) : 20
   const includeArchived = req.query.includeArchived === 'true'
   const period = req.query.period || 'all'
-  res.json(await queries.getAllPatients(limit, includeArchived, period))
+  const paginated = req.query.paginated === 'true' || req.query.page !== undefined
+
+  res.json(await queries.getAllPatients({
+    page,
+    limit,
+    includeArchived,
+    period,
+    paginated
+  }))
 }))
 
 router.get('/search', asyncHandler(async (req, res) => {

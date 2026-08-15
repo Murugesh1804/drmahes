@@ -16,6 +16,10 @@ export default function Patients() {
   const navigate = useNavigate()
   const { notify } = useApp()
   const [patients, setPatients] = useState([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [period, setPeriod] = useState('all')
   const [showAdd, setShowAdd] = useState(false)
@@ -24,14 +28,41 @@ export default function Patients() {
   const [downloading, setDownloading] = useState(false)
   const searchRef = useRef()
 
-  const load = useCallback(async (q = '', p = 'all') => {
-    const data = q.trim().length >= 2
-      ? await searchPatients(q)
-      : await getAllPatients(`?period=${p}`)
-    setPatients(data || [])
+  const load = useCallback(async (q = '', p = 'all', pageNum = 1) => {
+    setLoading(true)
+    try {
+      if (q.trim().length >= 2) {
+        const data = await searchPatients(q)
+        const items = Array.isArray(data) ? data : (data?.items || [])
+        setPatients(items)
+        setTotalCount(items.length)
+        setHasMore(false)
+      } else {
+        const res = await getAllPatients(`?period=${p}&page=${pageNum}&limit=24&paginated=true`)
+        const items = res?.items ? res.items : (Array.isArray(res) ? res : [])
+        const total = res?.total !== undefined ? res.total : items.length
+        const more = res?.hasMore !== undefined ? res.hasMore : false
+
+        if (pageNum === 1) {
+          setPatients(items)
+        } else {
+          setPatients(prev => [...prev, ...items])
+        }
+        setTotalCount(total)
+        setHasMore(more)
+      }
+    } catch (e) {
+      console.error(e)
+      if (pageNum === 1) setPatients([])
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  useEffect(() => { load(query, period) }, [load, period])
+  useEffect(() => {
+    setPage(1)
+    load(query, period, 1)
+  }, [load, period])
 
   useEffect(() => {
     const handleOpenAdd = () => setShowAdd(true)
@@ -41,9 +72,16 @@ export default function Patients() {
 
   // Debounced search
   useEffect(() => {
-    const t = setTimeout(() => load(query, period), 250)
+    setPage(1)
+    const t = setTimeout(() => load(query, period, 1), 250)
     return () => clearTimeout(t)
   }, [query, period, load])
+
+  const handleLoadMore = () => {
+    const next = page + 1
+    setPage(next)
+    load(query, period, next)
+  }
 
   function openAdd() {
     setForm(EMPTY_FORM)
@@ -57,7 +95,8 @@ export default function Patients() {
       const p = await addPatient({ ...form, age: form.age ? Number(form.age) : null })
       notify(`${p.name} added successfully`)
       setShowAdd(false)
-      load(query, period)
+      setPage(1)
+      load(query, period, 1)
     } catch (e) {
       notify(e.message || 'Failed to add patient', 'error')
     } finally {
@@ -70,14 +109,22 @@ export default function Patients() {
   async function handleDownloadCSV() {
     try {
       setDownloading(true)
-      const allPatients = await getAllPatients('?period=all')
-      if (!allPatients || allPatients.length === 0) {
+      const allPatients = await getAllPatients('?period=all&limit=0')
+      const items = Array.isArray(allPatients) ? allPatients : (allPatients?.items || [])
+      if (!items || items.length === 0) {
         notify('No patients found to download', 'info')
         return
       }
       
-      const headers = ['Full Name', 'Phone Number']
-      const rows = allPatients.map(p => `"${(p.name || '').replace(/"/g, '""')}","${(p.phone || '').replace(/"/g, '""')}"`)
+      const headers = ['PID', 'Full Name', 'Phone Number', 'Age', 'Gender', 'Visits']
+      const rows = items.map(p => [
+        `"${p.pid || ''}"`,
+        `"${(p.name || '').replace(/"/g, '""')}"`,
+        `"${(p.phone || '').replace(/"/g, '""')}"`,
+        `"${p.age || ''}"`,
+        `"${p.gender || ''}"`,
+        `"${p.appointment_count || 0}"`
+      ].join(','))
       const csvContent = [headers.join(','), ...rows].join('\n')
       
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
@@ -136,7 +183,7 @@ export default function Patients() {
         
         <div className="flex gap-2 flex-shrink-0">
           <button onClick={handleDownloadCSV} disabled={downloading} className="btn-secondary flex-shrink-0">
-            <Download size={16} /> {downloading ? 'Wait...' : 'CSV'}
+            <Download size={16} /> {downloading ? 'Exporting…' : 'Export CSV'}
           </button>
           <button id="btn-add-patient" onClick={openAdd} className="btn-primary flex-shrink-0">
             <Plus size={16} /> Add Patient
@@ -146,11 +193,11 @@ export default function Patients() {
 
       {/* Count */}
       <p className="text-sm text-slate-500">
-        {patients.length} patient{patients.length !== 1 ? 's' : ''} found
+        Showing {patients.length} of {totalCount || patients.length} patient{(totalCount || patients.length) !== 1 ? 's' : ''}
       </p>
 
       {/* List */}
-      {patients.length === 0 ? (
+      {patients.length === 0 && !loading ? (
         <div className="empty-state">
           <User size={48} className="mb-3 opacity-20" />
           <p className="font-semibold text-lg">No patients found</p>
@@ -164,10 +211,24 @@ export default function Patients() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-          {patients.map((p) => (
-            <PatientCard key={p.id} patient={p} onClick={() => navigate(`/patients/${p.id}`)} />
-          ))}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+            {patients.map((p) => (
+              <PatientCard key={p.id} patient={p} onClick={() => navigate(`/patients/${p.id}`)} />
+            ))}
+          </div>
+
+          {hasMore && !query && (
+            <div className="flex justify-center pt-3">
+              <button
+                onClick={handleLoadMore}
+                disabled={loading}
+                className="btn-secondary px-6 py-2 text-sm font-semibold shadow-sm hover:bg-slate-100"
+              >
+                {loading ? 'Loading patients…' : 'Load More Patients ↓'}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

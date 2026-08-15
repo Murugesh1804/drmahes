@@ -28,6 +28,13 @@ router.patch('/:id/status', asyncHandler(async (req, res) => {
   res.json(updated)
 }))
 
+// POST /api/enquiries/:id/convert - Convert enquiry to patient
+router.post('/:id/convert', asyncHandler(async (req, res) => {
+  const result = await queries.convertEnquiryToPatient(req.params.id)
+  if (!result) return res.status(404).json({ error: 'Enquiry not found' })
+  res.status(201).json(result)
+}))
+
 // DELETE /api/enquiries/:id - Delete enquiry
 router.delete('/:id', asyncHandler(async (req, res) => {
   const success = await queries.deleteEnquiry(req.params.id)

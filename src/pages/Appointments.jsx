@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, ChevronLeft, ChevronRight, Search, Trash2, Clock, Lock, Unlock, CalendarX, PhoneCall, CheckCircle } from 'lucide-react'
 import {
   getAppointmentsByDate, addAppointment,
-  updateAppointmentStatus, deleteAppointment,
+  updateAppointmentStatus, deleteAppointment, cancelAppointment,
   getAllPatients, searchPatients,
   getBlockedSlots, blockSlot, unblockSlot,
   getPendingCalls, updateCallStatus
@@ -179,8 +179,10 @@ export default function Appointments() {
   const [form, setForm] = useState({ scheduled_time: '', reason: '', notes: '' })
   
   const [saving, setSaving] = useState(false)
-  
   const [deleteId, setDeleteId] = useState(null)
+  const [cancelModalData, setCancelModalData] = useState(null)
+  const [cancelReason, setCancelReason] = useState('patient-requested')
+  const [cancelling, setCancelling] = useState(false)
 
   const load = useCallback(async () => {
     const data = await getAppointmentsByDate(date)
@@ -191,6 +193,11 @@ export default function Appointments() {
     const data = await getPendingCalls()
     setPendingCalls(data || [])
   }, [])
+
+  // Auto-load pending calls on mount so badge displays correctly
+  useEffect(() => {
+    loadPending()
+  }, [loadPending])
 
   useEffect(() => {
     if (activeTab === 'schedule') {
@@ -252,6 +259,21 @@ export default function Appointments() {
     }
   }
 
+  async function handleConfirmCancel() {
+    if (!cancelModalData) return
+    setCancelling(true)
+    try {
+      await cancelAppointment(cancelModalData.id, cancelReason, 'staff')
+      notify('Appointment cancelled')
+      setCancelModalData(null)
+      load()
+    } catch (e) {
+      notify(e.message || 'Failed to cancel appointment', 'error')
+    } finally {
+      setCancelling(false)
+    }
+  }
+
   async function handleDeleteConfirm() {
     try {
       await deleteAppointment(deleteId)
@@ -301,7 +323,7 @@ export default function Appointments() {
           <p className="font-bold text-slate-800">{fmtDate(date)}</p>
           {isToday && <span className="text-xs text-primary-600 font-semibold">Today</span>}
         </div>
-        <button onClick={nextDay} className="btn-right"><ChevronRight size={18} /></button>
+        <button onClick={nextDay} className="btn-icon"><ChevronRight size={18} /></button>
         {!isToday && (
           <button onClick={today} className="btn-secondary text-xs">Today</button>
         )}
@@ -407,8 +429,11 @@ export default function Appointments() {
                   )}
                   {a.status !== 'done' && a.status !== 'cancelled' && (
                     <button
-                      onClick={() => handleStatus(a.id, 'cancelled')}
-                      className="btn-ghost text-xs text-slate-400 px-2 py-1 h-auto min-h-0"
+                      onClick={() => {
+                        setCancelReason('patient-requested')
+                        setCancelModalData(a)
+                      }}
+                      className="btn-ghost text-xs text-slate-400 hover:text-red-500 px-2 py-1 h-auto min-h-0"
                     >
                       Cancel
                     </button>
@@ -589,6 +614,43 @@ export default function Appointments() {
         message="Are you sure you want to delete this appointment? This action cannot be undone."
         confirmText="Delete"
       />
+
+      {/* Cancel Appointment Modal with Reason */}
+      <Modal
+        open={!!cancelModalData}
+        onClose={() => setCancelModalData(null)}
+        title="Cancel Appointment"
+        size="sm"
+        footer={
+          <>
+            <button onClick={() => setCancelModalData(null)} className="btn-secondary" disabled={cancelling}>Back</button>
+            <button onClick={handleConfirmCancel} className="btn-danger" disabled={cancelling}>
+              {cancelling ? 'Cancelling…' : 'Confirm Cancellation'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            Cancel appointment for <strong className="text-slate-800">{cancelModalData?.patient_name}</strong>?
+          </p>
+          <div>
+            <label className="label">Cancellation Reason *</label>
+            <select
+              className="select"
+              value={cancelReason}
+              onChange={e => setCancelReason(e.target.value)}
+            >
+              <option value="patient-requested">Patient Requested</option>
+              <option value="doctor-requested">Doctor Requested</option>
+              <option value="no-show">No-Show (Did Not Arrive)</option>
+              <option value="rescheduled">Rescheduled to Another Date</option>
+              <option value="emergency">Emergency</option>
+              <option value="other">Other Reason</option>
+            </select>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
