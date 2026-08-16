@@ -397,14 +397,15 @@ async function generatePatientId(id) {
 
 async function updatePatient(id, data) {
   if (!isValidObjectId(id)) return null
-  const name = normalizeText(data.name)
-  if (!name) badRequest('Patient name is required')
 
   const patient = await Patient.findById(id)
   if (!patient) return null
 
-  const phone = normalizeText(data.phone)
-  const email = normalizeEmail(data.email)
+  const name = data.name !== undefined ? normalizeText(data.name) : patient.name
+  if (!name) badRequest('Patient name is required')
+
+  const phone = data.phone !== undefined ? normalizeText(data.phone) : patient.phone
+  const email = data.email !== undefined ? normalizeEmail(data.email) : patient.email
 
   // Allow multiple family members (parent/children) to share the same phone number.
   // Only reject if ANOTHER patient with the EXACT SAME name AND phone already exists.
@@ -429,12 +430,21 @@ async function updatePatient(id, data) {
     }
   }
 
+  const age = data.age !== undefined ? normalizeAge(data.age) : patient.age
+  const gender = data.gender !== undefined ? normalizeGender(data.gender) : patient.gender
+  const address = data.address !== undefined ? normalizeText(data.address) : patient.address
+  const complaint = data.complaint !== undefined ? normalizeText(data.complaint) : patient.complaint
+  const notes = data.notes !== undefined ? normalizeText(data.notes) : patient.notes
+
   // FIX #5: Log patient updates
   const hasChanges = name !== patient.name || 
                     phone !== patient.phone ||
                     email !== patient.email ||
-                    normalizeAge(data.age) !== patient.age ||
-                    normalizeGender(data.gender) !== patient.gender
+                    age !== patient.age ||
+                    gender !== patient.gender ||
+                    address !== patient.address ||
+                    complaint !== patient.complaint ||
+                    notes !== patient.notes
 
   if (hasChanges) {
     await logAudit(
@@ -446,14 +456,20 @@ async function updatePatient(id, data) {
         phone: patient.phone,
         email: patient.email,
         age: patient.age,
-        gender: patient.gender
+        gender: patient.gender,
+        address: patient.address,
+        complaint: patient.complaint,
+        notes: patient.notes
       },
       {
         name,
         phone,
         email,
-        age: normalizeAge(data.age),
-        gender: normalizeGender(data.gender)
+        age,
+        gender,
+        address,
+        complaint,
+        notes
       },
       'Patient information updated'
     )
@@ -462,13 +478,13 @@ async function updatePatient(id, data) {
   const updatedPatient = await Patient.findByIdAndUpdate(id, {
     $set: {
       name,
-      phone: normalizeText(data.phone),
-      email: normalizeEmail(data.email),
-      age: normalizeAge(data.age),
-      gender: normalizeGender(data.gender),
-      address: normalizeText(data.address),
-      complaint: normalizeText(data.complaint),
-      notes: normalizeText(data.notes)
+      phone,
+      email,
+      age,
+      gender,
+      address,
+      complaint,
+      notes
     }
   }, { new: true, runValidators: true }).lean()
 

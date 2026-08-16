@@ -93,7 +93,7 @@ export default function PatientDetail() {
   async function handleSaveNotes() {
     setSaving(true)
     try {
-      await updatePatient(id, { notes: form.notes })
+      await updatePatient(id, { ...form, notes: form.notes })
       notify('Doctor notes saved successfully')
       load()
     } catch (e) {
