@@ -1230,14 +1230,17 @@
                 // if (!res.ok) throw new Error('API Error');
                 // const data = await res.json();
 
-                const res = await fetch('https://portal.drmahesdentistry.in/api/consent', {
+                const res = await fetch('/api/consent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                if (!res.ok) throw new Error('API Error');
-                const data = await res.json();
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok) {
+                    throw new Error(data.error || `HTTP ${res.status}: Failed to submit consent form`);
+                }
 
                 el('success-queue').textContent     = data.appt.queue_number;
                 el('success-name').textContent      = data.patient.name;
@@ -1246,8 +1249,8 @@
                 setStep('success');
 
             } catch (err) {
-                console.error(err);
-                showError('consent', 'Something went wrong. Please ask a staff member for assistance.');
+                console.error('Consent submission error:', err);
+                showError('consent', err.message || 'Something went wrong. Please ask a staff member for assistance.');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Agree & Complete Check-in ✓';
