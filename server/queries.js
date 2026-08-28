@@ -337,13 +337,14 @@ async function addPatient(data) {
     }
   }
 
-  // FIX #1: Check for duplicate email
+  // Check for duplicate email (allows family members with the same phone number to share an email)
   if (email) {
     const existingEmail = await Patient.findOne({ 
-      email: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } 
+      email: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' },
+      ...(phone ? { phone: { $ne: phone } } : {})
     })
     if (existingEmail) {
-      badRequest(`Patient with email ${email} already exists (ID: ${existingEmail._id})`)
+      badRequest(`Patient with email ${email} already exists under a different phone number (${existingEmail.phone})`)
     }
   }
 
@@ -423,10 +424,11 @@ async function updatePatient(id, data) {
   if (email) {
     const existingEmail = await Patient.findOne({
       _id: { $ne: id },
-      email: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+      email: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' },
+      ...(phone ? { phone: { $ne: phone } } : {})
     })
     if (existingEmail) {
-      badRequest(`Another patient with email ${email} already exists (ID: ${existingEmail._id})`)
+      badRequest(`Another patient with email ${email} already exists under a different phone number (${existingEmail.phone})`)
     }
   }
 

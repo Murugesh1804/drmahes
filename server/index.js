@@ -64,7 +64,7 @@ app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (curl, mobile apps, server-to-server)
     if (!origin) return cb(null, true)
-    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true)
+    if (ALLOWED_ORIGINS.includes(origin) || /^https?:\/\/\d+\.\d+\.\d+\.\d+(:\d+)?$/.test(origin)) return cb(null, true)
     cb(new Error(`CORS: Origin ${origin} not allowed`))
   },
   credentials: true,
