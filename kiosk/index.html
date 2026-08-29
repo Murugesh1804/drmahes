@@ -920,6 +920,11 @@
         // ═══════════════════════════════════════════════════════════
         // CONSTANTS
         // ═══════════════════════════════════════════════════════════
+
+        // API base URL — must point to the Express backend regardless of
+        // which domain serves this kiosk HTML (mobile vs desktop).
+        const API_BASE = 'https://portal.drmahesdentistry.in';
+
         const GENDERS = ['Male', 'Female', 'Other'];
         const COMPLAINTS = [
             'Toothache',
@@ -1230,7 +1235,7 @@
                 // if (!res.ok) throw new Error('API Error');
                 // const data = await res.json();
 
-                const res = await fetch('/api/consent', {
+                const res = await fetch(`${API_BASE}/api/consent`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
