@@ -113,11 +113,15 @@ export default function Contact() {
             </div>
             <div>
               <div className="map-frame">
-                <iframe src="https://storage.googleapis.com/maps-solutions-p888dpsojl/commutes/ws32/commutes.html"
-                  width="100%" height="100%"
-                  style="border:0;"
-                  loading="lazy">
-                </iframe>
+                <iframe
+                  src="https://storage.googleapis.com/maps-solutions-p888dpsojl/commutes/ws32/commutes.html"
+                  width="600"
+                  height="450"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen=""
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
             </div>
           </div>
