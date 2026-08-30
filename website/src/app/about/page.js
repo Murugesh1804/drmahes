@@ -1,27 +1,52 @@
 import Link from "next/link";
+import { Phone, MessageCircle } from "lucide-react";
 
 export const metadata = {
-  title: "About Dr. Maheswari — Dentist in Porur, Chennai | Dr. Mahe's Dentistry",
-  description: "Meet Dr. Maheswari, BDS, lead dentist at Dr. Mahe's Dentistry in Porur, Chennai. Learn about our compassionate, patient-first dental care for all ages and book your visit.",
+  title: "Meet Dr. Maheswari, BDS — Dentist in Porur, Chennai | Dr. Mahe's Dentistry",
+  description: "Learn about Dr. Maheswari, BDS, lead dentist at Dr. Mahe's Dentistry in Porur, Chennai. Discover our compassionate philosophy, gentle techniques, and clinical standards.",
   keywords: ["dr maheswari dentist porur", "dentist porur chennai", "general dentist porur", "dr mahe dentistry about"],
   alternates: {
     canonical: '/about',
   },
   openGraph: {
-    title: "About Dr. Maheswari | Dr. Mahe's Dentistry",
-    description: "Meet Dr. Maheswari, BDS, lead dentist at Dr. Mahe's Dentistry in Porur, Chennai.",
+    title: "Meet Dr. Maheswari | Dr. Mahe's Dentistry Porur",
+    description: "Learn about Dr. Maheswari, BDS, lead dentist at Dr. Mahe's Dentistry in Porur, Chennai.",
     url: 'https://drmahesdentistry.com/about',
   }
 };
 
 export default function About() {
   const values = [
-    { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, title: 'International Sterilization Standards', desc: 'Class-B autoclave sterilization. Every instrument is vacuum-packed and opened fresh in front of you — zero compromise on hygiene.' },
-    { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>, title: 'Complete Transparency', desc: 'We explain your diagnosis, options and costs clearly before treatment begins. No surprises, no pressure — just honest advice.' },
-    { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>, title: 'Digital Diagnostics', desc: 'We use digital X-rays which deliver up to 90% less radiation than traditional films, giving sharper images for more accurate diagnosis.' },
-    { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, title: 'Patient-First Approach', desc: 'We take time to understand your concerns and anxieties. Every treatment pace is set by you — we never rush.' },
-    { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, title: 'All Ages Welcome', desc: 'From toddlers to seniors — we provide gentle, age-appropriate care for the whole family under one roof.' },
-    { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, title: 'Conveniently Located', desc: 'On Kundrathur Main Road, Porur — easily accessible by bus, auto, cab or private vehicle. Parking available.' },
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+      title: 'Class-B Autoclave Sterilization',
+      desc: 'Hospital-grade infection control protocols. Every instrument is vacuum-sealed in sterile pouches and opened fresh before your eyes.'
+    },
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+      title: 'Zero Judgment, Total Kindness',
+      desc: 'Haven’t been to a dentist in years? Worried about your oral hygiene? You will only receive encouragement, dignity, and gentle solutions here.'
+    },
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+      title: 'Low-Radiation Digital Scans',
+      desc: 'Digital sensors reduce radiation exposure by up to 90% compared to traditional dental X-rays, providing ultra-sharp diagnosis in seconds.'
+    },
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+      title: 'You Control the Pace',
+      desc: 'We never rush through an appointment. You can pause us anytime with a simple hand gesture. We move at your speed and comfort level.'
+    },
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+      title: 'Complete Family Care',
+      desc: 'From a toddler’s first milestone checkup to adolescent braces and senior implant rehabilitations — expert care under one roof.'
+    },
+    {
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+      title: 'Convenient Porur Location',
+      desc: 'On Kundrathur Main Road, Porur with parking. Open until 10:00 PM on weekdays and Saturdays for after-work and school visits.'
+    },
   ];
 
   const delays = ["100", "200", "300", "100", "200", "300"];
@@ -29,89 +54,150 @@ export default function About() {
   return (
     <>
       {/* ─── PAGE HERO ─── */}
-      <section className="page-hero">
+      <section className="page-hero-warm">
         <div className="container">
           <nav className="breadcrumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link>
             <span className="breadcrumb-sep">›</span>
-            <span className="breadcrumb-current">About</span>
+            <span className="breadcrumb-current">Meet Dr. Maheswari</span>
           </nav>
-          <span className="page-hero-badge">Our Practice</span>
-          <h1 className="page-hero-title">Meet <em>Dr. Maheswari</em></h1>
-          <p className="page-hero-desc">Your trusted dentist in Porur, Chennai — bringing compassion, precision and modern dentistry to every patient visit.</p>
+          <span className="page-hero-badge">Our Founder &amp; Lead Clinician</span>
+          <h1 className="page-hero-title-warm">Meet <em>Dr. Maheswari, BDS</em></h1>
+          <p className="page-hero-desc-warm">
+            Dedicated to gentle, unhurried, and genuinely empathetic dentistry for families across Porur and Chennai.
+          </p>
         </div>
       </section>
 
-      {/* ─── DOCTOR SECTION ─── */}
-      <section className="doctor-section section-padding">
+      {/* ─── MAIN DOCTOR PROFILE ─── */}
+      <section className="doctor-editorial-section section-padding">
         <div className="container">
-          <div className="doctor-layout">
-            <div className="doctor-img-wrap" data-animate="slide-left">
-              <div className="doctor-img-frame">
-                <img src="/assets/dr.mahe.webp" width={1684} height={2528} alt="Dr. Maheswari BDS — General Dentist, Dr. Mahe's Dentistry Porur Chennai" />
+          <div className="doctor-editorial-grid">
+            <div className="doctor-editorial-media" data-animate="slide-right">
+              <div className="doctor-portrait-frame">
+                <img
+                  src="/assets/dr.mahe.webp"
+                  width={1684}
+                  height={2528}
+                  alt="Dr. Maheswari BDS — Lead Dentist at Dr. Mahe's Dentistry, Porur Chennai"
+                />
               </div>
-              <div className="doctor-badge">
-                <div className="doctor-badge-label">Qualification</div>
-                <div className="doctor-badge-value">BDS — General Dentist</div>
+              <div className="doctor-stamp-card">
+                <div className="doctor-stamp-label">Qualifications</div>
+                <div className="doctor-stamp-name">Dr. Maheswari</div>
+                <div className="doctor-stamp-sub">Bachelor of Dental Surgery (BDS)</div>
               </div>
             </div>
-            <div className="doctor-info" data-animate="slide-right">
-              <div className="hero-badge" style={{display:'inline-flex', marginBottom:16}}>Dr. Maheswari · BDS</div>
-              <h2 className="doctor-name">Dr. Maheswari</h2>
-              <div className="doctor-quals">General &amp; Family Dentist — Porur, Chennai</div>
-              <p className="doctor-bio">
-                Meet Dr. Maheswari, who brings a patient-first philosophy to every aspect of dental care. With a deep passion for
-                creating healthy, confident smiles, she combines clinical precision with genuine empathy — ensuring
-                every patient feels comfortable, informed and cared for throughout their treatment.
+
+            <div className="doctor-letter-content" data-animate="slide-left">
+              <span className="section-badge">Personal Philosophy</span>
+              <h2 className="doctor-editorial-heading">
+                "A gentle touch and clear communication can transform how someone feels about dental care forever."
+              </h2>
+              <p className="doctor-letter-p">
+                Dr. Maheswari completed her dental education with a firm belief that dental visits should be centered around the patient's emotional comfort and long-term health. Over years of clinical practice in Chennai, she observed that fear and anxiety keep people from getting the dental care they deserve.
               </p>
-              <p className="doctor-bio">
-                From gentle paediatric dentistry and thorough preventive care to advanced root canals and full smile
-                makeovers, Dr. Maheswari tailors each treatment plan to the individual's needs, lifestyle and goals.
-                Her commitment to transparency means patients always understand exactly what is happening and why.
+              <p className="doctor-letter-p">
+                She founded <strong>Dr. Mahe's Dentistry</strong> in Porur to be a refuge from cold, rushed, clinical environments. Here, every patient is given full attention, time to ask questions, and a detailed explanation of their diagnosis in everyday language.
               </p>
-              <div className="doctor-specs">
-                <div className="spec-row"><div className="spec-dot"></div>Teeth Cleaning &amp; Preventive Dentistry</div>
-                <div className="spec-row"><div className="spec-dot"></div>Root Canal Treatment (Endodontics)</div>
-                <div className="spec-row"><div className="spec-dot"></div>Dental Implants &amp; Oral Surgery</div>
-                <div className="spec-row"><div className="spec-dot"></div>Orthodontics — Metal &amp; Ceramic Braces</div>
-                <div className="spec-row"><div className="spec-dot"></div>Pediatric Dentistry (Pedodontics) &amp; Child Care</div>
-                <div className="spec-row"><div className="spec-dot"></div>Crowns, Veneers &amp; Restorations</div>
-                <div className="spec-row"><div className="spec-dot"></div>Kids &amp; Family Dental Care</div>
+              <p className="doctor-letter-p">
+                From delicate single-sitting root canals and implant restorations to children’s dentistry and smile makeovers, Dr. Maheswari treats every patient with the precision, patience, and warmth she would offer her own family.
+              </p>
+
+              <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", marginTop: "32px" }}>
+                <Link href="/contact#booking" className="btn btn-primary">
+                  Book a Consultation with Dr. Maheswari
+                </Link>
+                <a
+                  href="https://wa.me/919342803217?text=Hi%20Dr.%20Maheswari,%20I%20would%20like%20to%20ask%20a%20question"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-whatsapp"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
+                >
+                  <MessageCircle size={18} />
+                  <span>Chat on WhatsApp</span>
+                </a>
               </div>
-              <Link href="/contact#booking" className="btn btn-primary">Book a Consultation with Dr. Maheswari</Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── CLINIC VALUES ─── */}
-      <section className="section-padding" style={{backgroundColor: 'var(--bg-secondary)'}}>
+      {/* ─── CLINIC VALUES & PROMISES ─── */}
+      <section className="section-padding" style={{ backgroundColor: 'var(--bg-secondary)' }}>
         <div className="container">
           <div className="section-header" data-animate>
-            <span className="section-badge">Our Philosophy</span>
-            <h2 className="section-title">Why Patients Choose Us</h2>
-            <p className="section-desc">Everything we do is guided by a commitment to your health, comfort and confidence.</p>
+            <span className="section-badge">Our Pillars</span>
+            <h2 className="section-title">The Principles that Guide <em>Every Visit</em></h2>
+            <p className="section-desc">
+              Everything we do in our clinic is designed to keep you safe, comfortable, and confident in your dental choices.
+            </p>
           </div>
-          <div className="values-grid">
+
+          <div className="benefit-grid-warm">
             {values.map((v, i) => (
-              <div className="value-card" key={v.title} data-animate data-delay={delays[i]}>
-                <div className="value-icon">{v.icon}</div>
-                <h3 className="value-title">{v.title}</h3>
-                <div className="value-desc">{v.desc}</div>
+              <div className="benefit-card-warm" key={v.title} data-animate data-delay={delays[i]}>
+                <div className="benefit-icon-warm">{v.icon}</div>
+                <h3 className="benefit-title-warm">{v.title}</h3>
+                <p className="benefit-desc-warm">{v.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── CTA ─── */}
-      <section className="cta-section">
+      {/* ─── CLINIC ENVIRONMENT SHOWCASE ─── */}
+      <section className="section-padding" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="container">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "48px", alignItems: "center" }}>
+            <div data-animate="slide-right">
+              <span className="section-badge">Clinic Environment</span>
+              <h2 className="section-title" style={{ fontSize: "2.4rem", textAlign: "left", marginBottom: "18px" }}>
+                Designed for <em>Calm &amp; Cleanliness</em>
+              </h2>
+              <p style={{ color: "var(--text-secondary)", lineHeight: 1.85, marginBottom: "20px" }}>
+                From the soothing ambient reception to the ergonomic treatment chairs, our clinic on Kundrathur Main Road is designed to minimize clinical stress.
+              </p>
+              <div className="info-box-warm">
+                <strong>Our Clean Air &amp; Surface Guarantee:</strong> We sanitize every surface between patient appointments and maintain high-efficiency air purification for maximum safety and comfort.
+              </div>
+            </div>
+
+            <div data-animate="slide-left">
+              <div style={{ borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-lg)", border: "4px solid #FFFFFF" }}>
+                <img
+                  src="/assets/reception_area.webp"
+                  alt="Dr. Mahe's Dentistry Reception & Consultation Area Porur"
+                  width={1024}
+                  height={1024}
+                  loading="lazy"
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA BANNER ─── */}
+      <section className="cta-section-warm">
         <div className="container" data-animate>
-          <h2 className="cta-title">Ready to Start Your Smile Journey?</h2>
-          <p className="cta-desc">Book a consultation with Dr. Maheswari and take the first step towards a healthier, more confident smile.</p>
-          <div className="cta-actions">
-            <Link href="/contact#booking" className="btn btn-accent">Book Appointment</Link>
-            <a href="tel:+919342803217" className="btn btn-white">Call: +91 93428 03217</a>
+          <span className="section-badge" style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "var(--accent)", borderColor: "rgba(255,255,255,0.2)" }}>
+            Let's Connect
+          </span>
+          <h2 className="cta-title-warm">Ready to Meet <em>Dr. Maheswari?</em></h2>
+          <p className="cta-desc-warm">
+            We'd love to welcome you to our Porur clinic. Book an appointment online or call us anytime.
+          </p>
+          <div className="cta-actions-warm">
+            <Link href="/contact#booking" className="btn btn-accent btn-lg">
+              Book an Appointment
+            </Link>
+            <a href="tel:+919342803217" className="btn btn-white btn-lg" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+              <Phone size={18} />
+              <span>Call: +91 93428 03217</span>
+            </a>
           </div>
         </div>
       </section>

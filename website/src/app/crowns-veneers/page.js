@@ -1,13 +1,14 @@
 import Link from "next/link";
+import { Phone } from "lucide-react";
 
 export const metadata = {
   title: "Dental Crowns & Veneers in Porur, Chennai | Dr. Mahe's Dentistry",
-  description: "Restore damaged teeth and enhance your smile with premium Zirconia and e.max crowns and veneers at Dr. Mahe's Dentistry in Porur.",
-  keywords: ["zirconia crowns porur", "dental veneers chennai", "e.max crowns porur", "tooth cap dentist", "porcelain veneers chennai"],
+  description: "Restore damaged teeth and enhance your smile with custom Zirconia, e.max crowns, and ultra-thin veneers at Dr. Mahe's Dentistry in Porur.",
+  keywords: ["zirconia crowns porur", "dental veneers chennai", "e.max crowns porur", "tooth cap dentist porur", "porcelain veneers chennai"],
   alternates: { canonical: '/crowns-veneers' },
   openGraph: {
-    title: "Crowns & Veneers | Dr. Mahe's Dentistry",
-    description: "Premium restorative and cosmetic dental crowns and veneers.",
+    title: "Crowns & Veneers | Dr. Mahe's Dentistry Porur",
+    description: "Premium restorative and cosmetic dental crowns and porcelain veneers in Porur, Chennai.",
     url: 'https://drmahesdentistry.com/crowns-veneers',
   }
 };
@@ -16,90 +17,125 @@ export default function CrownsVeneers() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "MedicalWebPage",
-    "name": "Dental Crowns & Veneers",
-    "description": "Information about dental crowns, caps and veneers at Dr. Mahe's Dentistry."
+    "name": "Dental Crowns & Veneers in Porur",
+    "description": "Information about custom dental crowns, caps and porcelain veneers at Dr. Mahe's Dentistry in Porur, Chennai."
   };
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <section className="page-hero">
+
+      {/* ─── PAGE HERO ─── */}
+      <section className="page-hero-warm">
         <div className="container">
           <nav className="breadcrumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link><span className="breadcrumb-sep">›</span>
             <Link href="/treatments">Treatments</Link><span className="breadcrumb-sep">›</span>
-            <span className="breadcrumb-current">Crowns & Veneers</span>
+            <span className="breadcrumb-current">Crowns &amp; Veneers</span>
           </nav>
-          <span className="page-hero-badge">Protect & Beautify</span>
-          <h1 className="page-hero-title">Crowns & <em>Veneers</em></h1>
-          <p className="page-hero-desc">High-strength, aesthetically perfect restorations designed to protect damaged teeth and completely transform your smile.</p>
+          <span className="page-hero-badge">Protect Strength &amp; Enhance Aesthetics</span>
+          <h1 className="page-hero-title-warm">Crowns &amp; <em>Veneers</em> in Porur</h1>
+          <p className="page-hero-desc-warm">
+            High-strength, biologically compatible restorations crafted from premium Zirconia and e.max porcelain to protect weakened teeth and create a harmonious, radiant smile.
+          </p>
+          <div className="page-hero-actions-warm">
+            <Link href="/contact?service=Crowns%20%26%20Veneers#booking" className="btn btn-primary">
+              Book Aesthetic Consultation
+            </Link>
+            <a href="tel:+919342803217" className="btn btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+              <Phone size={16} />
+              <span>Ask Dr. Maheswari</span>
+            </a>
+          </div>
         </div>
       </section>
 
+      {/* ─── CROWNS VS VENEERS ─── */}
       <section className="section-padding" style={{ backgroundColor: 'var(--bg-primary)' }}>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '60px', alignItems: 'center' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '56px', alignItems: 'center' }}>
           <div data-animate="slide-right">
-            <h2 className="section-title" style={{ fontSize: '2rem', textAlign: 'left', marginBottom: '16px' }}>What's the Difference?</h2>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: '24px' }}>
-              Both crowns and veneers are excellent ways to restore and improve teeth, but they serve different purposes. A <strong>crown</strong> (or cap) covers the entire tooth, providing structural support for teeth that are heavily decayed or have had a root canal. A <strong>veneer</strong> is an ultra-thin layer of porcelain bonded only to the front of the tooth, primarily used for cosmetic enhancements.
+            <span className="section-badge">Understanding Your Options</span>
+            <h2 className="section-title" style={{ fontSize: '2.2rem', textAlign: 'left', marginBottom: '16px' }}>
+              Crowns vs. Veneers: <em>What's the Difference?</em>
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.85, marginBottom: '20px' }}>
+              A <strong>dental crown (or cap)</strong> completely encases a weakened tooth, restoring structural strength after large fillings, fractures, or root canal therapy. A <strong>porcelain veneer</strong> is an ultra-thin ceramic shell bonded to the front surface to correct discoloration, gaps, or chipped edges.
             </p>
-            <div className="info-box">
-              <strong>Premium Materials:</strong> We use only the highest quality, lab-fabricated materials including Zirconia and e.max (Lithium Disilicate), which offer unmatched durability and perfectly mimic the translucency of natural enamel.
+            <div className="info-box-warm">
+              <strong>Premium Zirconia &amp; e.max:</strong> We work with leading certified dental laboratories using high-translucency CAD/CAM milled ceramics that mimic natural enamel light reflection with zero dark metal margins.
             </div>
           </div>
           <div data-animate="slide-left">
-            <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
-              <img src="/assets/veneers.jpg" alt="Dental Crowns and Veneers" width={700} height={500} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
+            <div style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', border: '4px solid #FFFFFF' }}>
+              <img src="/assets/veneers.jpg" alt="Dental Crowns and Porcelain Veneers at Dr. Mahe's Dentistry Porur" width={700} height={500} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="section-padding" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+      {/* ─── PROCEDURE STEPS ─── */}
+      <section className="section-padding" style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}>
         <div className="container">
-          <div className="section-header">
-            <span className="section-badge">Restoration Process</span>
-            <h2 className="section-title">How Crowns & Veneers are Made</h2>
+          <div className="section-header" data-animate>
+            <span className="section-badge">Crafting Your Restoration</span>
+            <h2 className="section-title">The Crown &amp; Veneer <em>Process</em></h2>
+            <p className="section-desc">Meticulously measured and shade-matched to complement your facial aesthetics.</p>
           </div>
-          <div className="steps-list" style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <div className="step-item" data-animate>
-              <div className="step-num">1</div>
+
+          <div className="steps-list-warm" style={{ maxWidth: '840px', margin: '0 auto' }}>
+            <div className="step-item-warm" data-animate>
+              <div className="step-num-warm">1</div>
               <div>
-                <div className="step-title">Preparation</div>
-                <div className="step-desc">The tooth is gently reshaped to make room for the crown or veneer. For veneers, this involves removing a microscopic layer of enamel from the front.</div>
+                <div className="step-title-warm">Gentle Tooth Preparation</div>
+                <div className="step-desc-warm">We carefully prepare the tooth under gentle local numbing, removing only the minimal enamel required for a secure, flush fit.</div>
               </div>
             </div>
-            <div className="step-item" data-animate>
-              <div className="step-num">2</div>
+
+            <div className="step-item-warm" data-animate>
+              <div className="step-num-warm">2</div>
               <div>
-                <div className="step-title">Impression & Shade Matching</div>
-                <div className="step-desc">A highly accurate digital or physical impression is taken. We carefully select the exact shade to match your surrounding teeth perfectly.</div>
+                <div className="step-title-warm">Digital Shade Matching &amp; Scanning</div>
+                <div className="step-desc-warm">We capture digital impressions and match the ceramic shade against your natural neighboring teeth in natural daylight.</div>
               </div>
             </div>
-            <div className="step-item" data-animate>
-              <div className="step-num">3</div>
+
+            <div className="step-item-warm" data-animate>
+              <div className="step-num-warm">3</div>
               <div>
-                <div className="step-title">Lab Fabrication</div>
-                <div className="step-desc">Our partner dental laboratories use advanced CAD/CAM technology to craft your permanent restoration from premium Zirconia or porcelain.</div>
+                <div className="step-title-warm">Precision CAD/CAM Lab Fabrication</div>
+                <div className="step-desc-warm">Your custom restoration is milled from medical-grade monolithic zirconia or lithium disilicate for maximum edge strength and beauty.</div>
               </div>
             </div>
-            <div className="step-item" data-animate>
-              <div className="step-num">4</div>
+
+            <div className="step-item-warm" data-animate>
+              <div className="step-num-warm">4</div>
               <div>
-                <div className="step-title">Final Bonding</div>
-                <div className="step-desc">The permanent crown or veneer is checked for fit, bite alignment and aesthetics, then permanently bonded to your tooth.</div>
+                <div className="step-title-warm">Bonding &amp; Bite Optimization</div>
+                <div className="step-desc-warm">Dr. Maheswari verifies the aesthetic alignment, checks your chewing bite, and permanently bonds the crown or veneer.</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="cta-section">
+      {/* ─── CTA BANNER ─── */}
+      <section className="cta-section-warm">
         <div className="container" data-animate>
-          <h2 className="cta-title">Restore Your Smile's Strength</h2>
-          <p className="cta-desc">Whether you need to protect a weakened tooth or want a Hollywood smile, we have the solution.</p>
-          <div className="cta-actions">
-            <Link href="/contact#booking" className="btn btn-accent">Book a Consultation</Link>
+          <span className="section-badge" style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "var(--accent)", borderColor: "rgba(255,255,255,0.2)" }}>
+            Aesthetic Harmony
+          </span>
+          <h2 className="cta-title-warm">Transform Your Smile with <em>Natural Ceramics</em></h2>
+          <p className="cta-desc-warm">
+            Book a smile consultation with Dr. Maheswari to explore crowns and veneers in Porur.
+          </p>
+          <div className="cta-actions-warm">
+            <Link href="/contact?service=Crowns%20%26%20Veneers#booking" className="btn btn-accent btn-lg">
+              Book Aesthetic Consultation
+            </Link>
+            <a href="tel:+919342803217" className="btn btn-white btn-lg" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+              <Phone size={18} />
+              <span>Call: +91 93428 03217</span>
+            </a>
           </div>
         </div>
       </section>

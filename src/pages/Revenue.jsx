@@ -22,6 +22,15 @@ function methodColor(m) {
   return METHOD_COLORS[key] || METHOD_COLORS.unknown
 }
 
+function getSubBadgeStyle(sub) {
+  if (typeof sub === 'number') {
+    if (sub > 0) return 'bg-emerald-50 text-emerald-700'
+    if (sub < 0) return 'bg-rose-50 text-rose-700'
+    return 'bg-slate-100 text-slate-700'
+  }
+  return 'bg-slate-100 text-slate-700'
+}
+
 // ── Metric KPI card ─────────────────────────────────────────
 function MetricCard({ icon, value, label, sub, color, accent, delay = 0 }) {
   return (
@@ -34,11 +43,7 @@ function MetricCard({ icon, value, label, sub, color, accent, delay = 0 }) {
           {icon}
         </div>
         {sub != null && (
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-            typeof sub === 'number'
-              ? sub > 0 ? 'bg-emerald-50 text-emerald-700' : sub < 0 ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-500'
-              : 'bg-slate-100 text-slate-500'
-          }`}>
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getSubBadgeStyle(sub)}`}>
             {typeof sub === 'number'
               ? sub > 0 ? `+${sub.toFixed(1)}%` : `${sub.toFixed(1)}%`
               : sub
@@ -158,18 +163,22 @@ function TrendChart({ trends, fmt }) {
                   <div
                     className="flex-1 rounded-t-sm"
                     style={{
-                      height: visible ? `${billedH}%` : '0%',
+                      height: `${billedH}%`,
+                      transformOrigin: 'bottom',
+                      transform: visible ? 'scaleY(1)' : 'scaleY(0)',
                       background: 'linear-gradient(180deg, #c7d2fe, #a5b4fc)',
-                      transition: `height 0.6s cubic-bezier(0.34,1.56,0.64,1) ${i * 50}ms`,
+                      transition: `transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${i * 40}ms`,
                     }}
                   />
                   {/* Revenue bar */}
                   <div
                     className="flex-1 rounded-t-sm"
                     style={{
-                      height: visible ? `${revH}%` : '0%',
+                      height: `${revH}%`,
+                      transformOrigin: 'bottom',
+                      transform: visible ? 'scaleY(1)' : 'scaleY(0)',
                       background: 'linear-gradient(180deg, #818cf8, #4f46e5)',
-                      transition: `height 0.6s cubic-bezier(0.34,1.56,0.64,1) ${i * 50 + 80}ms`,
+                      transition: `transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${i * 40 + 60}ms`,
                       boxShadow: '0 -2px 8px rgba(99,102,241,0.3)',
                     }}
                   />

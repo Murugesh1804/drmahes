@@ -272,7 +272,9 @@ export default function TreatmentMaster() {
                         <button
                           onClick={() => handleToggleActive(t)}
                           className={`text-xs font-bold px-2 py-0.5 rounded-full transition-colors ${
-                            t.is_active ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-200 text-slate-500 hover:bg-slate-300'
+                            t.is_active
+                              ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                              : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
                           }`}
                         >
                           {t.is_active ? 'Active' : 'Inactive'}
@@ -321,7 +323,9 @@ export default function TreatmentMaster() {
                         <button
                           onClick={() => handleToggleMedActive(m)}
                           className={`text-xs font-bold px-2 py-0.5 rounded-full transition-colors ${
-                            m.is_active ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-200 text-slate-500 hover:bg-slate-300'
+                            m.is_active
+                              ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                              : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
                           }`}
                         >
                           {m.is_active ? 'Active' : 'Inactive'}

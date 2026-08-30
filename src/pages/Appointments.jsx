@@ -16,12 +16,7 @@ import { clinicDateString, fmtDate } from '../utils/date'
 const STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
 const STATUS_LABELS = { waiting: 'Waiting', 'in-progress': 'In Progress', done: 'Done', cancelled: 'Cancelled' }
 const STATUS_COLORS = { waiting: 'badge-waiting', 'in-progress': 'badge-progress', done: 'badge-done', cancelled: 'badge-cancelled' }
-const STATUS_BG = {
-  waiting:       'bg-amber-50 border-l-4 border-amber-400',
-  'in-progress': 'bg-blue-50 border-l-4 border-blue-500',
-  done:          'bg-emerald-50 border-l-4 border-emerald-400',
-  cancelled:     'bg-slate-50 border-l-4 border-slate-300',
-}
+
 
 // All standard appointment slots (shown in the Slot Manager)
 const ALL_SLOTS = [
@@ -440,7 +435,8 @@ export default function Appointments() {
                   )}
                   <button 
                       onClick={() => setDeleteId(a.id)} 
-                      className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                      title="Delete"
                     >
                       <Trash2 size={16} />
                   </button>
