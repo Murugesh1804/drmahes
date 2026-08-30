@@ -1,19 +1,25 @@
-import { Open_Sans, Poppins } from "next/font/google";
+import { DM_Sans, Playfair_Display, Caveat } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ScrollAnimations from "../components/ScrollAnimations";
 
-const openSans = Open_Sans({
+const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-body",
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const poppins = Poppins({
+const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--font-display",
   weight: ["400", "500", "600", "700", "800"],
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-handwrite",
+  weight: ["400", "600", "700"],
 });
 
 export const metadata = {
@@ -53,7 +59,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${openSans.variable} ${poppins.variable}`}>
+    <html lang="en" className={`${dmSans.variable} ${playfairDisplay.variable} ${caveat.variable}`}>
       <body>
         <Header />
         <main>{children}</main>
