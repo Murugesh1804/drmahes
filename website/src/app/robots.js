@@ -1,5 +1,5 @@
 export default function robots() {
-  const baseUrl = 'https://drmahesdentistry.com';
+  const baseUrl = 'https://drmahesdentistry.in';
 
   return {
     rules: {

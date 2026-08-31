@@ -112,9 +112,9 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "Dentist",
     "name": "Dr. Mahe's Dentistry",
-    "image": "https://drmahesdentistry.com/assets/logo_black.webp",
-    "@id": "https://drmahesdentistry.com",
-    "url": "https://drmahesdentistry.com",
+    "image": "https://drmahesdentistry.in/assets/logo_black.webp",
+    "@id": "https://drmahesdentistry.in",
+    "url": "https://drmahesdentistry.in",
     "telephone": "+919342803217",
     "address": {
       "@type": "PostalAddress",

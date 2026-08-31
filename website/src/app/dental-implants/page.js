@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: {
     title: "Dental Implants | Dr. Mahe's Dentistry Porur",
     description: "Permanent, natural-looking tooth replacements with biocompatible titanium implants.",
-    url: 'https://drmahesdentistry.com/dental-implants',
+    url: 'https://drmahesdentistry.in/dental-implants',
   }
 };
 

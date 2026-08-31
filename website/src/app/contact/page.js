@@ -13,7 +13,7 @@ export const metadata = {
   openGraph: {
     title: "Contact & Book Appointment | Dr. Mahe's Dentistry Porur",
     description: "Visit Dr. Mahe's Dentistry on Kundrathur Main Road, Porur, Chennai. Book your dental appointment online.",
-    url: 'https://drmahesdentistry.com/contact',
+    url: 'https://drmahesdentistry.in/contact',
   }
 };
 

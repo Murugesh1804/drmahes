@@ -11,7 +11,7 @@ export const metadata = {
   openGraph: {
     title: "Dental Treatments | Dr. Mahe's Dentistry Porur",
     description: "Explore complete dental treatments at Dr. Mahe's Dentistry in Porur, Chennai.",
-    url: 'https://drmahesdentistry.com/treatments',
+    url: 'https://drmahesdentistry.in/treatments',
   }
 };
 

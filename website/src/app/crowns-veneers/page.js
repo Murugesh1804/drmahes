@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: {
     title: "Crowns & Veneers | Dr. Mahe's Dentistry Porur",
     description: "Premium restorative and cosmetic dental crowns and porcelain veneers in Porur, Chennai.",
-    url: 'https://drmahesdentistry.com/crowns-veneers',
+    url: 'https://drmahesdentistry.in/crowns-veneers',
   }
 };
 

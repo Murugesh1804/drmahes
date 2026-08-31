@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: {
     title: "Pediatric Dentistry (Kids Care) | Dr. Mahe's Dentistry Porur",
     description: "Specialized, gentle dental care for toddlers, kids, and teenagers in Porur, Chennai.",
-    url: 'https://drmahesdentistry.com/pediatric-dentistry',
+    url: 'https://drmahesdentistry.in/pediatric-dentistry',
   }
 };
 

@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: {
     title: "Orthodontics & Braces | Dr. Mahe's Dentistry Porur",
     description: "Customized orthodontic alignment for children, teens, and adults.",
-    url: 'https://drmahesdentistry.com/orthodontics',
+    url: 'https://drmahesdentistry.in/orthodontics',
   }
 };
 

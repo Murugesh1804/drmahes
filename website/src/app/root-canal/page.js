@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: {
     title: "Painless Root Canal Treatment | Dr. Mahe's Dentistry Porur",
     description: "Painless, single-sitting endodontic therapy to eliminate tooth pain and preserve your natural tooth.",
-    url: 'https://drmahesdentistry.com/root-canal',
+    url: 'https://drmahesdentistry.in/root-canal',
   }
 };
 

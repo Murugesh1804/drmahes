@@ -11,7 +11,7 @@ export const metadata = {
   openGraph: {
     title: "Meet Dr. Maheswari | Dr. Mahe's Dentistry Porur",
     description: "Learn about Dr. Maheswari, BDS, lead dentist at Dr. Mahe's Dentistry in Porur, Chennai.",
-    url: 'https://drmahesdentistry.com/about',
+    url: 'https://drmahesdentistry.in/about',
   }
 };
 

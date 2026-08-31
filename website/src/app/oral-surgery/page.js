@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: {
     title: "Oral Surgery & Extractions | Dr. Mahe's Dentistry Porur",
     description: "Expert wisdom teeth removal and complex extractions in Porur, Chennai.",
-    url: 'https://drmahesdentistry.com/oral-surgery',
+    url: 'https://drmahesdentistry.in/oral-surgery',
   }
 };
 
