@@ -291,7 +291,7 @@ function BookingFormInner() {
                 required
               />
             </div>
-            <div className="fg" style={{ gridColumn: 'span 2' }}>
+            <div className="fg fg-full">
               <label>Email Address (Optional)</label>
               <input 
                 type="email" 
