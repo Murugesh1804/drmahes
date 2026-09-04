@@ -139,16 +139,12 @@ export default function Treatments() {
       {/* ─── UNSURE WHAT YOU NEED? CONSULTATION GUIDE ─── */}
       <section className="section-padding" style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}>
         <div className="container">
-          <div style={{
+          <div className="consult-cta-grid" style={{
             backgroundColor: "#FFFFFF",
             borderRadius: "var(--radius-lg)",
             padding: "48px 44px",
             border: "1px solid var(--border)",
             boxShadow: "var(--shadow-md)",
-            display: "grid",
-            gridTemplateColumns: "1.2fr 0.8fr",
-            gap: "40px",
-            alignItems: "center"
           }} data-animate="scale">
             <div>
               <span className="section-badge">Not Sure What You Need?</span>

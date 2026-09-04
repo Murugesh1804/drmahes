@@ -127,7 +127,7 @@ export default function About() {
                 From delicate single-sitting root canals and implant restorations to children’s dentistry and smile makeovers, Dr. Maheswari treats every patient with the precision, patience and warmth she would offer her own family.
               </p>
 
-              <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", marginTop: "32px" }}>
+              <div className="doctor-editorial-actions" style={{ display: "flex", gap: "14px", flexWrap: "wrap", marginTop: "32px" }}>
                 <Link href="/contact#booking" className="btn btn-primary">
                   Book a Consultation with Dr. Maheswari
                 </Link>
@@ -173,7 +173,7 @@ export default function About() {
       {/* ─── CLINIC ENVIRONMENT SHOWCASE ─── */}
       <section className="section-padding" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <div className="container">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "48px", alignItems: "center" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))", gap: "48px", alignItems: "center" }}>
             <div data-animate="slide-right">
               <span className="section-badge">Clinic Environment</span>
               <h2 className="section-title" style={{ fontSize: "2.4rem", textAlign: "left", marginBottom: "18px" }}>

@@ -157,7 +157,7 @@ export default function PatientConcernExplorer() {
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "24px" }}>
+          <div className="concern-actions" style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "24px", alignItems: "flex-start" }}>
             <Link
               href={`/contact?service=${encodeURIComponent(activeConcern.bookingService)}#booking`}
               className="btn btn-primary"
