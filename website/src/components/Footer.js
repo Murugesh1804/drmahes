@@ -18,7 +18,7 @@ export default function Footer() {
             />
           </div>
           <p className="footer-desc-warm">
-            A patient-first dental studio in Porur, Chennai. Founded on the conviction that dental care should be calm, unhurried, transparent, and genuinely kind.
+            A patient-first dental studio in Porur, Chennai. Founded on the conviction that dental care should be calm, unhurried, transparent and genuinely kind.
           </p>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "4px" }}>
             <span style={{

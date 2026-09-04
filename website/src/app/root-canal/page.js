@@ -3,7 +3,7 @@ import { Phone } from "lucide-react";
 
 export const metadata = {
   title: "Painless Root Canal Treatment (RCT) in Porur, Chennai | Dr. Mahe's Dentistry",
-  description: "Save your infected tooth with a painless, single-sitting root canal treatment at Dr. Mahe's Dentistry in Porur. Gentle anesthesia, micro-rotary files, and fast relief.",
+  description: "Save your infected tooth with a painless, single-sitting root canal treatment at Dr. Mahe's Dentistry in Porur. Gentle anesthesia, micro-rotary files and fast relief.",
   keywords: ["root canal treatment porur", "painless rct chennai", "single sitting root canal porur", "endodontist chennai", "tooth pain relief porur"],
   alternates: { canonical: '/root-canal' },
   openGraph: {
@@ -59,7 +59,7 @@ export default function RootCanal() {
               Why Root Canals Don't Hurt <em>Anymore</em>
             </h2>
             <p style={{ color: 'var(--text-secondary)', lineHeight: 1.85, marginBottom: '20px' }}>
-              When deep cavity bacteria reach the inner pulp and nerve of your tooth, it causes inflammation and severe throbbing pain. A root canal simply removes the infected tissue, cleans the inner canals, and seals the tooth safely.
+              When deep cavity bacteria reach the inner pulp and nerve of your tooth, it causes inflammation and severe throbbing pain. A root canal simply removes the infected tissue, cleans the inner canals and seals the tooth safely.
             </p>
             <div className="info-box-warm">
               <strong>The Pain Myth:</strong> Root canals don’t cause pain — they <em>cure</em> pain. With modern computerized local anesthesia and soothing numbing gels, getting a root canal feels no more difficult than getting a simple standard filling.
@@ -129,7 +129,7 @@ export default function RootCanal() {
           <div className="benefit-grid-warm">
             <div className="benefit-card-warm" data-animate>
               <div className="benefit-icon-warm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               </div>
               <h3 className="benefit-title-warm">Throbbing Toothache</h3>
               <p className="benefit-desc-warm">Persistent pain while chewing or biting, or sudden throbbing pain that wakes you up at night.</p>
@@ -137,7 +137,7 @@ export default function RootCanal() {
 
             <div className="benefit-card-warm" data-animate data-delay="100">
               <div className="benefit-icon-warm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
               </div>
               <h3 className="benefit-title-warm">Lingering Sensitivity</h3>
               <p className="benefit-desc-warm">Sharp pain that lingers for several seconds after drinking hot coffee or eating cold ice cream.</p>
@@ -145,7 +145,7 @@ export default function RootCanal() {
 
             <div className="benefit-card-warm" data-animate data-delay="200">
               <div className="benefit-icon-warm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
               </div>
               <h3 className="benefit-title-warm">Gum Swelling &amp; Tenderness</h3>
               <p className="benefit-desc-warm">A small bump, pimple, or localized swelling on the gums next to the painful tooth.</p>

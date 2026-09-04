@@ -45,7 +45,7 @@ const patientConcerns = [
     label: "Missing or Broken Teeth",
     sub: "Want to chew & smile freely",
     title: "Permanent, Lifelike Tooth Replacements",
-    desc: "Missing teeth affect how you eat, speak, and feel about your smile. Our medical-grade titanium dental implants and custom zirconia crowns fuse seamlessly with your mouth, feeling and functioning just like your natural teeth.",
+    desc: "Missing teeth affect how you eat, speak and feel about your smile. Our medical-grade titanium dental implants and custom zirconia crowns fuse seamlessly with your mouth, feeling and functioning just like your natural teeth.",
     highlights: [
       "Biocompatible titanium implants that preserve your natural jawbone",
       "Custom shade-matched porcelain and zirconia crowns for a seamless match",
@@ -79,7 +79,7 @@ const patientConcerns = [
     label: "Crooked or Crowded Teeth",
     sub: "Braces & Clear Aligners",
     title: "Precision Teeth Straightening for All Ages",
-    desc: "Straight teeth aren't just about aesthetics — they make chewing easier and prevent future decay. We provide ceramic braces, self-ligating brackets, and clear aligners customized for teens and adults.",
+    desc: "Straight teeth aren't just about aesthetics — they make chewing easier and prevent future decay. We provide ceramic braces, self-ligating brackets and clear aligners customized for teens and adults.",
     highlights: [
       "Discreet ceramic braces and invisible clear aligner options",
       "Digital mapping for precise, predictable orthodontic movement",
@@ -96,7 +96,7 @@ const patientConcerns = [
     label: "Stained, Chipped or Dull Teeth",
     sub: "Smile makeover & Veneers",
     title: "Subtle, Natural Cosmetic Smile Enhancements",
-    desc: "A great smile doesn't look artificial — it looks like the best version of your natural self. We craft ultra-thin porcelain veneers, precision zirconia crowns, and gentle teeth whitening to enhance your natural beauty.",
+    desc: "A great smile doesn't look artificial — it looks like the best version of your natural self. We craft ultra-thin porcelain veneers, precision zirconia crowns and gentle teeth whitening to enhance your natural beauty.",
     highlights: [
       "Custom ultra-thin ceramic veneers for chipped or stained teeth",
       "High-translucency zirconia crowns with natural light reflection",
@@ -141,10 +141,13 @@ export default function PatientConcernExplorer() {
 
       <div className="concern-display-box">
         <div>
+          <div style={{ fontFamily: "var(--font-handwrite, cursive)", fontSize: "1.45rem", color: "var(--accent-hover)", marginBottom: "4px" }}>
+            Tailored Care Pathway ~ Dr. Maheswari
+          </div>
           <span className="section-badge" style={{ marginBottom: 12 }}>Recommended Care Plan</span>
           <h3 className="concern-display-title">{activeConcern.title}</h3>
           <p className="concern-display-desc">{activeConcern.desc}</p>
-          
+
           <div className="concern-highlights">
             {activeConcern.highlights.map((h, i) => (
               <div className="concern-highlight-item" key={i}>
@@ -170,10 +173,10 @@ export default function PatientConcernExplorer() {
 
         <div style={{
           backgroundColor: "#FFFFFF",
-          borderRadius: "var(--radius)",
-          padding: "32px 28px",
-          border: "1px solid var(--border)",
-          boxShadow: "var(--shadow-sm)",
+          borderRadius: "28px",
+          padding: "36px 30px",
+          border: "1px solid rgba(184, 151, 114, 0.22)",
+          boxShadow: "var(--shadow-md)",
           display: "flex",
           flexDirection: "column",
           gap: "18px",
@@ -202,7 +205,7 @@ export default function PatientConcernExplorer() {
             </div>
           </div>
           <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-            Consultation with Dr. Maheswari includes digital assessment, diagnosis, and full treatment roadmap.
+            Consultation with Dr. Maheswari includes digital assessment, diagnosis and full treatment roadmap.
           </p>
           <a
             href="https://wa.me/919342803217?text=Hi%20Dr.%20Maheswari,%20I%20have%20a%20question%20about%20my%20teeth"

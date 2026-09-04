@@ -1,40 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-    <meta name="description" content="Patient self check-in kiosk for Dr. Mahe's Dentistry – register your visit quickly and join the treatment queue.">
+    <meta name="description"
+        content="Patient self check-in kiosk for Dr. Mahe's Dentistry – register your visit quickly and join the treatment queue.">
     <title>Patient Check-in – Dr. Mahe's Dentistry</title>
 
     <!-- Google Fonts: Poppins (headings) + Open Sans (body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
+        rel="stylesheet">
 
     <style>
         /* ─── DESIGN TOKENS (mirrors landing page) ─────────────── */
         :root {
-            --primary:        #111111;
-            --accent:         #C4B097;
-            --accent-hover:   #A89680;
-            --accent-rgb:     196, 176, 151;
-            --bg-primary:     #FFFFFF;
-            --bg-secondary:   #F7F5F0;
-            --bg-card:        #FFFFFF;
-            --text-primary:   #111111;
+            --primary: #111111;
+            --accent: #C4B097;
+            --accent-hover: #A89680;
+            --accent-rgb: 196, 176, 151;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F7F5F0;
+            --bg-card: #FFFFFF;
+            --text-primary: #111111;
             --text-secondary: #555555;
-            --border:         rgba(17,17,17,0.09);
-            --border-accent:  rgba(196,176,151,0.35);
-            --success:        #2E7D32;
-            --shadow-sm:      0 2px 12px rgba(0,0,0,0.04);
-            --shadow-md:      0 8px 28px rgba(0,0,0,0.07);
-            --shadow-lg:      0 20px 50px rgba(0,0,0,0.10);
-            --radius:         10px;
-            --header-h:       64px;
+            --border: rgba(17, 17, 17, 0.09);
+            --border-accent: rgba(196, 176, 151, 0.35);
+            --success: #2E7D32;
+            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.10);
+            --radius: 10px;
+            --header-h: 64px;
         }
 
         /* ─── RESET ─────────────────────────────────────────────── */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         html {
             font-size: 16px;
@@ -54,33 +64,66 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        h1, h2, h3, h4 {
+        h1,
+        h2,
+        h3,
+        h4 {
             font-family: 'Poppins', sans-serif;
             line-height: 1.2;
         }
 
-        button, input, select, textarea {
+        button,
+        input,
+        select,
+        textarea {
             font-family: inherit;
             font-size: inherit;
             color: inherit;
         }
 
-        img { max-width: 100%; display: block; }
+        img {
+            max-width: 100%;
+            display: block;
+        }
 
         /* ─── SCROLLBAR ──────────────────────────────────────────── */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #d1ccc5; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d1ccc5;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
 
         /* ─── UTILITIES ─────────────────────────────────────────── */
-        .hidden { display: none !important; }
+        .hidden {
+            display: none !important;
+        }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(14px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .animate-fade-in { animation: fadeInUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
 
         /* ─── HEADER ─────────────────────────────────────────────── */
         .site-header {
@@ -121,7 +164,9 @@
             flex-shrink: 0;
         }
 
-        .header-title-wrap { min-width: 0; }
+        .header-title-wrap {
+            min-width: 0;
+        }
 
         .header-clinic-name {
             font-family: 'Poppins', sans-serif;
@@ -157,6 +202,7 @@
             transition: border-color 0.25s, color 0.25s, background-color 0.25s;
             white-space: nowrap;
         }
+
         .btn-fullscreen:hover {
             border-color: var(--accent);
             color: var(--primary);
@@ -204,12 +250,14 @@
             justify-content: center;
             transition: all 0.3s ease;
         }
+
         .step-circle.active {
             background-color: #111111;
             border-color: #111111;
             color: #fff;
             box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.2);
         }
+
         .step-circle.done {
             background-color: var(--accent);
             border-color: var(--accent);
@@ -224,19 +272,27 @@
             color: var(--text-secondary);
             transition: color 0.3s;
         }
-        .step-label.active { color: var(--primary); }
-        .step-label.done   { color: var(--accent); }
+
+        .step-label.active {
+            color: var(--primary);
+        }
+
+        .step-label.done {
+            color: var(--accent);
+        }
 
         .step-connector {
             flex: 1;
             height: 2px;
             background-color: var(--border);
             margin: 0 4px;
-            margin-bottom: 20px; /* offset for the label below */
+            margin-bottom: 20px;
+            /* offset for the label below */
             position: relative;
             overflow: hidden;
             border-radius: 2px;
         }
+
         .step-connector-fill {
             position: absolute;
             inset: 0;
@@ -246,7 +302,10 @@
             transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
             border-radius: 2px;
         }
-        .step-connector-fill.active { transform: scaleX(1); }
+
+        .step-connector-fill.active {
+            transform: scaleX(1);
+        }
 
         /* ─── MAIN ───────────────────────────────────────────────── */
         main {
@@ -313,7 +372,11 @@
         }
 
         /* ─── FORM FIELDS ────────────────────────────────────────── */
-        .form-stack { display: flex; flex-direction: column; gap: 20px; }
+        .form-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
         .field-label {
             display: block;
@@ -338,13 +401,19 @@
             -webkit-appearance: none;
             appearance: none;
         }
-        .form-input::placeholder { color: #aaa; }
+
+        .form-input::placeholder {
+            color: #aaa;
+        }
+
         .form-input:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18);
         }
 
-        textarea.form-input { resize: none; }
+        textarea.form-input {
+            resize: none;
+        }
 
         /* ─── GRID ROW ───────────────────────────────────────────── */
         .field-row {
@@ -372,10 +441,12 @@
             transition: all 0.2s ease;
             text-align: center;
         }
+
         .gender-btn:hover {
             border-color: var(--accent);
             color: var(--primary);
         }
+
         .gender-btn.selected {
             background-color: #111111;
             border-color: #111111;
@@ -405,12 +476,18 @@
             transition: all 0.2s ease;
             line-height: 1.3;
         }
-        .complaint-btn .icon { font-size: 1.1rem; flex-shrink: 0; }
+
+        .complaint-btn .icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
         .complaint-btn:hover {
             border-color: var(--accent);
             background-color: rgba(var(--accent-rgb), 0.06);
             color: var(--primary);
         }
+
         .complaint-btn.selected {
             border-color: var(--accent);
             background-color: rgba(var(--accent-rgb), 0.12);
@@ -437,12 +514,17 @@
             gap: 8px;
             transition: background-color 0.25s, transform 0.15s;
         }
+
         .btn-primary:hover {
             background-color: var(--accent);
             color: #111111;
             transform: translateY(-1px);
         }
-        .btn-primary:active { transform: translateY(0); }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
         .btn-primary:disabled {
             opacity: 0.55;
             cursor: not-allowed;
@@ -461,6 +543,7 @@
             cursor: pointer;
             transition: border-color 0.25s, color 0.25s;
         }
+
         .btn-secondary-outline:hover {
             border-color: var(--accent);
             color: var(--primary);
@@ -489,7 +572,11 @@
             flex-shrink: 0;
             transition: border-color 0.2s, color 0.2s;
         }
-        .btn-back:hover { border-color: var(--accent); color: var(--primary); }
+
+        .btn-back:hover {
+            border-color: var(--accent);
+            color: var(--primary);
+        }
 
         .consent-text-box {
             background-color: var(--bg-secondary);
@@ -513,11 +600,39 @@
         }
 
         /* ─── SIGNATURE CANVAS ───────────────────────────────────── */
-        .sig-wrap { margin-bottom: 24px; background: var(--bg-card); }
-        .sig-wrap:fullscreen { padding: 24px; display: flex; flex-direction: column; background: var(--bg-card); border: none; overflow: hidden; }
-        .sig-wrap:fullscreen .sig-canvas-wrap { flex: 1; height: auto; }
-        .sig-wrap.fs-fallback { position: fixed; inset: 0; z-index: 9999; padding: 24px; display: flex; flex-direction: column; background: var(--bg-card); }
-        .sig-wrap.fs-fallback .sig-canvas-wrap { flex: 1; height: auto; }
+        .sig-wrap {
+            margin-bottom: 24px;
+            background: var(--bg-card);
+        }
+
+        .sig-wrap:fullscreen {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+            border: none;
+            overflow: hidden;
+        }
+
+        .sig-wrap:fullscreen .sig-canvas-wrap {
+            flex: 1;
+            height: auto;
+        }
+
+        .sig-wrap.fs-fallback {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+        }
+
+        .sig-wrap.fs-fallback .sig-canvas-wrap {
+            flex: 1;
+            height: auto;
+        }
 
         .sig-header {
             display: flex;
@@ -537,7 +652,11 @@
             border-radius: 6px;
             transition: color 0.2s, background-color 0.2s;
         }
-        .btn-clear:hover { color: #ef4444; background-color: #fff0f0; }
+
+        .btn-clear:hover {
+            color: #ef4444;
+            background-color: #fff0f0;
+        }
 
         .sig-canvas-wrap {
             border: 2px dashed var(--border-accent);
@@ -547,6 +666,7 @@
             height: 200px;
             position: relative;
         }
+
         .sig-canvas-wrap:focus-within {
             border-color: var(--accent);
             border-style: solid;
@@ -617,7 +737,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(var(--accent-rgb),0.08) 0%, transparent 60%);
+            background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08) 0%, transparent 60%);
             pointer-events: none;
         }
 
@@ -656,71 +776,133 @@
 
         /* Mobile: up to 480px */
         @media (max-width: 480px) {
-            :root { --header-h: 56px; }
+            :root {
+                --header-h: 56px;
+            }
 
-            .site-header { padding: 0 14px; gap: 10px; }
+            .site-header {
+                padding: 0 14px;
+                gap: 10px;
+            }
 
-            .header-logo-mark { width: 36px; height: 36px; font-size: 1rem; }
+            .header-logo-mark {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
 
-            .header-clinic-name { font-size: 0.88rem; }
+            .header-clinic-name {
+                font-size: 0.88rem;
+            }
 
-            .btn-fullscreen { display: none; } /* Hide on very small screens */
+            .btn-fullscreen {
+                display: none;
+            }
 
-            .stepper-wrap { padding: 12px 16px; }
+            /* Hide on very small screens */
 
-            .step-circle { width: 28px; height: 28px; font-size: 0.72rem; }
+            .stepper-wrap {
+                padding: 12px 16px;
+            }
 
-            .step-label { font-size: 0.58rem; letter-spacing: 0.06em; }
+            .step-circle {
+                width: 28px;
+                height: 28px;
+                font-size: 0.72rem;
+            }
 
-            main { padding: 16px 12px 32px; }
+            .step-label {
+                font-size: 0.58rem;
+                letter-spacing: 0.06em;
+            }
 
-            .kiosk-card { padding: 20px 16px 24px; border-radius: 12px; }
+            main {
+                padding: 16px 12px 32px;
+            }
 
-            .card-title { font-size: 1.3rem; }
+            .kiosk-card {
+                padding: 20px 16px 24px;
+                border-radius: 12px;
+            }
 
-            .field-row { grid-template-columns: 1fr; gap: 14px; }
+            .card-title {
+                font-size: 1.3rem;
+            }
 
-            .complaint-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .field-row {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
 
-            .complaint-btn { padding: 10px 10px; font-size: 0.74rem; }
+            .complaint-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
 
-            .btn-row { flex-direction: column; }
+            .complaint-btn {
+                padding: 10px 10px;
+                font-size: 0.74rem;
+            }
 
-            .sig-canvas-wrap { height: 170px; }
+            .btn-row {
+                flex-direction: column;
+            }
 
-            .queue-number { font-size: 4rem; }
+            .sig-canvas-wrap {
+                height: 170px;
+            }
 
-            .btn-fullscreen-mobile { display: none; }
+            .queue-number {
+                font-size: 4rem;
+            }
+
+            .btn-fullscreen-mobile {
+                display: none;
+            }
         }
 
         /* Tablet: 481px – 768px */
         @media (min-width: 481px) and (max-width: 768px) {
-            .kiosk-card { padding: 28px 24px 32px; }
+            .kiosk-card {
+                padding: 28px 24px 32px;
+            }
 
-            .card-title { font-size: 1.5rem; }
+            .card-title {
+                font-size: 1.5rem;
+            }
 
-            .complaint-grid { grid-template-columns: repeat(2, 1fr); }
+            .complaint-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
 
-            main { padding: 20px 16px 36px; }
+            main {
+                padding: 20px 16px 36px;
+            }
         }
 
         /* Desktop kiosk: 769px+ */
         @media (min-width: 769px) {
-            .complaint-grid { grid-template-columns: repeat(3, 1fr); }
+            .complaint-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
 
         /* ─── CANVAS TOUCH FIXES ─────────────────────────────────── */
-        canvas { touch-action: none; }
+        canvas {
+            touch-action: none;
+        }
     </style>
 </head>
+
 <body>
 
     <!-- ═══════════════════════════════ HEADER ══════════════════════ -->
     <header class="site-header">
         <div class="header-brand">
             <!-- Dynamic Logo Image -->
-            <img id="logo-img" src="logo.webp" alt="Logo" style="max-height: 46px; width: auto; object-fit: contain; display: block;" onerror="handleLogoError()">
-            
+            <img id="logo-img" src="logo.webp" alt="Logo"
+                style="max-height: 46px; width: auto; object-fit: contain; display: block;" onerror="handleLogoError()">
+
             <!-- Fallback Dynamic Text Brand (shown only if image fails or is missing) -->
             <div id="text-brand" class="hidden" style="align-items: center; gap: 12px;">
                 <div class="header-logo-mark">D</div>
@@ -788,30 +970,30 @@
                 <!-- Name -->
                 <div>
                     <label class="field-label" for="f-name">Full Name <span style="color:#ef4444">*</span></label>
-                    <input id="f-name" class="form-input" type="text" autocomplete="name"
-                           inputmode="text" placeholder="Enter your full name">
+                    <input id="f-name" class="form-input" type="text" autocomplete="name" inputmode="text"
+                        placeholder="Enter your full name">
                 </div>
 
                 <!-- Phone -->
                 <div>
                     <label class="field-label" for="f-phone">Phone Number <span style="color:#ef4444">*</span></label>
-                    <input id="f-phone" class="form-input" type="tel" autocomplete="tel"
-                           inputmode="tel" placeholder="10-digit mobile number">
+                    <input id="f-phone" class="form-input" type="tel" autocomplete="tel" inputmode="tel"
+                        placeholder="10-digit mobile number">
                 </div>
 
                 <!-- Email -->
                 <div>
                     <label class="field-label" for="f-email">Email Address <span style="color:#ef4444">*</span></label>
-                    <input id="f-email" class="form-input" type="email" autocomplete="email"
-                           inputmode="email" placeholder="your.email@example.com">
+                    <input id="f-email" class="form-input" type="email" autocomplete="email" inputmode="email"
+                        placeholder="your.email@example.com">
                 </div>
 
                 <!-- Age + Gender -->
                 <div class="field-row">
                     <div>
                         <label class="field-label" for="f-age">Age (optional)</label>
-                        <input id="f-age" class="form-input" type="number"
-                               inputmode="numeric" min="1" max="120" placeholder="Your age">
+                        <input id="f-age" class="form-input" type="number" inputmode="numeric" min="1" max="120"
+                            placeholder="Your age">
                     </div>
                     <div>
                         <label class="field-label">Gender</label>
@@ -822,7 +1004,8 @@
                 <!-- Dental Concern -->
                 <div>
                     <label class="field-label">Primary Dental Concern <span style="color:#ef4444">*</span></label>
-                    <div class="complaint-grid" id="complaint-buttons" role="group" aria-label="Select dental concern"></div>
+                    <div class="complaint-grid" id="complaint-buttons" role="group" aria-label="Select dental concern">
+                    </div>
                 </div>
 
 
@@ -852,17 +1035,19 @@
             <div class="consent-text-box">
                 <span class="consent-label">Treatment Authorization</span>
                 I, <strong id="display-name"></strong>, hereby consent to undergo clinical diagnostic
-                scans, dental cleanings, and treatments deemed necessary by the specialist team.
-                I confirm the treatment options, procedural risks, and associated budgets have been
+                scans, dental cleanings and treatments deemed necessary by the specialist team.
+                I confirm the treatment options, procedural risks and associated budgets have been
                 outlined to my satisfaction.
             </div>
 
             <!-- Signature -->
             <div class="sig-wrap">
                 <div class="sig-header">
-                    <label class="field-label" style="margin:0;">Patient Signature <span style="color:#ef4444">*</span></label>
+                    <label class="field-label" style="margin:0;">Patient Signature <span
+                            style="color:#ef4444">*</span></label>
                     <div style="display: flex; gap: 8px;">
-                        <button id="btn-fs-sig" class="btn-clear" type="button" style="color: var(--primary); font-weight: 700;">⛶ Expand</button>
+                        <button id="btn-fs-sig" class="btn-clear" type="button"
+                            style="color: var(--primary); font-weight: 700;">⛶ Expand</button>
                         <button id="btn-clear-sig" class="btn-clear" type="button">↺ Clear</button>
                     </div>
                 </div>
@@ -892,7 +1077,8 @@
                     <p class="queue-label">Your Queue Number</p>
                     <p id="success-queue" class="queue-number">—</p>
                     <p id="success-name" class="queue-patient-name"></p>
-                    <p id="success-pid" class="queue-complaint" style="font-weight: 700; color: var(--accent); margin-top: 8px;"></p>
+                    <p id="success-pid" class="queue-complaint"
+                        style="font-weight: 700; color: var(--accent); margin-top: 8px;"></p>
                     <p id="success-complaint" class="queue-complaint"></p>
                 </div>
 
@@ -942,14 +1128,14 @@
         // ═══════════════════════════════════════════════════════════
         let state = {
             step: 'form',
-            form: { name:'', phone:'', email:'', age:'', gender:'Male', complaint:'', notes:'' },
+            form: { name: '', phone: '', email: '', age: '', gender: 'Male', complaint: '', notes: '' },
             hasSigned: false
         };
 
         const el = id => document.getElementById(id);
 
         const views = {
-            form:    el('view-form'),
+            form: el('view-form'),
             consent: el('view-consent'),
             success: el('view-success')
         };
@@ -1013,13 +1199,13 @@
             if (newStep === 'form') {
                 s1c.classList.add('active'); s1l.classList.add('active');
             } else if (newStep === 'consent') {
-                s1c.classList.add('done');  s1l.classList.add('done');  s1c.textContent = '✓';
+                s1c.classList.add('done'); s1l.classList.add('done'); s1c.textContent = '✓';
                 s2c.classList.add('active'); s2l.classList.add('active');
                 conn1.classList.add('active');
                 initCanvas();
             } else if (newStep === 'success') {
-                s1c.classList.add('done');  s1l.classList.add('done');  s1c.textContent = '✓';
-                s2c.classList.add('done');  s2l.classList.add('done');  s2c.textContent = '✓';
+                s1c.classList.add('done'); s1l.classList.add('done'); s1c.textContent = '✓';
+                s2c.classList.add('done'); s2l.classList.add('done'); s2c.textContent = '✓';
                 s3c.classList.add('active'); s3l.classList.add('active');
                 conn1.classList.add('active');
                 conn2.classList.add('active');
@@ -1048,19 +1234,19 @@
         // FORM PROCEED
         // ═══════════════════════════════════════════════════════════
         el('btn-proceed').onclick = () => {
-            state.form.name      = el('f-name').value.trim();
-            state.form.phone     = el('f-phone').value.trim();
-            state.form.email     = el('f-email') ? el('f-email').value.trim() : '';
-            state.form.age       = el('f-age').value.trim();
-            state.form.notes     = el('f-notes') ? el('f-notes').value.trim() : '';
+            state.form.name = el('f-name').value.trim();
+            state.form.phone = el('f-phone').value.trim();
+            state.form.email = el('f-email') ? el('f-email').value.trim() : '';
+            state.form.age = el('f-age').value.trim();
+            state.form.notes = el('f-notes') ? el('f-notes').value.trim() : '';
 
-            if (!state.form.name)      return showError('form', 'Please enter your full name.');
-            if (!state.form.phone)     return showError('form', 'Please enter your phone number.');
-            if (!state.form.email)     return showError('form', 'Please enter your email address.');
+            if (!state.form.name) return showError('form', 'Please enter your full name.');
+            if (!state.form.phone) return showError('form', 'Please enter your phone number.');
+            if (!state.form.email) return showError('form', 'Please enter your email address.');
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.form.email)) return showError('form', 'Please enter a valid email address.');
             const cleanPhone = state.form.phone.replace(/[\s\-\+]/g, '');
             if (!/^\d{10,15}$/.test(cleanPhone))
-                                       return showError('form', 'Phone number should be 10 to 15 digits.');
+                return showError('form', 'Phone number should be 10 to 15 digits.');
             state.form.phone = cleanPhone; // Save sanitized phone number to state
             if (!state.form.complaint) return showError('form', 'Please select your primary dental concern.');
 
@@ -1069,14 +1255,14 @@
             setStep('consent');
         };
 
-        el('btn-back-form').onclick  = () => setStep('form');
+        el('btn-back-form').onclick = () => setStep('form');
         el('btn-back-form2').onclick = () => setStep('form');
 
         // ═══════════════════════════════════════════════════════════
         // SIGNATURE CANVAS
         // ═══════════════════════════════════════════════════════════
         const canvas = el('sig-canvas');
-        let ctx = null, drawing = false, lastPos = {x:0, y:0};
+        let ctx = null, drawing = false, lastPos = { x: 0, y: 0 };
 
         function initCanvas() {
             if (!ctx) ctx = canvas.getContext('2d');
@@ -1091,7 +1277,7 @@
                 tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
             }
 
-            canvas.width  = wrap.clientWidth;
+            canvas.width = wrap.clientWidth;
             canvas.height = wrap.clientHeight;
             clearCanvas();
 
@@ -1107,9 +1293,9 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = '#111111';
-            ctx.lineWidth   = 3;
-            ctx.lineCap     = 'round';
-            ctx.lineJoin    = 'round';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
             state.hasSigned = false;
             showError('consent', '');
         }
@@ -1154,10 +1340,10 @@
 
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
-            const src  = e.touches ? e.touches[0] : e;
+            const src = e.touches ? e.touches[0] : e;
             return {
                 x: (src.clientX - rect.left) * (canvas.width / rect.width),
-                y: (src.clientY - rect.top)  * (canvas.height / rect.height)
+                y: (src.clientY - rect.top) * (canvas.height / rect.height)
             };
         }
 
@@ -1175,13 +1361,13 @@
         }
         function stopDraw(e) { if (e) e.preventDefault(); drawing = false; }
 
-        canvas.addEventListener('mousedown',  startDraw);
-        canvas.addEventListener('mousemove',  draw);
-        canvas.addEventListener('mouseup',    stopDraw);
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDraw);
         canvas.addEventListener('mouseleave', stopDraw);
         canvas.addEventListener('touchstart', startDraw, { passive: false });
-        canvas.addEventListener('touchmove',  draw,      { passive: false });
-        canvas.addEventListener('touchend',   stopDraw,  { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDraw, { passive: false });
 
         // Handle canvas resize (orientation change on mobile)
         window.addEventListener('resize', () => {
@@ -1195,7 +1381,7 @@
         function getCompressedSignature() {
             if (!state.hasSigned) return null;
             const small = document.createElement('canvas');
-            small.width  = 400;
+            small.width = 400;
             small.height = 200;
             small.getContext('2d').drawImage(canvas, 0, 0, 400, 200);
             return small.toDataURL('image/jpeg', 0.3);
@@ -1214,13 +1400,13 @@
 
             try {
                 const payload = {
-                    name:      state.form.name,
-                    phone:     state.form.phone,
-                    email:     state.form.email,
-                    age:       state.form.age ? Number(state.form.age) : null,
-                    gender:    state.form.gender,
+                    name: state.form.name,
+                    phone: state.form.phone,
+                    email: state.form.email,
+                    age: state.form.age ? Number(state.form.age) : null,
+                    gender: state.form.gender,
                     complaint: state.form.complaint,
-                    notes:     state.form.notes,
+                    notes: state.form.notes,
                     signature: getCompressedSignature()
                 };
 
@@ -1245,9 +1431,9 @@
                     throw new Error(data.error || `HTTP ${res.status}: Failed to submit consent form`);
                 }
 
-                el('success-queue').textContent     = data.appt.queue_number;
-                el('success-name').textContent      = data.patient.name;
-                el('success-pid').textContent       = data.patient.pid ? `Patient ID: ${data.patient.pid}` : '';
+                el('success-queue').textContent = data.appt.queue_number;
+                el('success-name').textContent = data.patient.name;
+                el('success-pid').textContent = data.patient.pid ? `Patient ID: ${data.patient.pid}` : '';
                 el('success-complaint').textContent = state.form.complaint;
                 setStep('success');
 
@@ -1264,8 +1450,8 @@
         // RESET
         // ═══════════════════════════════════════════════════════════
         el('btn-done').onclick = () => {
-            state.form = { name:'', phone:'', email:'', age:'', gender:'Male', complaint:'', notes:'' };
-            ['f-name','f-phone','f-email','f-age'].forEach(id => { if (el(id)) el(id).value = ''; });
+            state.form = { name: '', phone: '', email: '', age: '', gender: 'Male', complaint: '', notes: '' };
+            ['f-name', 'f-phone', 'f-email', 'f-age'].forEach(id => { if (el(id)) el(id).value = ''; });
             const notesEl = el('f-notes');
             if (notesEl) notesEl.value = '';
             renderGenderButtons();
@@ -1301,4 +1487,5 @@
         renderComplaintButtons();
     </script>
 </body>
+
 </html>

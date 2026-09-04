@@ -136,7 +136,7 @@ export default function Contact() {
               <div className="loc-label-warm">Bus &amp; Public Transit</div>
               <div className="loc-main-warm">Easily Accessible by MTC Buses</div>
               <p className="loc-sub-warm">
-                Frequent buses run along Kundrathur Main Road and Porur junction from Guindy, Vadapalani, Poonamallee, and Tambaram.
+                Frequent buses run along Kundrathur Main Road and Porur junction from Guindy, Vadapalani, Poonamallee and Tambaram.
               </p>
             </div>
 
@@ -152,7 +152,7 @@ export default function Contact() {
               <div className="loc-label-warm">Nearby Areas Served</div>
               <div className="loc-main-warm">Within 10-15 Minutes From:</div>
               <p className="loc-sub-warm">
-                Mugalivakkam, Ramapuram, Iyyappanthangal, Manapakkam, Valasaravakkam, Mangadu, and Kundrathur.
+                Mugalivakkam, Ramapuram, Iyyappanthangal, Manapakkam, Valasaravakkam, Mangadu and Kundrathur.
               </p>
             </div>
           </div>

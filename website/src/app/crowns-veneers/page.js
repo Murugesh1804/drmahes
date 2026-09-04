@@ -3,7 +3,7 @@ import { Phone } from "lucide-react";
 
 export const metadata = {
   title: "Dental Crowns & Veneers in Porur, Chennai | Dr. Mahe's Dentistry",
-  description: "Restore damaged teeth and enhance your smile with custom Zirconia, e.max crowns, and ultra-thin veneers at Dr. Mahe's Dentistry in Porur.",
+  description: "Restore damaged teeth and enhance your smile with custom Zirconia, e.max crowns and ultra-thin veneers at Dr. Mahe's Dentistry in Porur.",
   keywords: ["zirconia crowns porur", "dental veneers chennai", "e.max crowns porur", "tooth cap dentist porur", "porcelain veneers chennai"],
   alternates: { canonical: '/crowns-veneers' },
   openGraph: {
@@ -111,7 +111,7 @@ export default function CrownsVeneers() {
               <div className="step-num-warm">4</div>
               <div>
                 <div className="step-title-warm">Bonding &amp; Bite Optimization</div>
-                <div className="step-desc-warm">Dr. Maheswari verifies the aesthetic alignment, checks your chewing bite, and permanently bonds the crown or veneer.</div>
+                <div className="step-desc-warm">Dr. Maheswari verifies the aesthetic alignment, checks your chewing bite and permanently bonds the crown or veneer.</div>
               </div>
             </div>
           </div>

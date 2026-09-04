@@ -3,7 +3,7 @@ import { Phone } from "lucide-react";
 
 export const metadata = {
   title: "Oral Surgery & Wisdom Tooth Extractions in Porur, Chennai | Dr. Mahe's Dentistry",
-  description: "Expert, minimally invasive oral surgery and wisdom tooth removal at Dr. Mahe's Dentistry in Porur. Painless procedures, gentle recovery, and sterile protocols.",
+  description: "Expert, minimally invasive oral surgery and wisdom tooth removal at Dr. Mahe's Dentistry in Porur. Painless procedures, gentle recovery and sterile protocols.",
   keywords: ["oral surgery porur", "wisdom tooth extraction chennai", "tooth removal porur", "painless extraction dentist porur"],
   alternates: { canonical: '/oral-surgery' },
   openGraph: {
@@ -79,13 +79,13 @@ export default function OralSurgery() {
           <div className="section-header" data-animate>
             <span className="section-badge">Procedures Offered</span>
             <h2 className="section-title">Common Oral Surgical <em>Treatments</em></h2>
-            <p className="section-desc">Handled with precision, sterilization, and dedicated after-care instructions.</p>
+            <p className="section-desc">Handled with precision, sterilization and dedicated after-care instructions.</p>
           </div>
 
           <div className="benefit-grid-warm">
             <div className="benefit-card-warm" data-animate>
               <div className="benefit-icon-warm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18" /></svg>
               </div>
               <h3 className="benefit-title-warm">Impacted Wisdom Tooth Removal</h3>
               <p className="benefit-desc-warm">Safe removal of third molars trapped under the gums or growing horizontally toward neighboring teeth.</p>
@@ -93,7 +93,7 @@ export default function OralSurgery() {
 
             <div className="benefit-card-warm" data-animate data-delay="100">
               <div className="benefit-icon-warm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               </div>
               <h3 className="benefit-title-warm">Severely Damaged Root Extraction</h3>
               <p className="benefit-desc-warm">Minimally invasive extraction of teeth broken below the gumline that cannot be safely restored.</p>
@@ -101,7 +101,7 @@ export default function OralSurgery() {
 
             <div className="benefit-card-warm" data-animate data-delay="200">
               <div className="benefit-icon-warm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
               </div>
               <h3 className="benefit-title-warm">Socket Preservation &amp; Healing</h3>
               <p className="benefit-desc-warm">Biocompatible healing membranes to protect the extraction site and prepare the bone for future implants.</p>

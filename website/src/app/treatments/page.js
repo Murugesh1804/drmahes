@@ -3,7 +3,7 @@ import { Check, Phone, MessageCircle, ArrowRight } from "lucide-react";
 
 export const metadata = {
   title: "Complete Dental Treatments in Porur, Chennai | Dr. Mahe's Dentistry",
-  description: "Explore our complete range of gentle, advanced dental treatments in Porur, Chennai — painless root canals, dental implants, braces, pediatric dentistry, veneers, and oral surgery.",
+  description: "Explore our complete range of gentle, advanced dental treatments in Porur, Chennai — painless root canals, dental implants, braces, pediatric dentistry, veneers and oral surgery.",
   keywords: ["dental treatments porur", "dental services chennai", "implants root canal orthodontics porur", "cosmetic dentistry porur"],
   alternates: {
     canonical: '/treatments',
@@ -30,7 +30,7 @@ export default function Treatments() {
       name: 'Painless Root Canal Treatment',
       badge: 'Single Sitting Available',
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /><path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" /></svg>,
-      desc: 'Gentle endodontic therapy using micro-rotary files and digital imaging to eliminate infection, remove pain, and save your natural tooth in one visit.',
+      desc: 'Gentle endodontic therapy using micro-rotary files and digital imaging to eliminate infection, remove pain and save your natural tooth in one visit.',
       img: '/assets/root canal treament.jpg',
       page: '/root-canal',
       meta: 'Pain-Free · Same Day'
@@ -38,8 +38,8 @@ export default function Treatments() {
     {
       name: 'Orthodontics & Braces',
       badge: 'Clear Aligners & Ceramic',
-      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><rect x="3" y="8" width="18" height="8" rx="2" /><line x1="7" y1="8" x2="7" y2="16" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="17" y1="8" x2="17" y2="16" /><line x1="3" y1="12" x2="21" y2="12"/></svg>,
-      desc: 'Discreet ceramic brackets, self-ligating braces, and custom clear aligners for children, teenagers, and adults to achieve balanced facial aesthetics.',
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><rect x="3" y="8" width="18" height="8" rx="2" /><line x1="7" y1="8" x2="7" y2="16" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="17" y1="8" x2="17" y2="16" /><line x1="3" y1="12" x2="21" y2="12" /></svg>,
+      desc: 'Discreet ceramic brackets, self-ligating braces and custom clear aligners for children, teenagers and adults to achieve balanced facial aesthetics.',
       img: '/assets/braces.jpg',
       page: '/orthodontics',
       meta: 'All Ages · Custom Alignment'
@@ -48,7 +48,7 @@ export default function Treatments() {
       name: 'Pediatric Dentistry (Pedodontics)',
       badge: 'Child Friendly & Gentle',
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M12 2a5 5 0 0 1 5 5c0 3.5-3.5 7-5 10-1.5-3-5-6.5-5-10a5 5 0 0 1 5-5z" /><circle cx="12" cy="7" r="1.5" /></svg>,
-      desc: 'Specialized dental care for toddlers, kids, and teens. Preventive sealants, gentle cavity treatment, habit counseling, and fun milestone checkups.',
+      desc: 'Specialized dental care for toddlers, kids and teens. Preventive sealants, gentle cavity treatment, habit counseling and fun milestone checkups.',
       img: '/assets/pedo.jpg',
       page: '/pediatric-dentistry',
       meta: 'Fear-Free · Kids First'
@@ -66,7 +66,7 @@ export default function Treatments() {
       name: 'Oral Surgery & Wisdom Teeth',
       badge: 'Safe & Minimally Invasive',
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18" /></svg>,
-      desc: 'Expert surgical removal of impacted wisdom teeth, complex extractions, and minor soft-tissue procedures with gentle anesthesia and quick recovery.',
+      desc: 'Expert surgical removal of impacted wisdom teeth, complex extractions and minor soft-tissue procedures with gentle anesthesia and quick recovery.',
       img: '/assets/OralSurgery.jpg',
       page: '/oral-surgery',
       meta: 'Gentle Extractions'
@@ -156,7 +156,7 @@ export default function Treatments() {
                 Book an Honest, <em>Zero-Pressure</em> Consultation
               </h2>
               <p style={{ color: "var(--text-secondary)", lineHeight: 1.85, marginBottom: "20px" }}>
-                You don't need to diagnose your own teeth. Dr. Maheswari will carefully examine your mouth with digital imaging, explain what is happening, and present your options clearly so you can decide what fits your goals and budget.
+                You don't need to diagnose your own teeth. Dr. Maheswari will carefully examine your mouth with digital imaging, explain what is happening and present your options clearly so you can decide what fits your goals and budget.
               </p>
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                 <Link href="/contact#booking" className="btn btn-primary">

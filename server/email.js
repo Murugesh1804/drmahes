@@ -9,7 +9,7 @@ const smtpPass = process.env.SMTP_PASS || ''
 const mailFrom = process.env.MAIL_FROM || ''
 
 if (process.env.NODE_ENV === 'production' && (!mailFrom || !smtpUser || !smtpPass)) {
-  throw new Error('[email] MAIL_FROM, SMTP_USER, and SMTP_PASS must be configured in production')
+  throw new Error('[email] MAIL_FROM, SMTP_USER and SMTP_PASS must be configured in production')
 }
 
 const transporter = nodemailer.createTransport({

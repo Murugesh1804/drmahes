@@ -27,7 +27,7 @@ export default function Home() {
       name: 'Orthodontics & Braces',
       badge: 'Kids, Teens & Adults',
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><rect x="3" y="8" width="18" height="8" rx="2" /><line x1="7" y1="8" x2="7" y2="16" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="17" y1="8" x2="17" y2="16" /><line x1="3" y1="12" x2="21" y2="12" /></svg>,
-      desc: 'Ceramic brackets, self-ligating systems, and invisible clear aligners customized to give you a straight, harmonious smile with minimal discomfort.',
+      desc: 'Ceramic brackets, self-ligating systems and invisible clear aligners customized to give you a straight, harmonious smile with minimal discomfort.',
       img: '/assets/braces.jpg',
       page: '/orthodontics',
       meta: 'Clear Aligners & Ceramic'
@@ -36,7 +36,7 @@ export default function Home() {
       name: 'Pediatric Dentistry',
       badge: 'Gentle Child Care',
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M12 2a5 5 0 0 1 5 5c0 3.5-3.5 7-5 10-1.5-3-5-6.5-5-10a5 5 0 0 1 5-5z" /><circle cx="12" cy="7" r="1.5" /></svg>,
-      desc: 'Fun, fear-free dentistry for toddlers, children, and teens. Preventive fluoride, cavity treatments, and gentle habit coaching in a relaxed setting.',
+      desc: 'Fun, fear-free dentistry for toddlers, children and teens. Preventive fluoride, cavity treatments and gentle habit coaching in a relaxed setting.',
       img: '/assets/pedo.jpg',
       page: '/pediatric-dentistry',
       meta: 'Fear-Free for Kids'
@@ -45,7 +45,7 @@ export default function Home() {
       name: 'Crowns & Veneers',
       badge: 'Natural Aesthetics',
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M2 20h20M5 20V8l3.5 4L12 3l3.5 9L19 8v12" /></svg>,
-      desc: 'Hand-crafted zirconia, e.max, and porcelain restorations that seamlessly match your natural tooth shade, restoring beauty and strength.',
+      desc: 'Hand-crafted zirconia, e.max and porcelain restorations that seamlessly match your natural tooth shade, restoring beauty and strength.',
       img: '/assets/veneers.jpg',
       page: '/crowns-veneers',
       meta: 'Custom Shade Matching'
@@ -76,7 +76,7 @@ export default function Home() {
       rating: 5,
       time: "1 week ago",
       review:
-        "Had a very good experience at Dr. Mahe’s Dentistry. The doctor were friendly, professional, and explained the treatment clearly. The clinic was clean and well maintained. Overall, I’m happy with the care and would definitely recommend Dr. Mahe’s Dentistry to others."
+        "Had a very good experience at Dr. Mahe’s Dentistry. The doctor were friendly, professional and explained the treatment clearly. The clinic was clean and well maintained. Overall, I’m happy with the care and would definitely recommend Dr. Mahe’s Dentistry to others."
     },
     {
       name: "Pavithra",
@@ -97,14 +97,14 @@ export default function Home() {
       rating: 5,
       time: "1 month ago",
       review:
-        "I had an excellent experience at this dental clinic. I visited for a dental check-up, tooth scaling, and a tooth extraction. Mam explained every step of the treatment clearly, and the extraction was smooth and almost painless."
+        "I had an excellent experience at this dental clinic. I visited for a dental check-up, tooth scaling and a tooth extraction. Mam explained every step of the treatment clearly and the extraction was smooth and almost painless."
     },
     {
       name: "Lavanya Nagamani",
       rating: 5,
       time: "1 month ago",
       review:
-        "The clinic was so neat and I had Great experience from start to finish. The scaling was comfortable, and my fractured tooth was restored with excellent precision. Thank you for the wonderful care! 🦷"
+        "The clinic was so neat and I had Great experience from start to finish. The scaling was comfortable and my fractured tooth was restored with excellent precision. Thank you for the wonderful care! 🦷"
     }
   ];
 
@@ -169,7 +169,7 @@ export default function Home() {
             </h1>
 
             <p className="hero-lead-warm">
-              We know visiting the dentist can feel daunting. At Dr. Mahe's Dentistry, every visit is calm, unhurried, transparent, and genuinely kind — from simple cleanings to complete smile restorations.
+              We know visiting the dentist can feel daunting. At Dr. Mahe's Dentistry, every visit is calm, unhurried, transparent and genuinely kind — from simple cleanings to complete smile restorations.
             </p>
 
             <div className="hero-actions-warm">
@@ -209,6 +209,10 @@ export default function Home() {
                 <span>Painless Anesthesia</span>
               </div>
             </div>
+
+            <div className="hero-handwrite-note">
+              “Every smile is unique and so is our time with you.” <span>— Dr. Maheswari, BDS</span>
+            </div>
           </div>
 
           <div className="hero-visual-box" data-animate="slide-left">
@@ -221,10 +225,10 @@ export default function Home() {
                 priority="true"
               />
             </div>
-            
+
             <div className="hero-float-badge">
               <div className="hero-float-badge-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
               </div>
               <div>
                 <div className="hero-float-badge-title">Painless Care Promise</div>
@@ -238,10 +242,18 @@ export default function Home() {
       {/* ─── 2. THE GENTLE CARE DIFFERENCE (4 PILLARS) ─── */}
       <section className="gentle-promises-section section-padding-sm">
         <div className="container">
+          <div className="section-header" data-animate style={{ marginBottom: "38px" }}>
+            <span className="section-badge">The Gentle Care Difference</span>
+            <h2 className="section-title">A Higher Standard of <em>Compassionate Dentistry</em></h2>
+            <p className="section-desc">
+              Four fundamental clinical commitments that guide every consultation, cleaning and treatment.
+            </p>
+          </div>
+
           <div className="promises-grid">
             <div className="promise-card" data-animate data-delay="100">
               <div className="promise-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
               </div>
               <h3 className="promise-title">Pain-Conscious Care</h3>
               <p className="promise-desc">
@@ -251,17 +263,17 @@ export default function Home() {
 
             <div className="promise-card" data-animate data-delay="200">
               <div className="promise-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
               </div>
               <h3 className="promise-title">Zero Judgment Zone</h3>
               <p className="promise-desc">
-                Haven't visited a dentist in years? Worried about your teeth? You will always receive kindness, respect, and zero lectures.
+                Haven't visited a dentist in years? Worried about your teeth? You will always receive kindness, respect and zero lectures.
               </p>
             </div>
 
             <div className="promise-card" data-animate data-delay="300">
               <div className="promise-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               </div>
               <h3 className="promise-title">100% Honest Pricing</h3>
               <p className="promise-desc">
@@ -271,7 +283,7 @@ export default function Home() {
 
             <div className="promise-card" data-animate data-delay="400">
               <div className="promise-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></svg>
               </div>
               <h3 className="promise-title">Hospital Sterilization</h3>
               <p className="promise-desc">
@@ -289,7 +301,7 @@ export default function Home() {
             <span className="section-badge">Personalized Dental Guide</span>
             <h2 className="section-title">What brings you in <em>today?</em></h2>
             <p className="section-desc">
-              Select what you are experiencing below to see our recommended care pathway, expected timeline, and direct booking options.
+              Select what you are experiencing below to see our recommended care pathway, expected timeline and direct booking options.
             </p>
           </div>
 
@@ -361,19 +373,22 @@ export default function Home() {
             </div>
 
             <div className="doctor-letter-content" data-animate="slide-left">
-              <div className="doctor-handwrite-intro">A personal note from Dr. Maheswari</div>
+              <div className="doctor-handwrite-intro">A personal note from Dr. Maheswari ~ Founder &amp; Lead Clinician</div>
               <h2 className="doctor-editorial-heading">
                 "Dentistry isn't just about teeth. It is about how you <em>feel</em> when you are here."
               </h2>
               <p className="doctor-letter-p">
-                When I opened our clinic on Kundrathur Main Road in Porur, I wanted to build the kind of practice I would want my own family to visit: one where nobody feels hurried, nobody feels judged, and treatments are explained with honesty and clarity.
+                When I opened our clinic on Kundrathur Main Road in Porur, I wanted to build the kind of practice I would want my own family to visit: one where nobody feels hurried, nobody feels judged and treatments are explained with honesty and clarity.
               </p>
               <p className="doctor-letter-p">
-                Whether you need immediate relief from toothache, want to gently introduce your toddler to their first dental checkup, or are planning a complete smile makeover with implants, my team and I promise to listen first, move at your pace, and treat you with warmth.
+                Whether you need immediate relief from toothache, want to gently introduce your toddler to their first dental checkup, or are planning a complete smile makeover with implants, my team and I promise to listen first, move at your pace and treat you with warmth.
               </p>
-              
+
               <div className="doctor-signature-block">
                 <div className="doctor-sign-info">
+                  <div style={{ fontFamily: "var(--font-handwrite, cursive)", fontSize: "1.6rem", color: "var(--accent-hover)", lineHeight: 1.1, marginBottom: "4px" }}>
+                    Warmly, Dr. Mahe
+                  </div>
                   <span className="doctor-sign-name">Dr. Maheswari, BDS</span>
                   <span className="doctor-sign-role">Dr. Mahe's Dentistry · Porur, Chennai</span>
                 </div>
@@ -428,7 +443,7 @@ export default function Home() {
               </div>
               <h3 className="journey-step-title">Clear Options &amp; Pricing</h3>
               <p className="journey-step-desc">
-                We show you exactly what we see on screen, walk through treatment options, timelines, and exact costs before anything starts.
+                We show you exactly what we see on screen, walk through treatment options, timelines and exact costs before anything starts.
               </p>
             </div>
 
@@ -450,6 +465,9 @@ export default function Home() {
       <section className="patient-stories-section section-padding">
         <div className="container">
           <div className="section-header" data-animate>
+            <div style={{ fontFamily: "var(--font-handwrite, cursive)", fontSize: "1.5rem", color: "var(--accent-hover)", marginBottom: "4px" }}>
+              Authentic stories from our Porur neighbors
+            </div>
             <span className="section-badge">Verified Google Reviews</span>
             <h2 className="section-title">Words from our <em>Patients</em></h2>
             <p className="section-desc">
@@ -518,7 +536,7 @@ export default function Home() {
                   <span className="faq-icon">+</span>
                 </summary>
                 <div className="faq-body-warm">
-                  No — not at Dr. Mahe's Dentistry. With modern pre-numb comfort gels, computerized gentle anesthesia, and precision rotary instruments, root canals here are comfortable and typically completed in a single sitting. Most patients tell us they felt no pain whatsoever during the procedure.
+                  No — not at Dr. Mahe's Dentistry. With modern pre-numb comfort gels, computerized gentle anesthesia and precision rotary instruments, root canals here are comfortable and typically completed in a single sitting. Most patients tell us they felt no pain whatsoever during the procedure.
                 </div>
               </details>
 
@@ -528,7 +546,7 @@ export default function Home() {
                   <span className="faq-icon">+</span>
                 </summary>
                 <div className="faq-body-warm">
-                  Never. We have a strict zero-judgment policy. Life happens, dental anxiety is real, and we admire your courage in taking the step to visit today. We are here solely to help you get comfortable and healthy — zero guilt or lectures.
+                  Never. We have a strict zero-judgment policy. Life happens, dental anxiety is real and we admire your courage in taking the step to visit today. We are here solely to help you get comfortable and healthy — zero guilt or lectures.
                 </div>
               </details>
 
@@ -538,7 +556,7 @@ export default function Home() {
                   <span className="faq-icon">+</span>
                 </summary>
                 <div className="faq-body-warm">
-                  Dental implants are designed to last a lifetime. The medical-grade titanium fixture integrates directly with your jawbone, acting just like a natural tooth root. With regular brushing, flossing, and periodic routine checkups, implants rarely ever require replacement.
+                  Dental implants are designed to last a lifetime. The medical-grade titanium fixture integrates directly with your jawbone, acting just like a natural tooth root. With regular brushing, flossing and periodic routine checkups, implants rarely ever require replacement.
                 </div>
               </details>
 
@@ -548,7 +566,7 @@ export default function Home() {
                   <span className="faq-icon">+</span>
                 </summary>
                 <div className="faq-body-warm">
-                  We recommend bringing your child when their first tooth appears, or by their first birthday. Early visits are fun, gentle, and brief — helping your child feel happy and comfortable in the clinic environment while catching any early habits or enamel issues early.
+                  We recommend bringing your child when their first tooth appears, or by their first birthday. Early visits are fun, gentle and brief — helping your child feel happy and comfortable in the clinic environment while catching any early habits or enamel issues early.
                 </div>
               </details>
 
@@ -558,7 +576,7 @@ export default function Home() {
                   <span className="faq-icon">+</span>
                 </summary>
                 <div className="faq-body-warm">
-                  Always 100%. Before any procedure begins, Dr. Maheswari explains what was found on the digital X-ray, presents the available treatment options, and outlines the exact cost. You are always free to decide without any pressure.
+                  Always 100%. Before any procedure begins, Dr. Maheswari explains what was found on the digital X-ray, presents the available treatment options and outlines the exact cost. You are always free to decide without any pressure.
                 </div>
               </details>
 
@@ -583,7 +601,7 @@ export default function Home() {
             <span className="section-badge">Schedule Your Visit</span>
             <h2 className="section-title">Book an Appointment with <em>Dr. Maheswari</em></h2>
             <p className="section-desc">
-              Choose your treatment, select a convenient date and time, and share your contact details. No advance payment needed.
+              Choose your treatment, select a convenient date and time and share your contact details. No advance payment needed.
             </p>
           </div>
 

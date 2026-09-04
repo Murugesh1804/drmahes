@@ -3,7 +3,7 @@ import { Phone, MessageCircle } from "lucide-react";
 
 export const metadata = {
   title: "Meet Dr. Maheswari, BDS — Dentist in Porur, Chennai | Dr. Mahe's Dentistry",
-  description: "Learn about Dr. Maheswari, BDS, lead dentist at Dr. Mahe's Dentistry in Porur, Chennai. Discover our compassionate philosophy, gentle techniques, and clinical standards.",
+  description: "Learn about Dr. Maheswari, BDS, lead dentist at Dr. Mahe's Dentistry in Porur, Chennai. Discover our compassionate philosophy, gentle techniques and clinical standards.",
   keywords: ["dr maheswari dentist porur", "dentist porur chennai", "general dentist porur", "dr mahe dentistry about"],
   alternates: {
     canonical: '/about',
@@ -18,32 +18,32 @@ export const metadata = {
 export default function About() {
   const values = [
     {
-      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
       title: 'Class-B Autoclave Sterilization',
       desc: 'Hospital-grade infection control protocols. Every instrument is vacuum-sealed in sterile pouches and opened fresh before your eyes.'
     },
     {
-      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>,
       title: 'Zero Judgment, Total Kindness',
-      desc: 'Haven’t been to a dentist in years? Worried about your oral hygiene? You will only receive encouragement, dignity, and gentle solutions here.'
+      desc: 'Haven’t been to a dentist in years? Worried about your oral hygiene? You will only receive encouragement, dignity and gentle solutions here.'
     },
     {
-      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>,
       title: 'Low-Radiation Digital Scans',
       desc: 'Digital sensors reduce radiation exposure by up to 90% compared to traditional dental X-rays, providing ultra-sharp diagnosis in seconds.'
     },
     {
-      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
       title: 'You Control the Pace',
       desc: 'We never rush through an appointment. You can pause us anytime with a simple hand gesture. We move at your speed and comfort level.'
     },
     {
-      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
       title: 'Complete Family Care',
       desc: 'From a toddler’s first milestone checkup to adolescent braces and senior implant rehabilitations — expert care under one roof.'
     },
     {
-      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>,
       title: 'Convenient Porur Location',
       desc: 'On Kundrathur Main Road, Porur with parking. Open until 10:00 PM on weekdays and Saturdays for after-work and school visits.'
     },
@@ -64,7 +64,7 @@ export default function About() {
           <span className="page-hero-badge">Our Founder &amp; Lead Clinician</span>
           <h1 className="page-hero-title-warm">Meet <em>Dr. Maheswari, BDS</em></h1>
           <p className="page-hero-desc-warm">
-            Dedicated to gentle, unhurried, and genuinely empathetic dentistry for families across Porur and Chennai.
+            Dedicated to gentle, unhurried and genuinely empathetic dentistry for families across Porur and Chennai.
           </p>
         </div>
       </section>
@@ -98,10 +98,10 @@ export default function About() {
                 Dr. Maheswari completed her dental education with a firm belief that dental visits should be centered around the patient's emotional comfort and long-term health. Over years of clinical practice in Chennai, she observed that fear and anxiety keep people from getting the dental care they deserve.
               </p>
               <p className="doctor-letter-p">
-                She founded <strong>Dr. Mahe's Dentistry</strong> in Porur to be a refuge from cold, rushed, clinical environments. Here, every patient is given full attention, time to ask questions, and a detailed explanation of their diagnosis in everyday language.
+                She founded <strong>Dr. Mahe's Dentistry</strong> in Porur to be a refuge from cold, rushed, clinical environments. Here, every patient is given full attention, time to ask questions and a detailed explanation of their diagnosis in everyday language.
               </p>
               <p className="doctor-letter-p">
-                From delicate single-sitting root canals and implant restorations to children’s dentistry and smile makeovers, Dr. Maheswari treats every patient with the precision, patience, and warmth she would offer her own family.
+                From delicate single-sitting root canals and implant restorations to children’s dentistry and smile makeovers, Dr. Maheswari treats every patient with the precision, patience and warmth she would offer her own family.
               </p>
 
               <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", marginTop: "32px" }}>
@@ -131,7 +131,7 @@ export default function About() {
             <span className="section-badge">Our Pillars</span>
             <h2 className="section-title">The Principles that Guide <em>Every Visit</em></h2>
             <p className="section-desc">
-              Everything we do in our clinic is designed to keep you safe, comfortable, and confident in your dental choices.
+              Everything we do in our clinic is designed to keep you safe, comfortable and confident in your dental choices.
             </p>
           </div>
 

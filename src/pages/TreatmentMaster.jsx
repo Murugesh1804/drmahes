@@ -27,7 +27,7 @@ const EMPTY_MEDICINE_FORM = {
 export default function TreatmentMaster() {
   const { notify, fmt } = useApp()
   const [activeTab, setActiveTab] = useState('treatments') // 'treatments' | 'medicines'
-  
+
   const [treatments, setTreatments] = useState([])
   const [medicines, setMedicines] = useState([])
   const [loading, setLoading] = useState(false)
@@ -50,12 +50,12 @@ export default function TreatmentMaster() {
     setLoading(true)
     try {
       if (activeTab === 'treatments') {
-        const data = search.trim() 
+        const data = search.trim()
           ? await searchTreatmentMasters(search)
           : await getAllTreatmentMasters(true) // include inactive
         setTreatments(data || [])
       } else {
-        const data = search.trim() 
+        const data = search.trim()
           ? await searchMedicineMasters(search)
           : await getAllMedicineMasters(true) // include inactive
         setMedicines(data || [])
@@ -200,7 +200,7 @@ export default function TreatmentMaster() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-800">Master Data</h2>
-          <p className="text-sm text-slate-400">Manage clinic treatments, medicines, and products</p>
+          <p className="text-sm text-slate-400">Manage clinic treatments, medicines and products</p>
         </div>
         {activeTab === 'treatments' ? (
           <button id="btn-add-treatment-master" onClick={openAdd} className="btn-primary">
@@ -215,17 +215,15 @@ export default function TreatmentMaster() {
 
       <div className="flex border-b border-slate-200 gap-6">
         <button
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${
-            activeTab === 'treatments' ? 'border-primary-600 text-primary-700' : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'treatments' ? 'border-primary-600 text-primary-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
           onClick={() => { setActiveTab('treatments'); setSearch('') }}
         >
           <ShieldCheck size={16} /> Treatments Master
         </button>
         <button
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${
-            activeTab === 'medicines' ? 'border-primary-600 text-primary-700' : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'medicines' ? 'border-primary-600 text-primary-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
           onClick={() => { setActiveTab('medicines'); setSearch('') }}
         >
           <Pill size={16} /> Medicines & Products
@@ -271,11 +269,10 @@ export default function TreatmentMaster() {
                       <td>
                         <button
                           onClick={() => handleToggleActive(t)}
-                          className={`text-xs font-bold px-2 py-0.5 rounded-full transition-colors ${
-                            t.is_active
+                          className={`text-xs font-bold px-2 py-0.5 rounded-full transition-colors ${t.is_active
                               ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
                               : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
-                          }`}
+                            }`}
                         >
                           {t.is_active ? 'Active' : 'Inactive'}
                         </button>
@@ -322,11 +319,10 @@ export default function TreatmentMaster() {
                       <td>
                         <button
                           onClick={() => handleToggleMedActive(m)}
-                          className={`text-xs font-bold px-2 py-0.5 rounded-full transition-colors ${
-                            m.is_active
+                          className={`text-xs font-bold px-2 py-0.5 rounded-full transition-colors ${m.is_active
                               ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
                               : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
-                          }`}
+                            }`}
                         >
                           {m.is_active ? 'Active' : 'Inactive'}
                         </button>

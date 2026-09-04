@@ -36,7 +36,7 @@ export default function DentalImplants() {
           <span className="page-hero-badge">Permanent Missing Teeth Replacement</span>
           <h1 className="page-hero-title-warm">Dental <em>Implants</em> in Porur</h1>
           <p className="page-hero-desc-warm">
-            Eat, speak, and smile with complete natural confidence. Biocompatible titanium tooth roots topped with precision custom crowns designed to last a lifetime.
+            Eat, speak and smile with complete natural confidence. Biocompatible titanium tooth roots topped with precision custom crowns designed to last a lifetime.
           </p>
           <div className="page-hero-actions-warm">
             <Link href="/contact?service=Dental%20Implants#booking" className="btn btn-primary">
@@ -62,7 +62,7 @@ export default function DentalImplants() {
               A dental implant replaces both the visible crown and the invisible root beneath your gums. Made of medical-grade titanium that naturally fuses with your jawbone (osseointegration), it becomes a permanent part of your anatomy.
             </p>
             <div className="info-box-warm">
-              <strong>Why Implants Beat Bridges &amp; Dentures:</strong> Bridges require grinding down healthy neighboring teeth, and dentures often slip. Implants stand completely on their own, preserve your natural jawbone volume, and never decay.
+              <strong>Why Implants Beat Bridges &amp; Dentures:</strong> Bridges require grinding down healthy neighboring teeth and dentures often slip. Implants stand completely on their own, preserve your natural jawbone volume and never decay.
             </div>
           </div>
           <div data-animate="slide-left">
@@ -132,7 +132,7 @@ export default function DentalImplants() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2C8.5 2 7 5 7 7c0 2.5 1.5 4 3 5v3H9a1 1 0 0 0 0 2h1v2a1 1 0 0 0 2 0v-2h1a1 1 0 0 0 0-2h-1v-3c1.5-1 3-2.5 3-5 0-2-1.5-5-5-5z" /></svg>
               </div>
               <h3 className="benefit-title-warm">Feels 100% Natural</h3>
-              <p className="benefit-desc-warm">Eat your favorite foods, bite into crunchy apples, and smile freely without any worry of slipping or clicking.</p>
+              <p className="benefit-desc-warm">Eat your favorite foods, bite into crunchy apples and smile freely without any worry of slipping or clicking.</p>
             </div>
 
             <div className="benefit-card-warm" data-animate data-delay="100">
@@ -148,7 +148,7 @@ export default function DentalImplants() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
               </div>
               <h3 className="benefit-title-warm">Lifetime Durability</h3>
-              <p className="benefit-desc-warm">With standard brushing, flossing, and routine dental cleanings, titanium implants are built to last your entire life.</p>
+              <p className="benefit-desc-warm">With standard brushing, flossing and routine dental cleanings, titanium implants are built to last your entire life.</p>
             </div>
           </div>
         </div>
