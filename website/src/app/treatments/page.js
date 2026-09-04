@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Check, Phone, MessageCircle, ArrowRight } from "lucide-react";
 
 export const metadata = {
-  title: "Complete Dental Treatments in Porur, Chennai | Dr. Mahe's Dentistry",
+  title: "Complete Dental Treatments in Porur, Chennai",
   description: "Explore our complete range of gentle, advanced dental treatments in Porur, Chennai — painless root canals, dental implants, braces, pediatric dentistry, veneers and oral surgery.",
   keywords: ["dental treatments porur", "dental services chennai", "implants root canal orthodontics porur", "cosmetic dentistry porur"],
   alternates: {
@@ -80,7 +80,7 @@ export default function Treatments() {
     "@type": "MedicalClinic",
     "name": "Dr. Mahe's Dentistry Treatments",
     "availableService": treatmentsData.map(tx => ({
-      "@type": "MedicalTest",
+      "@type": "MedicalProcedure",
       "name": tx.name,
       "description": tx.desc
     }))

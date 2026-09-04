@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 
 export const metadata = {
-  title: "Oral Surgery & Wisdom Tooth Extractions in Porur, Chennai | Dr. Mahe's Dentistry",
+  title: "Oral Surgery & Wisdom Tooth Extractions in Porur, Chennai",
   description: "Expert, minimally invasive oral surgery and wisdom tooth removal at Dr. Mahe's Dentistry in Porur. Painless procedures, gentle recovery and sterile protocols.",
   keywords: ["oral surgery porur", "wisdom tooth extraction chennai", "tooth removal porur", "painless extraction dentist porur"],
   alternates: { canonical: '/oral-surgery' },

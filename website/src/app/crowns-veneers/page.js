@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 
 export const metadata = {
-  title: "Dental Crowns & Veneers in Porur, Chennai | Dr. Mahe's Dentistry",
+  title: "Dental Crowns & Veneers in Porur, Chennai",
   description: "Restore damaged teeth and enhance your smile with custom Zirconia, e.max crowns and ultra-thin veneers at Dr. Mahe's Dentistry in Porur.",
   keywords: ["zirconia crowns porur", "dental veneers chennai", "e.max crowns porur", "tooth cap dentist porur", "porcelain veneers chennai"],
   alternates: { canonical: '/crowns-veneers' },

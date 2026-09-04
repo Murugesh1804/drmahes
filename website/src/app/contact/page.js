@@ -18,8 +18,43 @@ export const metadata = {
 };
 
 export default function Contact() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Dentist",
+    "@id": "https://drmahesdentistry.in/#dentist",
+    "name": "Dr. Mahe's Dentistry",
+    "url": "https://drmahesdentistry.in",
+    "telephone": "+919342803217",
+    "email": "smile@drmahesdentistry.in",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "1st Floor, Kundrathur Main Road, Jaya Nagar, Porur",
+      "addressLocality": "Chennai",
+      "postalCode": "600116",
+      "addressCountry": "IN"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 13.0382,
+      "longitude": 80.1565
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "10:00",
+        "closes": "22:00"
+      }
+    ],
+    "hasMap": "https://www.google.com/maps/search/?api=1&query=Dr.+Mahe%27s+Dentistry,+Jaya+Nagar,+Porur"
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ─── PAGE HERO ─── */}
       <section className="page-hero-warm">
         <div className="container">

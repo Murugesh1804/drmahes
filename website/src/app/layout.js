@@ -38,6 +38,9 @@ export const metadata = {
     address: false,
     telephone: false,
   },
+  alternates: {
+    canonical: '/',
+  },
   icons: {
     icon: '/favicon.ico',
     apple: '/assets/apple-touch-icon.png',
@@ -49,11 +52,20 @@ export const metadata = {
     siteName: "Dr. Mahe's Dentistry",
     locale: 'en_IN',
     type: 'website',
+    images: [
+      {
+        url: 'https://drmahesdentistry.in/assets/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: "Dr. Mahe's Dentistry — Modern Dental Studio in Porur, Chennai",
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: "Dr. Mahe's Dentistry — Porur, Chennai",
     description: "Expert dental care in Porur, Chennai. Dr. Maheswari offers complete family dentistry, implants and root canals.",
+    images: ['https://drmahesdentistry.in/assets/og-image.jpg'],
   },
 };
 

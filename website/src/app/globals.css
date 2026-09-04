@@ -683,6 +683,16 @@ img {
   transform: rotate(-2deg);
 }
 
+.hero-tagline-warm {
+  font-family: var(--font-handwrite, 'Caveat', cursive);
+  font-size: 1.55rem;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: -14px;
+  margin-bottom: 20px;
+  letter-spacing: 0.01em;
+}
+
 .hero-lead-warm {
   font-size: 1.12rem;
   color: var(--text-secondary);

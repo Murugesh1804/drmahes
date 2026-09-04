@@ -12,7 +12,8 @@ export default function Home() {
       desc: 'Lifelike tooth replacement using biocompatible medical titanium fixtures — preserves jawbone integrity and restores natural chewing comfort for life.',
       img: '/assets/dental implant.jpg',
       page: '/dental-implants',
-      meta: 'Lifetime Durability'
+      meta: 'Lifetime Durability',
+      linkText: 'Explore Dental Implant Costs & Timeline'
     },
     {
       name: 'Root Canal Treatment',
@@ -21,7 +22,8 @@ export default function Home() {
       desc: 'Painless, gentle endodontic care using precision micro-rotary instruments to eliminate infection and save your natural tooth in a single comfortable visit.',
       img: '/assets/root canal treament.jpg',
       page: '/root-canal',
-      meta: 'Painless & Same-day'
+      meta: 'Painless & Same-day',
+      linkText: 'Read Root Canal Procedure Guide'
     },
     {
       name: 'Orthodontics & Braces',
@@ -30,7 +32,8 @@ export default function Home() {
       desc: 'Ceramic brackets, self-ligating systems and invisible clear aligners customized to give you a straight, harmonious smile with minimal discomfort.',
       img: '/assets/braces.jpg',
       page: '/orthodontics',
-      meta: 'Clear Aligners & Ceramic'
+      meta: 'Clear Aligners & Ceramic',
+      linkText: 'Explore Braces & Aligner Options'
     },
     {
       name: 'Pediatric Dentistry',
@@ -39,7 +42,8 @@ export default function Home() {
       desc: 'Fun, fear-free dentistry for toddlers, children and teens. Preventive fluoride, cavity treatments and gentle habit coaching in a relaxed setting.',
       img: '/assets/pedo.jpg',
       page: '/pediatric-dentistry',
-      meta: 'Fear-Free for Kids'
+      meta: 'Fear-Free for Kids',
+      linkText: 'See Kids Dental Care Services'
     },
     {
       name: 'Crowns & Veneers',
@@ -48,7 +52,8 @@ export default function Home() {
       desc: 'Hand-crafted zirconia, e.max and porcelain restorations that seamlessly match your natural tooth shade, restoring beauty and strength.',
       img: '/assets/veneers.jpg',
       page: '/crowns-veneers',
-      meta: 'Custom Shade Matching'
+      meta: 'Custom Shade Matching',
+      linkText: 'View Crowns & Veneers Guide'
     },
     {
       name: 'Oral Surgery & Wisdom Tooth',
@@ -57,7 +62,8 @@ export default function Home() {
       desc: 'Safe, minimally invasive removal of impacted wisdom molars and complex extractions with gentle anesthesia and dedicated post-care guidance.',
       img: '/assets/OralSurgery.jpg',
       page: '/oral-surgery',
-      meta: 'Minimal Recovery Time'
+      meta: 'Minimal Recovery Time',
+      linkText: 'Read Wisdom Tooth Removal Guide'
     },
   ];
 
@@ -165,8 +171,9 @@ export default function Home() {
             </div>
 
             <h1 className="hero-title-warm">
-              Advanced Dental Care with a <em>Gentle Touch</em>
+              Advanced Dental Care in <em>Porur, Chennai</em>
             </h1>
+            <p className="hero-tagline-warm">with a Gentle Touch</p>
 
             <p className="hero-lead-warm">
               We know visiting the dentist can feel daunting. At Dr. Mahe's Dentistry, every visit is calm, unhurried, transparent and genuinely kind — from simple cleanings to complete smile restorations.
@@ -333,7 +340,7 @@ export default function Home() {
                   <div className="tx-card-meta">
                     <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 600 }}>{tx.meta}</span>
                     <Link href={tx.page} className="tx-card-link">
-                      <span>Learn Details</span>
+                      <span>{tx.linkText}</span>
                       <ArrowRight size={14} />
                     </Link>
                   </div>

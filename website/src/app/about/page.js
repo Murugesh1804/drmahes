@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone, MessageCircle } from "lucide-react";
 
 export const metadata = {
-  title: "Meet Dr. Maheswari, BDS — Dentist in Porur, Chennai | Dr. Mahe's Dentistry",
+  title: "Meet Dr. Maheswari, BDS — Dentist in Porur, Chennai",
   description: "Learn about Dr. Maheswari, BDS, lead dentist at Dr. Mahe's Dentistry in Porur, Chennai. Discover our compassionate philosophy, gentle techniques and clinical standards.",
   keywords: ["dr maheswari dentist porur", "dentist porur chennai", "general dentist porur", "dr mahe dentistry about"],
   alternates: {
@@ -51,8 +51,31 @@ export default function About() {
 
   const delays = ["100", "200", "300", "100", "200", "300"];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "mainEntity": {
+      "@type": "Person",
+      "@id": "https://drmahesdentistry.in/about#doctor",
+      "name": "Dr. Maheswari",
+      "jobTitle": "Chief Dental Surgeon & Founder",
+      "worksFor": {
+        "@id": "https://drmahesdentistry.in/#dentist"
+      },
+      "honorificSuffix": "BDS",
+      "alumniOf": "The Tamil Nadu Dr. M.G.R. Medical University",
+      "medicalSpecialty": "Dentistry",
+      "url": "https://drmahesdentistry.in/about",
+      "image": "https://drmahesdentistry.in/assets/dr.mahe.webp"
+    }
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ─── PAGE HERO ─── */}
       <section className="page-hero-warm">
         <div className="container">

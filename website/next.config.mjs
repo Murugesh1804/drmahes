@@ -8,10 +8,10 @@ const nextConfig = {
         has: [
           {
             type: 'host',
-            value: 'www.drmahesdentistry.com',
+            value: 'www.drmahesdentistry.in',
           },
         ],
-        destination: 'https://drmahesdentistry.com/:path*',
+        destination: 'https://drmahesdentistry.in/:path*',
         permanent: true,
       },
     ];

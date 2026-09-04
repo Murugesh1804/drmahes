@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 
 export const metadata = {
-  title: "Orthodontics, Braces & Clear Aligners in Porur, Chennai | Dr. Mahe's Dentistry",
+  title: "Orthodontics, Braces & Clear Aligners in Porur, Chennai",
   description: "Straighten your teeth with ceramic braces, metal braces, or clear aligners at Dr. Mahe's Dentistry in Porur. Customized alignment for children, teens and adults.",
   keywords: ["braces porur", "orthodontics chennai", "clear aligners porur", "ceramic braces chennai", "teeth alignment porur"],
   alternates: { canonical: '/orthodontics' },

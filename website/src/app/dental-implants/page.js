@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 
 export const metadata = {
-  title: "Dental Implants in Porur, Chennai | Dr. Mahe's Dentistry",
+  title: "Dental Implants in Porur, Chennai",
   description: "Restore missing teeth permanently with biocompatible titanium dental implants at Dr. Mahe's Dentistry in Porur. Painless procedure with lifetime durability.",
   keywords: ["dental implants porur", "tooth replacement chennai", "implant dentist porur", "titanium implants chennai"],
   alternates: { canonical: '/dental-implants' },
