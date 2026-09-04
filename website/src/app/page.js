@@ -189,7 +189,7 @@ export default function Home() {
               <a
                 href="https://wa.me/919342803217?text=Hi%20Dr.%20Maheswari,%20I%20would%20like%20to%20know%20more%20about%20dental%20treatments"
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="nofollow noopener noreferrer"
                 className="btn btn-whatsapp btn-lg"
                 style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
               >
@@ -528,7 +528,7 @@ export default function Home() {
                     <Phone size={14} />
                     <span>Call +91 93428 03217</span>
                   </a>
-                  <a href="https://wa.me/919342803217" target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <a href="https://wa.me/919342803217" target="_blank" rel="nofollow noopener noreferrer" className="btn btn-whatsapp btn-sm" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                     <MessageCircle size={14} />
                     <span>WhatsApp Us</span>
                   </a>
@@ -639,7 +639,7 @@ export default function Home() {
                   <div>
                     <div className="booking-contact-label">WhatsApp Helpline</div>
                     <div className="booking-contact-val">
-                      <a href="https://wa.me/919342803217" target="_blank" rel="noopener noreferrer">
+                      <a href="https://wa.me/919342803217" target="_blank" rel="nofollow noopener noreferrer">
                         Chat on WhatsApp
                       </a>
                     </div>

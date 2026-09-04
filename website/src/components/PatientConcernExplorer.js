@@ -210,7 +210,7 @@ export default function PatientConcernExplorer() {
           <a
             href="https://wa.me/919342803217?text=Hi%20Dr.%20Maheswari,%20I%20have%20a%20question%20about%20my%20teeth"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="nofollow noopener noreferrer"
             className="btn btn-whatsapp btn-sm"
             style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
           >

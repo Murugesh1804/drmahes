@@ -4,7 +4,7 @@ import BookingForm from "../../components/BookingForm";
 import { Phone, MessageCircle, Mail, MapPin, Clock } from "lucide-react";
 
 export const metadata = {
-  title: "Clinic Location & Appointments | Dr. Mahe's Dentistry Porur, Chennai",
+  title: "Clinic Location & Appointments in Porur",
   description: "Visit Dr. Mahe's Dentistry on Kundrathur Main Road, Porur, Chennai. Book an appointment online or call +91 93428 03217 for gentle, modern dental care.",
   keywords: ["book dentist appointment porur", "dental appointment chennai", "dr mahe dentistry contact", "dentist porur location", "kundrathur road dental clinic"],
   alternates: {
@@ -76,7 +76,7 @@ export default function Contact() {
             <a
               href="https://wa.me/919342803217?text=Hi%20Dr.%20Maheswari,%20I%20would%20like%20to%20book%20an%20appointment"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="nofollow noopener noreferrer"
               className="btn btn-whatsapp"
               style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
             >
@@ -119,7 +119,11 @@ export default function Contact() {
                   </span>
                   <div>
                     <div className="booking-contact-label">Email Inquiries</div>
-                    <div className="booking-contact-val"><a href="mailto:smile@drmahesdentistry.in">smile@drmahesdentistry.in</a></div>
+                    <div className="booking-contact-val">
+                      <span dangerouslySetInnerHTML={{ __html: '<!--email_off-->' }} />
+                      <a href="mailto:smile@drmahesdentistry.in">smile@drmahesdentistry.in</a>
+                      <span dangerouslySetInnerHTML={{ __html: '<!--/email_off-->' }} />
+                    </div>
                   </div>
                 </div>
 

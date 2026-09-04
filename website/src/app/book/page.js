@@ -64,7 +64,7 @@ export default function BookPage() {
           <a
             href="https://wa.me/919342803217?text=Hi%20Dr.%20Maheswari,%20I%20would%20like%20to%20book%20an%20appointment"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="nofollow noopener noreferrer"
             className="qr-card qr-card-secondary"
           >
             <span className="qr-card-icon" style={{ color: "var(--accent-hover)" }}>

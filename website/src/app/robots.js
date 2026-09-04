@@ -7,7 +7,7 @@ export default function robots() {
         // General crawlers — allow everything
         userAgent: '*',
         allow: '/',
-        disallow: '/private/',
+        disallow: ['/private/', '/contact?*'],
       },
       {
         // Allow AI Search Engines for Local Discovery & Citations

@@ -75,16 +75,18 @@ export default function Footer() {
               </a>
             </li>
             <li>
-              <a href="https://wa.me/919342803217" target="_blank" rel="noopener noreferrer" className="footer-link-warm" style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "8px" }}>
+              <a href="https://wa.me/919342803217" target="_blank" rel="nofollow noopener noreferrer" className="footer-link-warm" style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "8px" }}>
                 <MessageCircle size={15} style={{ color: "var(--accent)" }} />
                 <span>Chat on WhatsApp</span>
               </a>
             </li>
             <li>
+              <span dangerouslySetInnerHTML={{ __html: '<!--email_off-->' }} />
               <a href="mailto:smile@drmahesdentistry.in" className="footer-link-warm" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
                 <Mail size={15} style={{ color: "var(--accent)" }} />
                 <span>smile@drmahesdentistry.in</span>
               </a>
+              <span dangerouslySetInnerHTML={{ __html: '<!--/email_off-->' }} />
             </li>
             <li style={{ marginTop: "8px", lineHeight: 1.6, color: "rgba(255,255,255,0.75)", display: "inline-flex", alignItems: "flex-start", gap: "8px" }}>
               <MapPin size={15} style={{ color: "var(--accent)", flexShrink: 0, marginTop: "4px" }} />
@@ -107,6 +109,7 @@ export default function Footer() {
           <Link href="/about" className="footer-link-warm">About Doctor</Link>
           <Link href="/contact" className="footer-link-warm">Find Location</Link>
           <Link href="/contact#booking" className="footer-link-warm">Book Visit</Link>
+          <Link href="/sitemap.xml" className="footer-link-warm">Sitemap</Link>
         </div>
       </div>
     </footer>

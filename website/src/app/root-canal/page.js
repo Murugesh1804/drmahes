@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 
 export const metadata = {
-  title: "Painless Root Canal Treatment (RCT) in Porur, Chennai",
+  title: "Painless Root Canal Treatment (RCT)",
   description: "Save your infected tooth with a painless, single-sitting root canal treatment at Dr. Mahe's Dentistry in Porur. Gentle anesthesia, micro-rotary files and fast relief.",
   keywords: ["root canal treatment porur", "painless rct chennai", "single sitting root canal porur", "endodontist chennai", "tooth pain relief porur"],
   alternates: { canonical: '/root-canal' },

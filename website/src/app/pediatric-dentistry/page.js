@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 
 export const metadata = {
-  title: "Gentle Pediatric Dentistry (Kids Dentist) in Porur, Chennai",
+  title: "Gentle Pediatric Dentistry for Kids",
   description: "Gentle, fear-free dental care for infants, children and teenagers at Dr. Mahe's Dentistry in Porur. Cavity prevention, sealants and friendly checkups.",
   keywords: ["pediatric dentist porur", "kids dentist chennai", "child dental care porur", "fluoride sealants kids chennai", "baby tooth checkup"],
   alternates: { canonical: '/pediatric-dentistry' },

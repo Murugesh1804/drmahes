@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Check, Phone, MessageCircle, ArrowRight } from "lucide-react";
 
 export const metadata = {
-  title: "Complete Dental Treatments in Porur, Chennai",
+  title: "Comprehensive Dental Treatments in Porur",
   description: "Explore our complete range of gentle, advanced dental treatments in Porur, Chennai — painless root canals, dental implants, braces, pediatric dentistry, veneers and oral surgery.",
   keywords: ["dental treatments porur", "dental services chennai", "implants root canal orthodontics porur", "cosmetic dentistry porur"],
   alternates: {
@@ -77,12 +77,24 @@ export default function Treatments() {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "MedicalClinic",
-    "name": "Dr. Mahe's Dentistry Treatments",
+    "@type": "Dentist",
+    "@id": "https://drmahesdentistry.in/#dentist",
+    "name": "Dr. Mahe's Dentistry",
+    "url": "https://drmahesdentistry.in/treatments",
+    "telephone": "+919342803217",
+    "medicalSpecialty": "Dentistry",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "1st Floor, Kundrathur Main Road, Jaya Nagar, Porur",
+      "addressLocality": "Chennai",
+      "postalCode": "600116",
+      "addressCountry": "IN"
+    },
     "availableService": treatmentsData.map(tx => ({
       "@type": "MedicalProcedure",
       "name": tx.name,
-      "description": tx.desc
+      "description": tx.desc,
+      "url": `https://drmahesdentistry.in${tx.page}`
     }))
   };
 
@@ -161,7 +173,7 @@ export default function Treatments() {
                 <a
                   href="https://wa.me/919342803217?text=Hi%20Dr.%20Maheswari,%20I%20am%20not%20sure%20which%20treatment%20I%20need"
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="nofollow noopener noreferrer"
                   className="btn btn-whatsapp"
                   style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
                 >

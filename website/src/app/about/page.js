@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone, MessageCircle } from "lucide-react";
 
 export const metadata = {
-  title: "Meet Dr. Maheswari, BDS — Dentist in Porur, Chennai",
+  title: "Meet Dr. Maheswari, BDS — Lead Dentist",
   description: "Learn about Dr. Maheswari, BDS, lead dentist at Dr. Mahe's Dentistry in Porur, Chennai. Discover our compassionate philosophy, gentle techniques and clinical standards.",
   keywords: ["dr maheswari dentist porur", "dentist porur chennai", "general dentist porur", "dr mahe dentistry about"],
   alternates: {
@@ -134,7 +134,7 @@ export default function About() {
                 <a
                   href="https://wa.me/919342803217?text=Hi%20Dr.%20Maheswari,%20I%20would%20like%20to%20ask%20a%20question"
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="nofollow noopener noreferrer"
                   className="btn btn-whatsapp"
                   style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
                 >
@@ -190,7 +190,7 @@ export default function About() {
             <div data-animate="slide-left">
               <div style={{ borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-lg)", border: "4px solid #FFFFFF" }}>
                 <img
-                  src="/assets/reception_area.webp"
+                  src="/assets/clinic.webp"
                   alt="Dr. Mahe's Dentistry Reception & Consultation Area Porur"
                   width={1024}
                   height={1024}
