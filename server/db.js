@@ -79,6 +79,11 @@ patientSchema.index({ email: 1 }, {
   collation: { locale: 'en', strength: 2 }
 })
 
+// Compound indexes for patient listing, sorting, and pagination
+patientSchema.index({ is_archived: 1, updated_at: -1 })
+patientSchema.index({ is_archived: 1, created_at: -1 })
+patientSchema.index({ name: 1 })
+
 // ── APPOINTMENT SCHEMA ──────────────────────────────────────────────────────
 const appointmentSchema = new mongoose.Schema({
   patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
@@ -131,6 +136,11 @@ appointmentSchema.index(
     }
   }
 )
+// Fast lookup for patient history & $lookup aggregation
+appointmentSchema.index({ patient_id: 1, scheduled_date: -1 })
+// Dashboard range & status metrics
+appointmentSchema.index({ created_at: 1, status: 1 })
+appointmentSchema.index({ status: 1, scheduled_date: 1 })
 
 // ── TREATMENT SCHEMA ────────────────────────────────────────────────────────
 const treatmentSchema = new mongoose.Schema({
@@ -194,6 +204,9 @@ treatmentSchema.pre('validate', function(next) {
   next()
 })
 
+treatmentSchema.index({ patient_id: 1, status: 1 })
+treatmentSchema.index({ status: 1, created_at: -1 })
+
 // ── BILL SCHEMA ────────────────────────────────────────────────────────────
 const billSchema = new mongoose.Schema({
   patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
@@ -238,6 +251,9 @@ const billSchema = new mongoose.Schema({
 
 billSchema.index({ status: 1 })
 billSchema.index({ created_at: 1 })
+billSchema.index({ patient_id: 1, created_at: -1 })
+billSchema.index({ status: 1, balance: 1 })
+billSchema.index({ created_at: -1, status: 1 })
 
 const billItemSchema = new mongoose.Schema({
   bill_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', required: true, index: true },
@@ -277,6 +293,12 @@ const paymentSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 })
+
+// Compound indexes for revenue recognition, payment ledger, and cash audits
+paymentSchema.index({ payment_date: 1, is_reversed: 1, method: 1 })
+paymentSchema.index({ bill_id: 1, is_reversed: 1 })
+paymentSchema.index({ patient_id: 1, payment_date: -1 })
+paymentSchema.index({ paid_at: 1, is_reversed: 1 })
 
 // ── COUNTER SCHEMA ─────────────────────────────────────────
 // For sequential invoice numbers (INV-YYYY-XXXX)
@@ -460,6 +482,7 @@ const treatmentMasterSchema = new mongoose.Schema({
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 })
 treatmentMasterSchema.index({ category: 1, is_active: 1 })
+treatmentMasterSchema.index({ is_active: 1, treatment_name: 1 })
 
 // ── MEDICINE MASTER SCHEMA ──────────────────────────────────────────────────
 const medicineMasterSchema = new mongoose.Schema({
@@ -476,6 +499,7 @@ const medicineMasterSchema = new mongoose.Schema({
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 })
 medicineMasterSchema.index({ type: 1, is_active: 1 })
+medicineMasterSchema.index({ is_active: 1, item_name: 1 })
 
 // ── ADVANCE LEDGER SCHEMA (Patient Wallet / Escrow) ────────
 const advanceLedgerSchema = new mongoose.Schema({
@@ -527,6 +551,7 @@ const labWorkOrderSchema = new mongoose.Schema({
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 })
 labWorkOrderSchema.index({ status: 1, expected_date: 1 })
+labWorkOrderSchema.index({ patient_id: 1, sent_date: -1 })
 
 const Patient = mongoose.model('Patient', patientSchema)
 const Appointment = mongoose.model('Appointment', appointmentSchema)

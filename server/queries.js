@@ -1,6 +1,25 @@
 const mongoose = require('mongoose')
 const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, ConsultantPayment, TreatmentMaster, MedicineMaster, AdvanceLedger, LabWorkOrder, Enquiry, getDbPath } = require('./db')
 
+// In-memory cache for frequently accessed data with TTL (5 minutes)
+const cache = {
+  settings: { data: null, expires: 0 },
+  treatmentMasters: { data: null, expires: 0 },
+  medicineMasters: { data: null, expires: 0 }
+}
+
+function setCache(key, data, ttlMs = 5 * 60 * 1000) {
+  cache[key] = { data, expires: Date.now() + ttlMs }
+}
+
+function getCache(key) {
+  const entry = cache[key]
+  if (entry && entry.expires > Date.now()) {
+    return entry.data
+  }
+  return null
+}
+
 const CLINIC_TIME_ZONE = process.env.CLINIC_TIME_ZONE || 'Asia/Kolkata'
 const APPOINTMENT_STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
 const CALL_STATUSES = ['pending', 'called', 'not_required']
@@ -193,46 +212,51 @@ async function getAllPatients(optionsOrLimit = 20, includeArchivedParam = false,
     ...createdFilter
   }
 
-  const pipeline = [
-    { $match: matchFilter },
-    {
-      $lookup: {
-        from: 'appointments',
-        localField: '_id',
-        foreignField: 'patient_id',
-        as: 'appts'
-      }
-    },
-    {
-      $project: {
-        name: 1,
-        phone: 1,
-        email: 1,
-        age: 1,
-        gender: 1,
-        address: 1,
-        complaint: 1,
-        notes: 1,
-        consentFormSaved: 1,
-        consentFormPath: 1,
-        consentSignedAt: 1,
-        pid: 1,
-        is_archived: 1,
-        archived_at: 1,
-        archived_reason: 1,
-        created_at: 1,
-        updated_at: 1,
-        appointment_count: { $size: '$appts' },
-        last_visit: { $max: '$appts.scheduled_date' }
-      }
-    },
-    { $sort: { updated_at: -1 } }
-  ]
+  const projectStage = {
+    $project: {
+      name: 1,
+      phone: 1,
+      email: 1,
+      age: 1,
+      gender: 1,
+      address: 1,
+      complaint: 1,
+      notes: 1,
+      consentFormSaved: 1,
+      consentFormPath: 1,
+      consentSignedAt: 1,
+      pid: 1,
+      is_archived: 1,
+      archived_at: 1,
+      archived_reason: 1,
+      created_at: 1,
+      updated_at: 1,
+      appointment_count: { $size: '$appts' },
+      last_visit: { $max: '$appts.scheduled_date' }
+    }
+  }
+
+  const lookupStage = {
+    $lookup: {
+      from: 'appointments',
+      localField: '_id',
+      foreignField: 'patient_id',
+      as: 'appts'
+    }
+  }
 
   if (isPaginated && limit > 0) {
     const skip = (page - 1) * limit
+    // ⚡ FAST: Filter, sort, skip, and limit BEFORE $lookup so we only join appointments for the current page
     const [itemsResult, countResult] = await Promise.all([
-      Patient.aggregate([...pipeline, { $skip: skip }, { $limit: limit }]),
+      Patient.aggregate([
+        { $match: matchFilter },
+        { $sort: { updated_at: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        lookupStage,
+        projectStage
+      ]),
       Patient.countDocuments(matchFilter)
     ])
     const items = itemsResult.map(p => ({ ...p, id: p._id.toString() }))
@@ -246,9 +270,13 @@ async function getAllPatients(optionsOrLimit = 20, includeArchivedParam = false,
     }
   }
 
-  if (limit > 0) {
-    pipeline.push({ $limit: limit })
-  }
+  const pipeline = [
+    { $match: matchFilter },
+    { $sort: { updated_at: -1 } },
+    ...(limit > 0 ? [{ $limit: limit }] : []),
+    lookupStage,
+    projectStage
+  ]
 
   const result = await Patient.aggregate(pipeline)
   const items = result.map(p => ({ ...p, id: p._id.toString() }))
@@ -256,18 +284,22 @@ async function getAllPatients(optionsOrLimit = 20, includeArchivedParam = false,
 }
 
 async function searchPatients(query) {
-  const matchFilter = query.trim() ? {
+  const q = normalizeText(query)
+  const matchFilter = q ? {
     $or: [
-      { name:      { $regex: query, $options: 'i' } },
-      { phone:     { $regex: query, $options: 'i' } },
-      { complaint: { $regex: query, $options: 'i' } },
-      { notes:     { $regex: query, $options: 'i' } },
-      { pid:       { $regex: query, $options: 'i' } },
+      { name:      { $regex: q, $options: 'i' } },
+      { phone:     { $regex: q, $options: 'i' } },
+      { complaint: { $regex: q, $options: 'i' } },
+      { notes:     { $regex: q, $options: 'i' } },
+      { pid:       { $regex: q, $options: 'i' } },
     ]
   } : {}
 
+  // ⚡ FAST: Filter, sort, and limit to 50 BEFORE joining appointments
   const result = await Patient.aggregate([
     { $match: matchFilter },
+    { $sort: { name: 1 } },
+    { $limit: 50 },
     {
       $lookup: {
         from: 'appointments',
@@ -297,9 +329,7 @@ async function searchPatients(query) {
         appointment_count: { $size: '$appts' },
         last_visit: { $max: '$appts.scheduled_date' }
       }
-    },
-    { $sort: { name: 1 } },
-    { $limit: 50 }
+    }
   ])
 
   return result.map(p => ({ ...p, id: p._id.toString() }))
@@ -2115,14 +2145,16 @@ async function adjustPayment(paymentId, newAmount, reason = '', session = null) 
 
 async function getAllBills(page = 1, limit = 50) {
   const skip = (page - 1) * limit
-  const bills = await Bill.find()
-    .populate('patient_id')
-    .sort({ created_at: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean()
+  const [bills, total] = await Promise.all([
+    Bill.find()
+      .populate('patient_id')
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Bill.countDocuments()
+  ])
 
-  const total = await Bill.countDocuments()
   const items = bills.map(b => ({
     ...b,
     id: b._id.toString(),
@@ -2138,7 +2170,7 @@ async function getAllBills(page = 1, limit = 50) {
 }
 
 /**
- * Search bills by patient name (regex search on MongoDB)
+ * Search bills by patient name, phone, or PID
  * Supports pagination to handle large result sets
  */
 async function searchBills(query, page = 1, limit = 50) {
@@ -2147,49 +2179,39 @@ async function searchBills(query, page = 1, limit = 50) {
 
   const skip = (page - 1) * limit
   
-  // Aggregate to join patients and filter by patient name inside MongoDB
-  const pipeline = [
-    {
-      $lookup: {
-        from: 'patients',
-        localField: 'patient_id',
-        foreignField: '_id',
-        as: 'patient'
-      }
-    },
-    { $unwind: { path: '$patient', preserveNullAndEmptyArrays: true } },
-    {
-      $match: {
-        'patient.name': { $regex: searchPattern, $options: 'i' }
-      }
-    }
-  ]
-  
-  const [results, totalCount] = await Promise.all([
-    Bill.aggregate([
-      ...pipeline,
-      { $sort: { created_at: -1 } },
-      { $skip: skip },
-      { $limit: limit }
-    ]),
-    Bill.aggregate([
-      ...pipeline,
-      { $count: 'total' }
-    ])
+  // ⚡ FAST: Match patients first by indexed fields
+  const matchingPatients = await Patient.find({
+    $or: [
+      { name: { $regex: searchPattern, $options: 'i' } },
+      { phone: { $regex: searchPattern, $options: 'i' } },
+      { pid: { $regex: searchPattern, $options: 'i' } }
+    ]
+  }).select('_id').lean()
+
+  const patientIds = matchingPatients.map(p => p._id)
+  if (patientIds.length === 0) return { items: [], total: 0, page, limit, hasMore: false }
+
+  const filter = { patient_id: { $in: patientIds } }
+  const [bills, total] = await Promise.all([
+    Bill.find(filter)
+      .populate('patient_id')
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Bill.countDocuments(filter)
   ])
-  
-  const total = totalCount.length > 0 ? totalCount[0].total : 0
-  
-  const items = results.map(b => ({
+
+  const items = bills.map(b => ({
     ...b,
     id: b._id.toString(),
-    patient_id:  b.patient ? b.patient._id.toString() : null,
-    patient_name: b.patient ? b.patient.name : '',
-    patient_pid:  b.patient ? (b.patient.pid || null) : null,
-    age:          b.patient ? b.patient.age : null,
-    gender:       b.patient ? b.patient.gender : null,
-    phone:        b.patient ? b.patient.phone : '',
-    patient_email: b.patient ? b.patient.email : ''
+    patient_id:  b.patient_id ? b.patient_id._id.toString() : null,
+    patient_name: b.patient_id ? b.patient_id.name : '',
+    patient_pid:  b.patient_id ? (b.patient_id.pid || null) : null,
+    age:          b.patient_id ? b.patient_id.age : null,
+    gender:       b.patient_id ? b.patient_id.gender : null,
+    phone:        b.patient_id ? b.patient_id.phone : '',
+    patient_email: b.patient_id ? b.patient_id.email : ''
   }))
 
   return { items, total, page, limit, hasMore: skip + items.length < total }
@@ -2199,12 +2221,18 @@ async function searchBills(query, page = 1, limit = 50) {
 // SETTINGS
 // ═══════════════════════════════════════════════════════════
 async function getSettings() {
+  // Return cached settings if valid
+  const cached = getCache('settings')
+  if (cached) return cached
   const list = await Setting.find().lean()
-  return list.reduce((acc, r) => ({ ...acc, [r.key]: r.value }), {})
+  const result = list.reduce((acc, r) => ({ ...acc, [r.key]: r.value }), {})
+  setCache('settings', result)
+  return result
 }
 
 async function setSetting(key, value) {
   await Setting.findOneAndUpdate({ key }, { value }, { upsert: true })
+  setCache('settings', null, 0)
   return { key, value }
 }
 
@@ -2220,6 +2248,7 @@ async function setSettingsBulk(settingsObj) {
   if (updates.length > 0) {
     await Setting.bulkWrite(updates)
   }
+  setCache('settings', null, 0)
   return getSettings()
 }
 
@@ -2898,9 +2927,17 @@ async function recordConsultantPaymentAmount(id, amount, method = 'cash', paymen
 // TREATMENT MASTER (corrections.md §4.1)
 // ═══════════════════════════════════════════════════════════
 async function getAllTreatmentMasters(includeInactive = false) {
+  if (!includeInactive) {
+    const cached = getCache('treatmentMasters')
+    if (cached) return cached
+  }
   const filter = includeInactive ? {} : { is_active: true }
   const items = await TreatmentMaster.find(filter).sort({ category: 1, treatment_name: 1 }).lean()
-  return items.map(t => ({ ...t, id: t._id.toString() }))
+  const result = items.map(t => ({ ...t, id: t._id.toString() }))
+  if (!includeInactive) {
+    setCache('treatmentMasters', result)
+  }
+  return result
 }
 
 async function addTreatmentMaster(data) {
@@ -2923,6 +2960,7 @@ async function addTreatmentMaster(data) {
     is_active: data.is_active !== false
   })
   await item.save()
+  setCache('treatmentMasters', null, 0)
   const doc = item.toObject()
   doc.id = doc._id.toString()
   return doc
@@ -2951,6 +2989,7 @@ async function updateTreatmentMaster(id, data) {
   if (data.is_active !== undefined) item.is_active = data.is_active === true || data.is_active === 'true'
 
   await item.save()
+  setCache('treatmentMasters', null, 0)
   const doc = item.toObject()
   doc.id = doc._id.toString()
   return doc
@@ -2960,6 +2999,7 @@ async function deleteTreatmentMaster(id) {
   if (!isValidObjectId(id)) return { success: false }
   // Soft delete by marking inactive
   await TreatmentMaster.findByIdAndUpdate(id, { $set: { is_active: false } })
+  setCache('treatmentMasters', null, 0)
   return { success: true }
 }
 
@@ -2976,9 +3016,17 @@ async function searchTreatmentMasters(query) {
 // MEDICINE MASTER
 // ═══════════════════════════════════════════════════════════
 async function getAllMedicineMasters(includeInactive = false) {
+  if (!includeInactive) {
+    const cached = getCache('medicineMasters')
+    if (cached) return cached
+  }
   const filter = includeInactive ? {} : { is_active: true }
   const items = await MedicineMaster.find(filter).sort({ type: 1, item_name: 1 }).lean()
-  return items.map(t => ({ ...t, id: t._id.toString() }))
+  const result = items.map(t => ({ ...t, id: t._id.toString() }))
+  if (!includeInactive) {
+    setCache('medicineMasters', result)
+  }
+  return result
 }
 
 async function addMedicineMaster(data) {
@@ -2999,6 +3047,7 @@ async function addMedicineMaster(data) {
     is_active: data.is_active !== false
   })
   await item.save()
+  setCache('medicineMasters', null, 0)
   const doc = item.toObject()
   doc.id = doc._id.toString()
   return doc
@@ -3025,6 +3074,7 @@ async function updateMedicineMaster(id, data) {
   if (data.is_active !== undefined) item.is_active = data.is_active === true || data.is_active === 'true'
 
   await item.save()
+  setCache('medicineMasters', null, 0)
   const doc = item.toObject()
   doc.id = doc._id.toString()
   return doc
@@ -3033,6 +3083,7 @@ async function updateMedicineMaster(id, data) {
 async function deleteMedicineMaster(id) {
   if (!isValidObjectId(id)) return { success: false }
   await MedicineMaster.findByIdAndUpdate(id, { $set: { is_active: false } })
+  setCache('medicineMasters', null, 0)
   return { success: true }
 }
 
