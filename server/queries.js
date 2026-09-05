@@ -2034,13 +2034,6 @@ async function reversePayment(paymentId, data = {}, session = null) {
     if (!isExternalSession) await dbSession.endSession()
   }
 }
-  } catch (err) {
-    if (!isExternalSession) await dbSession.abortTransaction()
-    throw err
-  } finally {
-    if (!isExternalSession) await dbSession.endSession()
-  }
-}
 
 async function adjustPayment(paymentId, newAmount, reason = '', session = null) {
   if (!isValidObjectId(paymentId)) return null
