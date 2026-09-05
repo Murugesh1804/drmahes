@@ -48,4 +48,13 @@ router.post('/:id/unarchive', asyncHandler(async (req, res) => {
   res.json(await queries.unarchivePatient(req.params.id))
 }))
 
+// Patient Advance Ledger (Wallet)
+router.post('/:id/advance/deposit', asyncHandler(async (req, res) => {
+  res.json(await queries.addPatientAdvanceDeposit(req.params.id, req.body))
+}))
+
+router.get('/:id/advance', asyncHandler(async (req, res) => {
+  res.json(await queries.getPatientAdvanceHistory(req.params.id))
+}))
+
 module.exports = router

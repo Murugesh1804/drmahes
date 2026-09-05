@@ -160,6 +160,7 @@ app.use('/api/consultant-payments', require('./routes/consultant-payments'))
 app.use('/api/treatment-masters', require('./routes/treatment-masters'))
 app.use('/api/enquiries', require('./routes/enquiries'))
 app.use('/api/revenue', require('./routes/revenue'))
+app.use('/api/lab-orders', require('./routes/lab-orders'))
 
 // ── BACKUP ────────────────────────────────────────────────────────────────────
 // Returns only DB name/status — NOT the full connection URI

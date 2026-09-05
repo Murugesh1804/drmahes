@@ -187,7 +187,7 @@ export const getConsultantPayments = (params = {}) => request(`/consultant-payme
 export const addConsultantPayment = (data) => request('/consultant-payments', { method: 'POST', body: JSON.stringify(data) })
 export const updateConsultantPayment = (id, data) => request(`/consultant-payments/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 export const deleteConsultantPayment = (id) => request(`/consultant-payments/${id}`, { method: 'DELETE' })
-export const recordConsultantPaymentAmount = (id, amount, method) => request(`/consultant-payments/${id}/pay`, { method: 'PUT', body: JSON.stringify({ amount, payment_method: method }) })
+export const recordConsultantPaymentAmount = (id, amount, method, date = null) => request(`/consultant-payments/${id}/pay`, { method: 'PUT', body: JSON.stringify({ amount, payment_method: method, payment_date: date }) })
 export const getConsultantMonthlyReport = (month, year) => request(`/consultant-payments/monthly-report?month=${month}&year=${year}`)
 export const getConsultantOutstandingDues = () => request('/consultant-payments/outstanding')
 
@@ -204,3 +204,22 @@ export const addMedicineMaster = (data) => request('/medicine-masters', { method
 export const updateMedicineMaster = (id, data) => request(`/medicine-masters/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 export const deleteMedicineMaster = (id) => request(`/medicine-masters/${id}`, { method: 'DELETE' })
 export const searchMedicineMasters = (q) => request(`/medicine-masters/search?q=${encodeURIComponent(q)}`)
+
+// ── Payment Reversals & Credit Notes ─────────────────────────
+export const reversePayment = (paymentId, data = {}) => request(`/payments/${paymentId}/reverse`, { method: 'POST', body: JSON.stringify(data) })
+
+// ── Patient Advance Ledger (Wallet) ──────────────────────────
+export const getPatientAdvance = (patientId) => request(`/patients/${patientId}/advance`)
+export const addPatientAdvanceDeposit = (patientId, data) => request(`/patients/${patientId}/advance/deposit`, { method: 'POST', body: JSON.stringify(data) })
+
+// ── Dental Lab Work Orders ───────────────────────────────────
+export const getAllLabWorkOrders = (params = {}) => {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') qs.set(k, v) })
+  const s = qs.toString()
+  return request(`/lab-orders${s ? '?' + s : ''}`)
+}
+export const getLabWorkOrderById = (id) => request(`/lab-orders/${id}`)
+export const createLabWorkOrder = (data) => request('/lab-orders', { method: 'POST', body: JSON.stringify(data) })
+export const updateLabWorkOrder = (id, data) => request(`/lab-orders/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const deleteLabWorkOrder = (id) => request(`/lab-orders/${id}`, { method: 'DELETE' })

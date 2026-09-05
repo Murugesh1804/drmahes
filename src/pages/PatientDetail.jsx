@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Edit2, Phone, MapPin, Calendar, Activity,
-  Receipt, Plus, Trash2, User, FileText
+  Receipt, Plus, Trash2, User, FileText, Wallet
 } from 'lucide-react'
 import {
   getPatientById, updatePatient,
@@ -10,7 +10,9 @@ import {
   getTreatmentsByPatient,
   getBillsByPatient,
   openConsentForm,
-  signExistingConsentForm
+  signExistingConsentForm,
+  getPatientAdvance,
+  addPatientAdvanceDeposit
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
@@ -21,6 +23,7 @@ const TABS = [
   { key: 'appointments', label: 'Appointments', icon: Calendar },
   { key: 'treatments',   label: 'Treatments',   icon: Activity },
   { key: 'bills',        label: 'Bills',         icon: Receipt  },
+  { key: 'advance',      label: 'Advance Ledger', icon: Wallet },
   { key: 'notes',        label: 'Doctor Notes',  icon: FileText }
 ]
 
@@ -45,21 +48,27 @@ export default function PatientDetail() {
   const [appointments, setAppointments] = useState([])
   const [treatments, setTreatments] = useState([])
   const [bills, setBills] = useState([])
+  const [advanceHistory, setAdvanceHistory] = useState([])
   const [showEdit, setShowEdit] = useState(false)
   const [showSignatureModal, setShowSignatureModal] = useState(false)
+  const [showDepositModal, setShowDepositModal] = useState(false)
+  const [depositForm, setDepositForm] = useState({ amount: '', payment_method: 'cash', notes: '' })
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
   const [notFound, setNotFound] = useState(false)
 
   const load = useCallback(async () => {
     try {
-      const [p, appts, txs, blls] = await Promise.all([
+      const [p, appts, txs, blls, advData] = await Promise.all([
         getPatientById(id),
         getPatientAppointments(id),
         getTreatmentsByPatient(id),
         getBillsByPatient(id),
+        getPatientAdvance(id).catch(() => ({ advance_balance: 0, history: [] }))
       ])
       if (!p) { setNotFound(true); return }
+      // Merge latest advance balance into patient object
+      p.advance_balance = advData?.advance_balance ?? p.advance_balance ?? 0
       setPatient(p)
       setForm({
         name: p.name, phone: p.phone || '', age: p.age || '',
@@ -69,6 +78,7 @@ export default function PatientDetail() {
       setAppointments(appts || [])
       setTreatments(txs || [])
       setBills(blls || [])
+      setAdvanceHistory(advData?.history || [])
     } catch (e) {
       console.error(e)
       setNotFound(true)
@@ -76,6 +86,27 @@ export default function PatientDetail() {
   }, [id])
 
   useEffect(() => { load() }, [load])
+
+  async function handleDepositAdvance() {
+    const amt = parseFloat(depositForm.amount)
+    if (!amt || amt <= 0) { notify('Enter a valid deposit amount', 'error'); return }
+    setSaving(true)
+    try {
+      await addPatientAdvanceDeposit(id, {
+        amount: amt,
+        payment_method: depositForm.payment_method,
+        notes: depositForm.notes
+      })
+      notify(`Advance deposit of ${fmt(amt)} recorded successfully`)
+      setShowDepositModal(false)
+      setDepositForm({ amount: '', payment_method: 'cash', notes: '' })
+      load()
+    } catch (e) {
+      notify(e.message || 'Failed to record advance deposit', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   async function handleUpdate() {
     if (!form.name.trim()) { notify('Name is required', 'error'); return }
@@ -205,7 +236,7 @@ export default function PatientDetail() {
           </div>
 
           {/* Mini stats */}
-          <div className="flex gap-4 flex-shrink-0">
+          <div className="flex gap-4 flex-shrink-0 items-center">
             <div className="text-center">
               <p className="text-2xl font-bold text-slate-800">{appointments.length}</p>
               <p className="text-xs text-slate-400">Visits</p>
@@ -220,6 +251,19 @@ export default function PatientDetail() {
                 <p className="text-xs text-slate-400">Due</p>
               </div>
             )}
+            <div className="text-center bg-emerald-50/80 border border-emerald-200 px-3.5 py-2 rounded-2xl">
+              <div className="flex items-center justify-center gap-1.5 text-emerald-700">
+                <Wallet size={14} />
+                <p className="text-xl font-bold leading-none">{fmt(patient.advance_balance || 0)}</p>
+              </div>
+              <p className="text-[10px] text-emerald-700 font-semibold mt-0.5">Advance Wallet</p>
+              <button
+                onClick={() => setShowDepositModal(true)}
+                className="mt-1.5 text-[10px] font-bold text-emerald-800 bg-white border border-emerald-300 hover:bg-emerald-50 px-2.5 py-0.5 rounded-lg shadow-sm transition-colors block w-full text-center"
+              >
+                + Deposit
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -243,7 +287,9 @@ export default function PatientDetail() {
               <span className={`text-xs rounded-full px-1.5 py-0.5 ${tab === key ? 'bg-primary-100 text-primary-700' : 'bg-slate-200 text-slate-500'}`}>
                 {key === 'appointments' ? appointments.length
                  : key === 'treatments' ? treatments.length
-                 : bills.length}
+                 : key === 'bills' ? bills.length
+                 : key === 'advance' ? advanceHistory.length
+                 : 0}
               </span>
             )}
           </button>
@@ -289,9 +335,19 @@ export default function PatientDetail() {
                       {t.appointment_date ? new Date(t.appointment_date).toLocaleDateString('en-IN') : new Date(t.created_at).toLocaleDateString('en-IN')}
                     </td>
                     <td>
-                      <span className="bg-primary-50 text-primary-700 text-xs font-semibold px-2 py-0.5 rounded-lg">
-                        {t.treatment_type}
-                      </span>
+                      <div className="space-y-1">
+                        <span className="bg-primary-50 text-primary-700 text-xs font-semibold px-2 py-0.5 rounded-lg inline-block">
+                          {t.treatment_type}
+                        </span>
+                        {t.implant_details?.is_implant && (
+                          <div className="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-100 rounded px-1.5 py-0.5 mt-0.5 flex flex-wrap items-center gap-1.5 font-mono">
+                            <span className="font-bold font-sans">🔩 {t.implant_details.brand || 'Implant'}</span>
+                            {t.implant_details.model && <span>{t.implant_details.model}</span>}
+                            {t.implant_details.lot_number && <span>Lot: {t.implant_details.lot_number}</span>}
+                            {t.implant_details.torque_ncm && <span>{t.implant_details.torque_ncm}Ncm</span>}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="text-slate-500">{t.tooth_number || '—'}</td>
                     <td className="text-slate-600 max-w-[200px] truncate">{t.description || '—'}</td>
@@ -330,6 +386,79 @@ export default function PatientDetail() {
                 ))}
               </tbody>
             </table>
+          )}
+        </div>
+      )}
+
+      {tab === 'advance' && (
+        <div className="card space-y-4">
+          <div className="flex justify-between items-center bg-emerald-50/70 p-4 rounded-xl border border-emerald-100">
+            <div>
+              <p className="text-xs font-semibold text-emerald-800">Current Advance Balance (Escrow Wallet)</p>
+              <p className="text-3xl font-bold text-emerald-700">{fmt(patient.advance_balance || 0)}</p>
+            </div>
+            <button
+              onClick={() => setShowDepositModal(true)}
+              className="btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-700 text-xs py-2 px-3 flex items-center gap-1.5"
+            >
+              <Plus size={14} /> Deposit Advance
+            </button>
+          </div>
+
+          {advanceHistory.length === 0 ? (
+            <div className="empty-state py-12">
+              <Wallet size={36} className="mb-2 opacity-20" />
+              <p className="font-semibold text-slate-600">No Advance Ledger Activity</p>
+              <p className="text-xs text-slate-400 mt-1">Deposits for high-value treatments (aligners, implants) will appear here</p>
+              <button
+                onClick={() => setShowDepositModal(true)}
+                className="btn-secondary text-xs mt-3 text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+              >
+                + Record First Advance Deposit
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>Date &amp; Time</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                    <th>Method &amp; Reference</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {advanceHistory.map(h => (
+                    <tr key={h.id}>
+                      <td className="font-medium whitespace-nowrap text-xs text-slate-600">
+                        {new Date(h.created_at).toLocaleString('en-IN')}
+                      </td>
+                      <td>
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                          h.type === 'deposit' ? 'bg-emerald-100 text-emerald-800' :
+                          h.type === 'applied_to_bill' ? 'bg-blue-100 text-blue-800' :
+                          'bg-amber-100 text-amber-800'
+                        }`}>
+                          {h.type === 'deposit' ? '+ Deposit' :
+                           h.type === 'applied_to_bill' ? '- Applied to Bill' :
+                           h.type}
+                        </span>
+                      </td>
+                      <td className={`font-bold ${h.type === 'deposit' ? 'text-emerald-600' : 'text-slate-700'}`}>
+                        {h.type === 'deposit' ? `+${fmt(h.amount)}` : `-${fmt(h.amount)}`}
+                      </td>
+                      <td className="font-mono text-xs font-bold text-slate-800">{fmt(h.balance_after)}</td>
+                      <td className="text-xs text-slate-500">
+                        {h.payment_method && <span className="uppercase font-semibold text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded mr-1.5 border">{h.payment_method}</span>}
+                        {h.notes || '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
@@ -381,6 +510,63 @@ export default function PatientDetail() {
         patientName={patient.name}
         saving={saving}
       />
+
+      {/* Deposit Advance Modal */}
+      <Modal
+        open={showDepositModal}
+        onClose={() => setShowDepositModal(false)}
+        title="Deposit Patient Advance (Escrow Wallet)"
+        size="sm"
+        footer={
+          <div className="flex gap-2 justify-end">
+            <button onClick={() => setShowDepositModal(false)} className="btn-secondary">Cancel</button>
+            <button onClick={handleDepositAdvance} disabled={saving || !depositForm.amount} className="btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-700">
+              {saving ? 'Processing…' : 'Record Deposit ✓'}
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-xs text-emerald-800">
+            Deposited funds are held in the patient's advance escrow wallet and can be drawn against future treatments or multi-stage cases (implants, aligners).
+          </div>
+          <div>
+            <label className="label">Deposit Amount (₹) *</label>
+            <input
+              type="number"
+              min="1"
+              className="input text-lg font-bold"
+              placeholder="e.g. 25000"
+              value={depositForm.amount}
+              onChange={e => setDepositForm(f => ({ ...f, amount: e.target.value }))}
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="label">Payment Method *</label>
+            <select
+              className="select"
+              value={depositForm.payment_method}
+              onChange={e => setDepositForm(f => ({ ...f, payment_method: e.target.value }))}
+            >
+              <option value="cash">Cash</option>
+              <option value="upi">UPI</option>
+              <option value="card">Card</option>
+              <option value="bank_transfer">Bank Transfer</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">Notes / Treatment Plan Reference</label>
+            <input
+              type="text"
+              className="input"
+              placeholder="e.g. Advance for Clear Aligners Phase 1"
+              value={depositForm.notes}
+              onChange={e => setDepositForm(f => ({ ...f, notes: e.target.value }))}
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

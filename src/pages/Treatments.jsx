@@ -34,6 +34,13 @@ const FILTER_PRESETS = [
 const EMPTY_FORM = {
   treatment_type: '', tooth_numbers: [],
   description: '', doctor_notes: '',
+  is_implant: false,
+  implant_brand: '',
+  implant_model: '',
+  implant_lot_number: '',
+  implant_serial_number: '',
+  implant_expiry_date: '',
+  implant_torque: '',
 }
 
 function getDateRange(preset) {
@@ -186,6 +193,16 @@ export default function Treatments() {
       const toothCount = form.tooth_numbers && form.tooth_numbers.length > 0 ? form.tooth_numbers.length : 1
       const calculatedCost = (selectedMaster?.standard_cost || 0) * toothCount
 
+      const implantDetails = form.is_implant ? {
+        is_implant: true,
+        brand: form.implant_brand?.trim() || '',
+        model: form.implant_model?.trim() || '',
+        lot_number: form.implant_lot_number?.trim() || '',
+        serial_number: form.implant_serial_number?.trim() || '',
+        expiry_date: form.implant_expiry_date || null,
+        torque_ncm: form.implant_torque ? parseFloat(form.implant_torque) : null
+      } : undefined
+
       await addTreatment({
         patient_id: selectedPatient.id,
         treatment_type: form.treatment_type,
@@ -193,6 +210,7 @@ export default function Treatments() {
         description: form.description,
         cost: calculatedCost,
         doctor_notes: form.doctor_notes,
+        implant_details: implantDetails,
         status: 'completed'
       })
       notify('Treatment recorded')
@@ -359,6 +377,20 @@ export default function Treatments() {
                     {t.description && (
                       <p className="text-sm text-slate-600 mt-1">{t.description}</p>
                     )}
+                    {t.implant_details?.is_implant && (
+                      <div className="mt-2 p-2.5 rounded-lg bg-indigo-50/70 border border-indigo-100 text-xs space-y-1">
+                        <div className="flex items-center gap-1.5 text-indigo-900 font-bold text-[11px]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                          Implant Device Passport: {t.implant_details.brand || 'Implant'} {t.implant_details.model && `(${t.implant_details.model})`}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-slate-600 text-[11px]">
+                          {t.implant_details.lot_number && <span><strong className="text-slate-700">Lot:</strong> <span className="font-mono">{t.implant_details.lot_number}</span></span>}
+                          {t.implant_details.serial_number && <span><strong className="text-slate-700">SN:</strong> <span className="font-mono">{t.implant_details.serial_number}</span></span>}
+                          {t.implant_details.torque_ncm && <span><strong className="text-slate-700">Torque:</strong> {t.implant_details.torque_ncm} Ncm</span>}
+                          {t.implant_details.expiry_date && <span><strong className="text-slate-700">Expiry:</strong> {new Date(t.implant_details.expiry_date).toLocaleDateString()}</span>}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -485,6 +517,20 @@ export default function Treatments() {
                             {t.doctor_notes && (
                               <p className="text-xs text-slate-400 mt-1 italic">{t.doctor_notes}</p>
                             )}
+                            {t.implant_details?.is_implant && (
+                              <div className="mt-2 p-2.5 rounded-lg bg-indigo-50/70 border border-indigo-100 text-xs space-y-1">
+                                <div className="flex items-center gap-1.5 text-indigo-900 font-bold text-[11px]">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                                  Implant Device Passport: {t.implant_details.brand || 'Implant'} {t.implant_details.model && `(${t.implant_details.model})`}
+                                </div>
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 text-slate-600 text-[11px]">
+                                  {t.implant_details.lot_number && <span><strong className="text-slate-700">Lot:</strong> <span className="font-mono">{t.implant_details.lot_number}</span></span>}
+                                  {t.implant_details.serial_number && <span><strong className="text-slate-700">SN:</strong> <span className="font-mono">{t.implant_details.serial_number}</span></span>}
+                                  {t.implant_details.torque_ncm && <span><strong className="text-slate-700">Torque:</strong> {t.implant_details.torque_ncm} Ncm</span>}
+                                  {t.implant_details.expiry_date && <span><strong className="text-slate-700">Expiry:</strong> {new Date(t.implant_details.expiry_date).toLocaleDateString()}</span>}
+                                </div>
+                              </div>
+                            )}
                             <p className="text-[10px] text-slate-400 mt-1 font-semibold">Recorded on {new Date(t.created_at).toLocaleDateString()}</p>
                           </div>
                           <button
@@ -530,7 +576,19 @@ export default function Treatments() {
         <div className="space-y-4">
           <div>
             <label className="label">Treatment Type *</label>
-            <select className="select" value={form.treatment_type} onChange={set('treatment_type')}>
+            <select
+              className="select"
+              value={form.treatment_type}
+              onChange={e => {
+                const val = e.target.value
+                const isImp = val.toLowerCase().includes('implant')
+                setForm(f => ({
+                  ...f,
+                  treatment_type: val,
+                  is_implant: isImp ? true : f.is_implant
+                }))
+              }}
+            >
               <option value="">-- Select Treatment --</option>
               {treatmentTypes.map(t => <option key={t}>{t}</option>)}
             </select>
@@ -601,6 +659,93 @@ export default function Treatments() {
               onChange={set('description')}
             />
           </div>
+
+          {/* Dental Implant Device Passport Section */}
+          <div className="border border-indigo-100 rounded-xl p-3.5 bg-indigo-50/40 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-indigo-900">
+                <input
+                  type="checkbox"
+                  checked={form.is_implant}
+                  onChange={e => setForm(f => ({ ...f, is_implant: e.target.checked }))}
+                  className="rounded text-indigo-600 focus:ring-indigo-500"
+                />
+                Dental Implant Device Passport
+              </label>
+              <span className="text-[10px] uppercase font-semibold text-indigo-600 bg-indigo-100/70 px-2 py-0.5 rounded">
+                Batch &amp; Lot Tracking
+              </span>
+            </div>
+
+            {form.is_implant && (
+              <div className="space-y-2.5 pt-1 animate-fade-in">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-600">Manufacturer / Brand</label>
+                    <input
+                      className="input text-xs py-1.5"
+                      placeholder="e.g. Straumann, Nobel, Osstem"
+                      value={form.implant_brand}
+                      onChange={set('implant_brand')}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-600">Model &amp; Size</label>
+                    <input
+                      className="input text-xs py-1.5"
+                      placeholder="e.g. BLX Ø4.5 x 10mm"
+                      value={form.implant_model}
+                      onChange={set('implant_model')}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-600">Lot / Batch Number</label>
+                    <input
+                      className="input text-xs py-1.5 font-mono"
+                      placeholder="e.g. LOT-2026-X88"
+                      value={form.implant_lot_number}
+                      onChange={set('implant_lot_number')}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-600">Serial Number</label>
+                    <input
+                      className="input text-xs py-1.5 font-mono"
+                      placeholder="e.g. SN-994821"
+                      value={form.implant_serial_number}
+                      onChange={set('implant_serial_number')}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-600">Sterile Expiry Date</label>
+                    <input
+                      type="date"
+                      className="input text-xs py-1.5"
+                      value={form.implant_expiry_date}
+                      onChange={set('implant_expiry_date')}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-600">Insertion Torque (Ncm)</label>
+                    <input
+                      type="number"
+                      className="input text-xs py-1.5"
+                      placeholder="e.g. 35"
+                      value={form.implant_torque}
+                      onChange={set('implant_torque')}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div>
             <label className="label">Doctor's Notes</label>
             <input className="input" placeholder="Internal notes…" value={form.doctor_notes} onChange={set('doctor_notes')} />

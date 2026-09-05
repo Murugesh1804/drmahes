@@ -345,89 +345,240 @@ async function sendAppointmentConfirmation(toEmail, patientName, date, timeSlot,
 }
 
 /**
- * Sends an invoice email to the patient.
- * @param {string} toEmail
- * @param {object} bill
- * @param {Array}  treatments
+ * Sends a corporate, beautifully styled HTML invoice email to the patient.
+ * 
+ * @param {string} toEmail 
+ * @param {object} bill 
+ * @param {Array}  treatments 
+ * @param {Array}  payments 
+ * @param {object} settings 
  */
-async function sendInvoiceEmail(toEmail, bill, treatments = []) {
+async function sendInvoiceEmail(toEmail, bill, treatments = [], payments = [], settings = {}) {
   if (!toEmail) return { success: false, error: 'No email provided' }
 
   const cur = '₹'
-  const date = new Date(bill.created_at).toLocaleDateString('en-IN', {
-    day: 'numeric', month: 'long', year: 'numeric'
+  const fmt = (n) => cur + Number(n || 0).toLocaleString('en-IN')
+
+  const billDate = new Date(bill.created_at || Date.now()).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric'
   })
 
-  const rowsHtml = treatments.length > 0
+  const clinicName = settings.clinic_name || "Dr. Mahe's Dentistry"
+  const clinicPhone = settings.clinic_phone || '+91 93428 03217'
+  const clinicAddress = settings.clinic_address || 'No. 12, Trunk Road, Porur, Chennai - 600116'
+  const clinicEmail = settings.clinic_email || 'drmahesdentistry@gmail.com'
+  const upiId = settings.upi_id || '9342803217@okbizaxis'
+
+  // 1. Treatment item rows
+  const txRowsHtml = treatments.length > 0
     ? treatments.map((t, i) => `
       <tr>
-        <td style="padding:8px 12px;border-bottom:1px solid #f0ece4;font-size:13px;color:#1a1209;">
-          ${i + 1}. ${t.treatment_type}${t.tooth_number ? ` <span style="color:#9a7c50;font-size:11px;">(Tooth #${t.tooth_number})</span>` : ''}
+        <td style="padding:10px 14px;border-bottom:1px solid #f0ece4;font-size:13px;color:#1a1209;">
+          <strong>${i + 1}. ${t.treatment_type}</strong>
+          ${t.tooth_numbers && t.tooth_numbers.length ? `<span style="color:#9a7c50;font-size:11px;margin-left:6px;">(Tooth #${t.tooth_numbers.join(', ')})</span>` : t.tooth_number ? `<span style="color:#9a7c50;font-size:11px;margin-left:6px;">(Tooth #${t.tooth_number})</span>` : ''}
+          ${t.description ? `<div style="color:#78716c;font-size:11px;margin-top:2px;">${t.description}</div>` : ''}
         </td>
-        <td style="padding:8px 12px;border-bottom:1px solid #f0ece4;font-size:13px;text-align:right;color:#1a1209;font-weight:600;">
-          ${cur}${Number(t.cost).toLocaleString('en-IN')}
+        <td style="padding:10px 14px;border-bottom:1px solid #f0ece4;font-size:13px;text-align:right;color:#1a1209;font-weight:600;">
+          ${fmt(t.cost)}
         </td>
       </tr>`).join('')
-    : `<tr><td style="padding:8px 12px;font-size:13px;color:#1a1209;" colspan="2">Dental Treatment Services</td></tr>`
+    : `<tr><td style="padding:12px 14px;font-size:13px;color:#78716c;" colspan="2">Dental Clinical Services</td></tr>`
 
-  const subtotal = treatments.reduce((s, t) => s + (t.cost || 0), 0) || bill.total_amount
-  const discountLine = bill.discount > 0
-    ? `<tr><td style="padding:4px 12px;font-size:12px;color:#9a7c50;">Discount (${bill.discount}%)</td><td style="padding:4px 12px;font-size:12px;text-align:right;color:#c53030;">- ${cur}${Math.round(subtotal * bill.discount / 100).toLocaleString('en-IN')}</td></tr>`
+  // 2. Extra charges rows
+  const manualChargeRow = (bill.manual_charges || 0) > 0
+    ? `<tr><td style="padding:8px 14px;border-bottom:1px solid #f0ece4;font-size:12px;color:#44403c;">Additional Clinical Procedures / Consumables</td><td style="padding:8px 14px;border-bottom:1px solid #f0ece4;font-size:12px;text-align:right;color:#44403c;font-weight:600;">+ ${fmt(bill.manual_charges)}</td></tr>`
     : ''
-  const taxLine = bill.tax_percent > 0
-    ? `<tr><td style="padding:4px 12px;font-size:12px;color:#9a7c50;">GST (${bill.tax_percent}%)</td><td style="padding:4px 12px;font-size:12px;text-align:right;color:#1a1209;">+ ${cur}${Number(bill.tax_amount || 0).toLocaleString('en-IN')}</td></tr>`
+
+  const medChargeRow = (bill.medicine_charges || 0) > 0
+    ? `<tr><td style="padding:8px 14px;border-bottom:1px solid #f0ece4;font-size:12px;color:#44403c;">Prescribed Medicines & Hygiene Care</td><td style="padding:8px 14px;border-bottom:1px solid #f0ece4;font-size:12px;text-align:right;color:#44403c;font-weight:600;">+ ${fmt(bill.medicine_charges)}</td></tr>`
     : ''
+
+  const discountRow = (bill.discount || 0) > 0
+    ? `<tr><td style="padding:8px 14px;border-bottom:1px solid #f0ece4;font-size:12px;color:#16a34a;">Special Discount</td><td style="padding:8px 14px;border-bottom:1px solid #f0ece4;font-size:12px;text-align:right;color:#16a34a;font-weight:600;">- ${fmt(bill.discount)}</td></tr>`
+    : ''
+
+  const taxRow = (bill.tax_amount || 0) > 0
+    ? `<tr><td style="padding:8px 14px;border-bottom:1px solid #f0ece4;font-size:12px;color:#78716c;">GST / Tax (${bill.tax_percent}%)</td><td style="padding:8px 14px;border-bottom:1px solid #f0ece4;font-size:12px;text-align:right;color:#78716c;font-weight:600;">+ ${fmt(bill.tax_amount)}</td></tr>`
+    : ''
+
+  // 3. Payment Installments Ledger rows
+  const paymentRowsHtml = payments.length > 0
+    ? payments.map((p, idx) => {
+        const pDate = new Date(p.payment_date || p.paid_at || p.created_at).toLocaleDateString('en-IN', {
+          day: '2-digit', month: 'short', year: 'numeric'
+        })
+        const method = (p.payment_method || p.method || 'cash').toUpperCase()
+        const recNo = p.receipt_number ? `<span style="font-family:monospace;color:#9a7c50;font-size:11px;">[${p.receipt_number}]</span> ` : ''
+        return `
+        <tr>
+          <td style="padding:8px 12px;font-size:12px;color:#1a1209;border-bottom:1px solid #f5f0e8;">
+            ${recNo}${pDate} &middot; <span style="background:#f5efe6;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;color:#6b5c45;">${method}</span>
+            ${p.reference_id ? `<span style="color:#78716c;font-size:10px;margin-left:4px;">(Ref: ${p.reference_id})</span>` : ''}
+          </td>
+          <td style="padding:8px 12px;font-size:12px;text-align:right;color:#16a34a;font-weight:700;border-bottom:1px solid #f5f0e8;">
+            ${fmt(p.amount)}
+          </td>
+        </tr>`
+      }).join('')
+    : `<tr><td colspan="2" style="padding:8px 12px;font-size:12px;color:#78716c;text-align:center;">No payment installments recorded yet</td></tr>`
+
+  const balanceDue = Number(bill.balance || 0)
+  const isFullyPaid = balanceDue <= 0
 
   const mailOptions = {
     from: process.env.MAIL_FROM,
     to: toEmail.trim(),
-    subject: `Invoice ${bill.invoice_number || ''} — Dr. Mahe's Dentistry`,
+    subject: `Tax Invoice & Receipt ${bill.invoice_number || ''} — ${clinicName}`,
     html: `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="font-family:'Segoe UI',Arial,sans-serif;background:#f5f0e8;margin:0;padding:40px 20px;">
-  <div style="max-width:560px;margin:0 auto;background:#fffdf9;border-radius:20px;overflow:hidden;border:1px solid #e8dfc8;">
-    <div style="background:#1a1209;padding:28px 36px;">
-      <img src="cid:logo_black" alt="Dr. Mahe's Dentistry" style="height:52px;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice - ${clinicName}</title>
+</head>
+<body style="font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;background-color:#f4ede4;margin:0;padding:24px 12px;color:#1c1917;-webkit-font-smoothing:antialiased;">
+  <div style="max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.06);border:1px solid #e7dfd5;">
+    
+    <!-- HEADER -->
+    <div style="background:linear-gradient(135deg, #16120c 0%, #2a2016 100%);padding:30px 32px;color:#ffffff;text-align:left;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="vertical-align:middle;">
+            <img src="cid:logo_black" alt="${clinicName}" style="height:48px;width:auto;display:block;">
+            <h1 style="margin:10px 0 2px;font-size:19px;font-weight:700;letter-spacing:0.02em;color:#fdfbf7;">${clinicName}</h1>
+            <p style="margin:0;font-size:11px;color:#d4af72;letter-spacing:0.05em;text-transform:uppercase;">Specialty Dental & Oral Healthcare Center</p>
+          </td>
+          <td style="text-align:right;vertical-align:top;">
+            <span style="display:inline-block;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:${isFullyPaid ? '#15803d' : '#b45309'};color:#ffffff;">
+              ${isFullyPaid ? '✓ PAID IN FULL' : 'PAYMENT DUE'}
+            </span>
+            <div style="margin-top:10px;font-size:12px;color:#e7dfd5;">
+              <strong>Invoice #:</strong> ${bill.invoice_number || '—'}
+            </div>
+            <div style="font-size:11px;color:#c4b5a5;margin-top:3px;">
+              ${billDate}
+            </div>
+          </td>
+        </tr>
+      </table>
     </div>
-    <div style="height:4px;background:linear-gradient(90deg,#c9a96e,#e8d5a3,#c9a96e);"></div>
-    <div style="padding:32px 36px;">
-      <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#9a7c50;margin:0 0 16px;">Invoice Receipt</p>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
+    
+    <div style="height:4px;background:linear-gradient(90deg, #c9a96e, #f3e5c8, #c9a96e);"></div>
+
+    <!-- PATIENT & BILL META -->
+    <div style="padding:24px 32px;background:#fbf9f6;border-bottom:1px solid #eee7dc;">
+      <table style="width:100%;border-collapse:collapse;">
         <tr>
-          <td style="font-size:13px;color:#6b5c45;">Invoice No.</td>
-          <td style="font-size:13px;font-weight:700;color:#1a1209;text-align:right;">${bill.invoice_number || '—'}</td>
-        </tr>
-        <tr>
-          <td style="font-size:13px;color:#6b5c45;">Patient</td>
-          <td style="font-size:13px;font-weight:700;color:#1a1209;text-align:right;">${bill.patient_name || ''}</td>
-        </tr>
-        <tr>
-          <td style="font-size:13px;color:#6b5c45;">Date</td>
-          <td style="font-size:13px;color:#1a1209;text-align:right;">${date}</td>
+          <td style="width:55%;vertical-align:top;">
+            <div style="font-size:10px;text-transform:uppercase;font-weight:700;color:#9a7c50;letter-spacing:0.08em;margin-bottom:4px;">Patient Details</div>
+            <div style="font-size:15px;font-weight:700;color:#1c1917;">${bill.patient_name || 'Patient'}</div>
+            ${bill.patient_phone ? `<div style="font-size:12px;color:#78716c;margin-top:2px;">Phone: ${bill.patient_phone}</div>` : ''}
+            ${bill.patient_pid ? `<div style="font-size:11px;font-family:monospace;color:#9a7c50;margin-top:2px;">PID: ${bill.patient_pid}</div>` : ''}
+          </td>
+          <td style="width:45%;vertical-align:top;text-align:right;">
+            <div style="font-size:10px;text-transform:uppercase;font-weight:700;color:#9a7c50;letter-spacing:0.08em;margin-bottom:4px;">Clinic Location</div>
+            <div style="font-size:12px;color:#44403c;line-height:1.4;">${clinicAddress}</div>
+            <div style="font-size:12px;color:#44403c;margin-top:2px;">Helpline: ${clinicPhone}</div>
+          </td>
         </tr>
       </table>
-      <hr style="border:none;border-top:1px solid #e8dfc8;margin:20px 0;">
-      <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#9a7c50;margin:0 0 8px;">Treatment Details</p>
-      <table style="width:100%;border-collapse:collapse;background:#f9f4eb;border-radius:12px;overflow:hidden;">
-        ${rowsHtml}
-        ${discountLine}
-        ${taxLine}
-        <tr style="background:#1a1209;">
-          <td style="padding:12px;font-size:14px;font-weight:700;color:#e8d5a3;">Total</td>
-          <td style="padding:12px;font-size:14px;font-weight:700;color:#e8d5a3;text-align:right;">${cur}${Number(bill.total_amount).toLocaleString('en-IN')}</td>
-        </tr>
+    </div>
+
+    <!-- TREATMENT & CHARGES BREAKDOWN -->
+    <div style="padding:28px 32px 16px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9a7c50;margin-bottom:10px;">Itemized Treatment Summary</div>
+      <table style="width:100%;border-collapse:collapse;border:1px solid #eee7dc;border-radius:10px;overflow:hidden;">
+        <thead>
+          <tr style="background-color:#f4eee5;">
+            <th style="padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;color:#6b5c45;text-align:left;border-bottom:1px solid #e7dfd5;">Procedure / Description</th>
+            <th style="padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;color:#6b5c45;text-align:right;border-bottom:1px solid #e7dfd5;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${txRowsHtml}
+          ${manualChargeRow}
+          ${medChargeRow}
+          ${discountRow}
+          ${taxRow}
+        </tbody>
+        <tfoot>
+          <tr style="background:#1c1917;color:#ffffff;">
+            <td style="padding:12px 14px;font-size:14px;font-weight:700;color:#fbf7ef;">Total Bill Amount</td>
+            <td style="padding:12px 14px;font-size:15px;font-weight:700;color:#d4af72;text-align:right;">${fmt(bill.total_amount)}</td>
+          </tr>
+        </tfoot>
       </table>
-      <div style="margin-top:16px;padding:12px 16px;background:${bill.balance > 0 ? '#fff5f5' : '#f0fdf4'};border-radius:10px;border:1px solid ${bill.balance > 0 ? '#fecaca' : '#bbf7d0'};">
-        <span style="font-size:13px;font-weight:600;color:${bill.balance > 0 ? '#c53030' : '#276749'};">
-          ${bill.balance > 0 ? `Balance Due: ${cur}${Number(bill.balance).toLocaleString('en-IN')}` : '✓ Fully Paid'}
-        </span>
+    </div>
+
+    <!-- PAYMENT & RECEIPT LEDGER -->
+    <div style="padding:12px 32px 24px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9a7c50;margin-bottom:10px;">Payments Received (Installments)</div>
+      <div style="background:#faf8f5;border:1px solid #eee7dc;border-radius:10px;overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f4eee5;">
+              <th style="padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:#6b5c45;text-align:left;">Receipt / Date & Mode</th>
+              <th style="padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;color:#6b5c45;text-align:right;">Paid Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${paymentRowsHtml}
+          </tbody>
+        </table>
       </div>
+
+      <!-- BALANCE SUMMARY CARD -->
+      <div style="margin-top:16px;padding:16px 20px;background:${isFullyPaid ? '#f0fdf4' : '#fffbeb'};border:1px solid ${isFullyPaid ? '#bbf7d0' : '#fde68a'};border-radius:12px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td>
+              <div style="font-size:11px;font-weight:600;color:${isFullyPaid ? '#166534' : '#92400e'};text-transform:uppercase;letter-spacing:0.05em;">
+                ${isFullyPaid ? 'Settlement Status' : 'Outstanding Balance Due'}
+              </div>
+              <div style="font-size:13px;color:#57534e;margin-top:2px;">
+                Total Paid to Date: <strong style="color:#1c1917;">${fmt(bill.paid_amount)}</strong> of ${fmt(bill.total_amount)}
+              </div>
+            </td>
+            <td style="text-align:right;vertical-align:middle;">
+              <div style="font-size:22px;font-weight:800;color:${isFullyPaid ? '#16a34a' : '#dc2626'};">
+                ${isFullyPaid ? '₹0 (Settled)' : fmt(balanceDue)}
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      ${!isFullyPaid ? `
+      <!-- UPI / BANK PAYMENT OPTIONS -->
+      <div style="margin-top:18px;padding:14px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#0f172a;margin-bottom:6px;">Easy Online Payment Instructions</div>
+        <p style="font-size:12px;color:#475569;margin:0 0 6px;">To clear the outstanding balance, you can transfer via UPI or NetBanking:</p>
+        <table style="width:100%;font-size:12px;color:#1e293b;border-collapse:collapse;">
+          <tr>
+            <td style="padding:2px 0;width:30%;color:#64748b;">UPI ID:</td>
+            <td style="padding:2px 0;font-weight:700;font-family:monospace;color:#0f172a;">${upiId}</td>
+          </tr>
+          <tr>
+            <td style="padding:2px 0;color:#64748b;">Bank Name:</td>
+            <td style="padding:2px 0;font-weight:600;">Axis Bank / Porur Branch</td>
+          </tr>
+          <tr>
+            <td style="padding:2px 0;color:#64748b;">Account Name:</td>
+            <td style="padding:2px 0;font-weight:600;">Dr. Mahes Dentistry</td>
+          </tr>
+        </table>
+        <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Please mention Invoice <strong>${bill.invoice_number || ''}</strong> in the transfer remarks.</div>
+      </div>` : ''}
     </div>
-    <div style="background:#f2ebe0;padding:24px 36px;border-top:1px solid #e0d0b0;text-align:center;">
-      <p style="margin:0;font-size:13px;font-weight:600;color:#1a1209;">Dr. Mahe's Dentistry</p>
-      <p style="margin:6px 0 0;font-size:12px;color:#6b5c45;">Porur, Chennai — 📞 +91 93428 03217</p>
+
+    <!-- FOOTER -->
+    <div style="background:#f4eee5;padding:22px 32px;border-top:1px solid #e7dfd5;text-align:center;">
+      <p style="margin:0;font-size:13px;font-weight:700;color:#1c1917;">${clinicName}</p>
+      <p style="margin:4px 0 0;font-size:11px;color:#78716c;">${clinicAddress} &middot; 📞 ${clinicPhone}</p>
+      <p style="margin:4px 0 0;font-size:11px;color:#78716c;">✉️ ${clinicEmail}</p>
+      <p style="margin:12px 0 0;font-size:10px;color:#a8a29e;">This is a computer-generated tax invoice and money receipt voucher. Retain for insurance & healthcare tax deduction purposes.</p>
     </div>
+
   </div>
 </body>
 </html>`,

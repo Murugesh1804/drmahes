@@ -16,7 +16,7 @@ router.get('/bill/:bid', asyncHandler(async (req, res) => {
  * Reverse a payment
  */
 router.post('/:id/reverse', asyncHandler(async (req, res) => {
-  res.json(await queries.reversePayment(req.params.id, req.body.reason || ''))
+  res.json(await queries.reversePayment(req.params.id, req.body))
 }))
 
 /**

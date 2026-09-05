@@ -336,8 +336,8 @@ export default function Revenue() {
           color="emerald"
           accent="bg-emerald-100 text-emerald-600"
           value={fmt(data.totalRevenue)}
-          label="Total Collected"
-          sub={collectionPct > 0 ? `${collectionPct.toFixed(0)}% rate` : null}
+          label="Cash Collections (Realized)"
+          sub={collectionPct > 0 ? `${collectionPct.toFixed(0)}% realized` : null}
           delay={0}
         />
         <MetricCard
@@ -345,8 +345,8 @@ export default function Revenue() {
           color="indigo"
           accent="bg-indigo-100 text-indigo-600"
           value={fmt(data.totalBilled)}
-          label="Total Billed"
-          sub={data.billCount ? `${data.billCount} bills` : null}
+          label="Accrual Revenue (Billed)"
+          sub={data.billCount ? `${data.billCount} invoices` : null}
           delay={60}
         />
         <MetricCard
@@ -354,7 +354,7 @@ export default function Revenue() {
           color="rose"
           accent="bg-rose-100 text-rose-600"
           value={fmt(data.pendingBalance)}
-          label="Pending Balance"
+          label="Outstanding Receivables"
           sub={data.totalBilled > 0 ? (100 - collectionPct) : null}
           delay={120}
         />
@@ -363,7 +363,7 @@ export default function Revenue() {
           color="teal"
           accent="bg-teal-100 text-teal-600"
           value={`${collectionPct.toFixed(1)}%`}
-          label="Collection Rate"
+          label="Realization Rate"
           sub={collectionPct >= 80 ? '✓ On Track' : collectionPct >= 60 ? '~ Moderate' : '↓ Low'}
           delay={180}
         />

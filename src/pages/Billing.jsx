@@ -1,17 +1,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, X, Printer, CreditCard, ShoppingBag, Trash2, Mail, Edit2 } from 'lucide-react'
+import { Plus, Search, X, Printer, CreditCard, ShoppingBag, Trash2, Mail, Edit2, RotateCcw, Wallet, FileCheck, Ban } from 'lucide-react'
 import {
   getAllBills, getBillsByPatient, createBill, updateBillPayment, updateBill, getBillEditHistory,
   getAllPatients, searchPatients,
   getTreatmentsByPatient, getTreatmentsByAppointment, getTreatmentsByBill, getPatientAppointments,
   getPaymentsByBill, searchBills, emailBillInvoice,
-  getUnbilledTreatments, getAllTreatmentMasters, getAllMedicineMasters
+  getUnbilledTreatments, getAllTreatmentMasters, getAllMedicineMasters,
+  reversePayment, getPatientAdvance
 } from '../services/api'
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
 import ConfirmModal from '../components/ConfirmModal'
-import { generateReceiptHTML } from '../utils/printer'
+import { generateReceiptHTML, generateMoneyReceiptHTML, generateCreditNoteHTML } from '../utils/printer'
+import { clinicDateString, fmtDate } from '../utils/date'
 
 const BILL_COLORS = { paid: 'badge-paid', partial: 'badge-partial', pending: 'badge-pending' }
 
@@ -61,7 +63,7 @@ export default function Billing() {
   const [cartMedQty, setCartMedQty] = useState('1')
 
   const [billForm, setBillForm] = useState({
-    paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: ''
+    paid_amount: '', payment_method: 'cash', payment_date: '', notes: '', discount: '', tax_percent: ''
   })
   const [discountMode, setDiscountMode] = useState('flat') // 'flat' | 'percent'
 
@@ -77,8 +79,81 @@ export default function Billing() {
   // --- Payment / Other State ---
   const [payAmount, setPayAmount] = useState('')
   const [payMethod, setPayMethod] = useState('cash')
+  const [payDate, setPayDate] = useState('')
+  const [payNotes, setPayNotes] = useState('')
   const [historyItems, setHistoryItems] = useState([])
   const [emailAddr, setEmailAddr] = useState('')
+
+  // Patient Advance & Escrow State
+  const [patientAdvance, setPatientAdvance] = useState(0)
+  const [applyAdvance, setApplyAdvance] = useState(false)
+  const [advanceToApply, setAdvanceToApply] = useState('')
+
+  // Payment Reversal / Credit Note State
+  const [reversingPayment, setReversingPayment] = useState(null)
+  const [showReversalModal, setShowReversalModal] = useState(false)
+  const [reversalReason, setReversalReason] = useState('')
+  const [refundMethod, setRefundMethod] = useState('to_advance_wallet')
+
+  function printHtmlDoc(html) {
+    if (typeof window !== 'undefined' && window.electronAPI !== undefined) {
+      window.electronAPI.printReceipt(html)
+    } else {
+      const w = window.open('', '_blank')
+      w.document.write(html)
+      w.document.close()
+      w.onload = () => { w.focus(); w.print() }
+      setTimeout(() => {
+        if (w.document.readyState === 'complete') {
+          w.focus()
+          w.print()
+        }
+      }, 1000)
+    }
+  }
+
+  function printMoneyReceipt(payment) {
+    const html = generateMoneyReceiptHTML(payment, activeBill, settings)
+    printHtmlDoc(html)
+  }
+
+  function printCreditNote(payment) {
+    const html = generateCreditNoteHTML(payment, activeBill, settings)
+    printHtmlDoc(html)
+  }
+
+  function openReversal(payment) {
+    setReversingPayment(payment)
+    setReversalReason('')
+    setRefundMethod('to_advance_wallet')
+    setShowReversalModal(true)
+  }
+
+  async function handleConfirmReversal() {
+    if (!reversalReason.trim()) {
+      notify('Please enter a reason for reversal / credit note', 'error')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await reversePayment(reversingPayment.id, {
+        reason: reversalReason.trim(),
+        refund_method: refundMethod
+      })
+      notify(`Payment reversed. Credit Note ${res?.payment?.credit_note_number || ''} issued!`)
+      setShowReversalModal(false)
+      setReversingPayment(null)
+      if (activeBill) {
+        const updated = await getPaymentsByBill(activeBill.id)
+        setHistoryItems(updated || [])
+      }
+      load(billPage)
+    } catch (e) {
+      notify(e.message || 'Failed to reverse payment', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const load = useCallback(async (page = 1) => {
     const data = search.trim()
@@ -130,18 +205,35 @@ export default function Billing() {
     return () => clearTimeout(t)
   }, [patSearch, showCreate])
 
-  // Load patient's unbilled treatments when selected
+  // Load patient's unbilled treatments and advance balance when selected
   useEffect(() => {
     if (!selPatient) { 
       setUnbilledTreatments([])
       setSelectedUnbilled(new Set())
+      setPatientAdvance(0)
+      setApplyAdvance(false)
+      setAdvanceToApply('')
       return 
     }
     getUnbilledTreatments(selPatient.id).then(txs => {
       setUnbilledTreatments(txs || [])
-      // Default to empty selection - user must explicitly choose treatments
       setSelectedUnbilled(new Set())
     }).catch(console.error)
+
+    getPatientAdvance(selPatient.id).then(data => {
+      const adv = data?.advance_balance || 0
+      setPatientAdvance(adv)
+      if (adv > 0) {
+        setApplyAdvance(true)
+        setAdvanceToApply(adv.toString())
+      } else {
+        setApplyAdvance(false)
+        setAdvanceToApply('')
+      }
+    }).catch(err => {
+      console.error(err)
+      setPatientAdvance(0)
+    })
   }, [selPatient])
 
   // Sync selected unbilled treatments to bill items
@@ -251,8 +343,9 @@ export default function Billing() {
     setUnbilledTreatments([]); setSelectedUnbilled(new Set())
     setCartSelect(''); setCartCost(''); setCartTooth(''); setCartDesc('')
     setCartMedSelect(''); setCartMedCost(''); setCartMedDesc(''); setCartMedQty('1')
-    setBillForm({ paid_amount: '', payment_method: 'cash', notes: '', discount: '', tax_percent: '', manual_charges: '', medicine_charges: '' })
+    setBillForm({ paid_amount: '', payment_method: 'cash', payment_date: clinicDateString(), notes: '', discount: '', tax_percent: '', manual_charges: '', medicine_charges: '' })
     setDiscountMode('flat')
+    setPatientAdvance(0); setApplyAdvance(false); setAdvanceToApply('')
     setShowCreate(true)
   }
 
@@ -283,8 +376,10 @@ export default function Billing() {
   const baseTotal = preDiscountTotal - discountAmount
   const taxAmount = Math.round(baseTotal * (taxPercent / 100) * 100) / 100
   const finalTotal = Math.round((baseTotal + taxAmount) * 100) / 100
+  const advanceDeduction = applyAdvance ? Math.min(patientAdvance, parseFloat(advanceToApply) || 0) : 0
+  const afterAdvanceTotal = Math.max(0, finalTotal - advanceDeduction)
   const paidNow = parseFloat(billForm.paid_amount) || 0
-  const balancePreview = Math.max(0, finalTotal - paidNow)
+  const balancePreview = Math.max(0, afterAdvanceTotal - paidNow)
 
   async function handleCreate() {
     if (!selPatient) { notify('Select a patient', 'error'); return }
@@ -297,7 +392,18 @@ export default function Billing() {
       return
     }
     
-    if (paidNow > finalTotal) { notify(`Paid amount cannot exceed final total of ${fmt(finalTotal)}`, 'error'); return }
+    if (advanceDeduction > patientAdvance) {
+      notify(`Applied advance cannot exceed available balance of ${fmt(patientAdvance)}`, 'error')
+      return
+    }
+    if (advanceDeduction > finalTotal) {
+      notify(`Applied advance cannot exceed final total of ${fmt(finalTotal)}`, 'error')
+      return
+    }
+    if (paidNow > afterAdvanceTotal) {
+      notify(`Paid amount cannot exceed remaining total of ${fmt(afterAdvanceTotal)}`, 'error')
+      return
+    }
 
     setSaving(true)
     try {
@@ -314,7 +420,9 @@ export default function Billing() {
         existingTreatmentIds,
         treatments: newTreatments,
         paid_amount: paidNow,
+        apply_advance: advanceDeduction,
         payment_method: billForm.payment_method,
+        payment_date: billForm.payment_date || clinicDateString(),
         discount: discountAmount,
         tax_percent: taxPercent,
         notes: billForm.notes,
@@ -353,25 +461,41 @@ export default function Billing() {
     const amount = parseFloat(payAmount)
     if (!amount || amount <= 0) { notify('Enter payment amount', 'error'); return }
     if (amount > activeBill.balance) { notify(`Amount cannot exceed balance of ${fmt(activeBill.balance)}`, 'error'); return }
+    if (!payDate) { notify('Please enter a payment date', 'error'); return }
+    if (payMethod === 'advance' && amount > patientAdvance) {
+      notify(`Amount exceeds available advance balance of ${fmt(patientAdvance)}`, 'error')
+      return
+    }
     setSaving(true)
     try {
       await updateBillPayment(activeBill.id, {
         amount,
         payment_method: payMethod,
+        payment_date: payDate,
+        notes: payNotes
       })
       notify('Payment recorded')
       setShowPayment(false)
-      load(1)
+      load(billPage)
     } catch (e) {
       notify(e.message || 'Failed to record payment', 'error')
     } finally { setSaving(false) }
   }
 
-  function openPayment(bill) {
+  async function openPayment(bill) {
     setActiveBill(bill)
     setPayAmount(bill.balance.toString())
     setPayMethod('cash')
+    setPayDate(clinicDateString())
+    setPayNotes('')
     setShowPayment(true)
+    try {
+      const adv = await getPatientAdvance(bill.patient_id)
+      setPatientAdvance(adv?.advance_balance || 0)
+    } catch (err) {
+      console.warn(err)
+      setPatientAdvance(0)
+    }
   }
 
   async function handleViewHistory(bill) {
@@ -566,6 +690,49 @@ export default function Billing() {
 
           {selPatient && (
             <>
+              {/* Advance Wallet Available Deposit */}
+              {patientAdvance > 0 && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold flex-shrink-0">
+                      <Wallet size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-emerald-800">Advance Wallet Balance</p>
+                      <p className="text-sm font-bold text-emerald-900">{fmt(patientAdvance)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-emerald-300 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 shadow-sm">
+                      <input
+                        type="checkbox"
+                        checked={applyAdvance}
+                        onChange={e => {
+                          const checked = e.target.checked
+                          setApplyAdvance(checked)
+                          setAdvanceToApply(checked ? Math.min(patientAdvance, finalTotal).toString() : '')
+                        }}
+                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                      />
+                      Apply to Invoice
+                    </label>
+                    {applyAdvance && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-emerald-700">₹</span>
+                        <input
+                          type="number"
+                          max={Math.min(patientAdvance, finalTotal)}
+                          min="1"
+                          className="input py-1 px-2 text-xs w-24 text-right font-bold bg-white border-emerald-300"
+                          value={advanceToApply}
+                          onChange={e => setAdvanceToApply(e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Unbilled Treatments Selection */}
               {unbilledTreatments.length > 0 && (
                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 space-y-3">
@@ -743,17 +910,35 @@ export default function Billing() {
                     <span>Final Total:</span>
                     <span>{fmt(finalTotal)}</span>
                   </div>
+
+                  {advanceDeduction > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
+                      <span>Advance Applied:</span>
+                      <span>- {fmt(advanceDeduction)}</span>
+                    </div>
+                  )}
                   
                   <div className="pt-4 border-t border-slate-100 space-y-3">
                     <div>
                       <label className="label">Paying Now (₹)</label>
                       <input type="number" className="input bg-emerald-50 border-emerald-200" value={billForm.paid_amount} onChange={e => setBillForm({ ...billForm, paid_amount: e.target.value })} />
                     </div>
-                    <div>
-                      <label className="label">Method</label>
-                      <select className="select" value={billForm.payment_method} onChange={e => setBillForm({ ...billForm, payment_method: e.target.value })}>
-                        <option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="other">Other</option>
-                      </select>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="label">Method</label>
+                        <select className="select" value={billForm.payment_method} onChange={e => setBillForm({ ...billForm, payment_method: e.target.value })}>
+                          <option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="other">Other</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="label">Payment Date</label>
+                        <input
+                          type="date"
+                          className="input"
+                          value={billForm.payment_date || clinicDateString()}
+                          onChange={e => setBillForm({ ...billForm, payment_date: e.target.value })}
+                        />
+                      </div>
                     </div>
                     <div className="flex justify-between text-red-600 font-bold text-sm bg-red-50 p-2 rounded-lg">
                       <span>Remaining Balance:</span>
@@ -878,30 +1063,209 @@ export default function Billing() {
               <p className="text-sm text-slate-500">Balance Due</p>
               <p className="text-3xl font-bold text-red-600">{fmt(activeBill.balance)}</p>
             </div>
+            {patientAdvance > 0 && (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
+                <Wallet size={15} className="text-emerald-600 flex-shrink-0" />
+                <span>Patient Advance Wallet Available: <strong>{fmt(patientAdvance)}</strong></span>
+              </div>
+            )}
             <div>
               <label className="label">Amount (₹)</label>
               <input className="input text-lg font-bold h-12" type="number" max={activeBill.balance} value={payAmount} onChange={e => setPayAmount(e.target.value)} autoFocus />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">Payment Method</label>
+                <select className="select" value={payMethod} onChange={e => setPayMethod(e.target.value)}>
+                  <option value="cash">Cash</option>
+                  <option value="upi">UPI</option>
+                  <option value="card">Card</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  {patientAdvance > 0 && (
+                    <option value="advance">Advance Wallet (Avail: {fmt(patientAdvance)})</option>
+                  )}
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Payment Date</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={payDate}
+                  onChange={e => setPayDate(e.target.value)}
+                />
+              </div>
+            </div>
             <div>
-              <label className="label">Payment Method</label>
-              <select className="select" value={payMethod} onChange={e => setPayMethod(e.target.value)}>
-                <option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="other">Other</option>
-              </select>
+              <label className="label">Notes / Ref # <span className="text-slate-400 text-xs font-normal">(Optional UTR / Cheque / Note)</span></label>
+              <input
+                type="text"
+                className="input"
+                placeholder="e.g. UTR123456 / Cheque # / Front desk note"
+                value={payNotes}
+                onChange={e => setPayNotes(e.target.value)}
+              />
             </div>
           </div>
         )}
       </Modal>
 
       {/* HISTORY MODAL */}
-      <Modal open={showHistory} onClose={() => setShowHistory(false)} title="Payment History" size="md" footer={<button onClick={() => setShowHistory(false)} className="btn-secondary">Close</button>}>
+      <Modal open={showHistory} onClose={() => setShowHistory(false)} title="Payment Installment History" size="md" footer={<button onClick={() => setShowHistory(false)} className="btn-secondary">Close</button>}>
         <div className="space-y-3">
-          {historyItems.length === 0 ? <p className="text-center py-8 text-slate-500">No payments found</p> : historyItems.map(p => (
-            <div key={p.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-              <div><p className="font-bold text-slate-800">{fmt(p.amount)}</p><p className="text-xs text-slate-400 capitalize">{p.payment_method}</p></div>
-              <div className="text-right text-xs text-slate-500">{new Date(p.payment_date).toLocaleString()}</div>
-            </div>
-          ))}
+          {historyItems.length === 0 ? (
+            <p className="text-center py-8 text-slate-500">No payments found</p>
+          ) : (
+            historyItems.map(p => (
+              <div key={p.id} className={`p-3.5 rounded-xl border transition-all ${p.status === 'reversed' ? 'bg-rose-50/40 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="flex justify-between items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-base font-bold text-slate-800">{fmt(p.amount)}</span>
+                      {p.receipt_number && (
+                        <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold tracking-wide">
+                          {p.receipt_number}
+                        </span>
+                      )}
+                      {p.status === 'reversed' && (
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-rose-100 text-rose-700">
+                          REVERSED
+                        </span>
+                      )}
+                      {p.credit_note_number && (
+                        <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200">
+                          CN: {p.credit_note_number}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span className="text-[11px] uppercase tracking-wide px-2 py-0.5 font-semibold text-slate-600 bg-white border border-slate-200 rounded-md">
+                        {p.payment_method || p.method || 'cash'}
+                      </span>
+                      {p.notes && <span className="text-xs text-slate-500 truncate max-w-xs">{p.notes}</span>}
+                      {p.reference_id && <span className="text-[11px] font-mono text-slate-400">Ref: {p.reference_id}</span>}
+                    </div>
+
+                    {p.status === 'reversed' && (
+                      <div className="mt-2 text-xs text-rose-700 bg-rose-50 p-2 rounded-lg border border-rose-100 space-y-0.5">
+                        {p.reversal_reason && <p><span className="font-semibold">Reason:</span> {p.reversal_reason}</p>}
+                        {p.refund_method && (
+                          <p className="text-[11px] text-rose-600 font-medium">
+                            Refund Route: {p.refund_method === 'to_advance_wallet' ? 'Credited to Patient Advance Wallet' : p.refund_method.toUpperCase()}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="text-right flex flex-col items-end gap-2 flex-shrink-0">
+                    <div>
+                      <p className="text-xs font-medium text-slate-700">
+                        {fmtDate(p.payment_date || p.paid_at || p.created_at)}
+                      </p>
+                      {(p.payment_date || p.paid_at) && !isNaN(new Date(p.payment_date || p.paid_at).getTime()) && (
+                        <p className="text-[10px] text-slate-400">
+                          {new Date(p.payment_date || p.paid_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Action Buttons: Print Receipt / Credit Note, Reverse */}
+                    <div className="flex items-center gap-1.5">
+                      {p.status !== 'reversed' ? (
+                        <>
+                          <button
+                            onClick={() => printMoneyReceipt(p)}
+                            className="px-2 py-1 rounded-lg text-xs font-semibold text-emerald-700 bg-white border border-emerald-200 hover:bg-emerald-50 flex items-center gap-1 shadow-sm transition-colors"
+                            title="Print Money Receipt Voucher"
+                          >
+                            <Printer size={12} /> Receipt
+                          </button>
+                          <button
+                            onClick={() => openReversal(p)}
+                            className="px-2 py-1 rounded-lg text-xs font-semibold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 flex items-center gap-1 shadow-sm transition-colors"
+                            title="Reverse / Issue Credit Note"
+                          >
+                            <RotateCcw size={12} /> Reverse
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => printCreditNote(p)}
+                          className="px-2 py-1 rounded-lg text-xs font-semibold text-rose-700 bg-white border border-rose-300 hover:bg-rose-50 flex items-center gap-1 shadow-sm transition-colors"
+                          title="Print Credit Note Voucher"
+                        >
+                          <Printer size={12} /> Credit Note
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
+      </Modal>
+
+      {/* REVERSAL / CREDIT NOTE MODAL */}
+      <Modal
+        open={showReversalModal}
+        onClose={() => setShowReversalModal(false)}
+        title="Reverse Payment & Issue Credit Note"
+        size="sm"
+        footer={
+          <div className="flex gap-2 justify-end">
+            <button onClick={() => setShowReversalModal(false)} className="btn-secondary">Cancel</button>
+            <button onClick={handleConfirmReversal} disabled={saving || !reversalReason.trim()} className="btn-primary bg-rose-600 hover:bg-rose-700 border-rose-700">
+              {saving ? 'Processing…' : 'Issue Credit Note ✓'}
+            </button>
+          </div>
+        }
+      >
+        {reversingPayment && (
+          <div className="space-y-4">
+            <div className="bg-rose-50 border border-rose-100 p-4 rounded-xl text-center">
+              <p className="text-xs text-rose-600 font-semibold uppercase tracking-wider">Reversing Payment Installment</p>
+              <p className="text-3xl font-bold text-rose-700 mt-1">{fmt(reversingPayment.amount)}</p>
+              {reversingPayment.receipt_number && (
+                <p className="text-xs font-mono text-rose-500 mt-1">Receipt #{reversingPayment.receipt_number}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="label">Refund Method / Route *</label>
+              <select
+                className="select"
+                value={refundMethod}
+                onChange={e => setRefundMethod(e.target.value)}
+              >
+                <option value="to_advance_wallet">Credit to Patient Advance Wallet (Escrow)</option>
+                <option value="cash">Cash Refund</option>
+                <option value="upi">UPI Refund</option>
+                <option value="bank_transfer">Bank Transfer</option>
+              </select>
+              <p className="text-[11px] text-slate-500 mt-1">
+                {refundMethod === 'to_advance_wallet'
+                  ? 'Amount will be deposited into patient’s advance ledger for future treatments.'
+                  : 'Full payout reversal to patient.'}
+              </p>
+            </div>
+
+            <div>
+              <label className="label">Reason for Reversal / Cancellation *</label>
+              <textarea
+                className="textarea"
+                rows={3}
+                placeholder="e.g. Patient cancelled procedure, payment recorded under wrong invoice, excess charge correction"
+                value={reversalReason}
+                onChange={e => setReversalReason(e.target.value)}
+                autoFocus
+              />
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* EMAIL MODAL */}

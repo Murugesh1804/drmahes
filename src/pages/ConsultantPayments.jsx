@@ -9,6 +9,7 @@ import {
 import { useApp } from '../context/AppContext'
 import Modal from '../components/Modal'
 import ConfirmModal from '../components/ConfirmModal'
+import { clinicDateString } from '../utils/date'
 
 const EMPTY_FORM = {
   consultant_name: '', patient_id: '', treatment_type: '',
@@ -37,6 +38,7 @@ export default function ConsultantPayments() {
   const [deleteId, setDeleteId] = useState(null)
   const [payAmount, setPayAmount] = useState('')
   const [payMethod, setPayMethod] = useState('cash')
+  const [payDate, setPayDate] = useState('')
 
   // Patient search
   const [patientSearch, setPatientSearch] = useState('')
@@ -152,14 +154,22 @@ export default function ConsultantPayments() {
     } finally { setSaving(false) }
   }
 
+  function openRecordPayment(item) {
+    setShowPay(item)
+    setPayAmount(item.balance_due ? item.balance_due.toString() : '')
+    setPayMethod('cash')
+    setPayDate(clinicDateString())
+  }
+
   async function handlePay() {
     if (!payAmount || parseFloat(payAmount) <= 0) { notify('Enter a valid amount', 'error'); return }
     setSaving(true)
     try {
-      await recordConsultantPaymentAmount(showPay.id, parseFloat(payAmount), payMethod)
+      await recordConsultantPaymentAmount(showPay.id, parseFloat(payAmount), payMethod, payDate || null)
       notify('Payment recorded')
       setShowPay(null)
       setPayAmount('')
+      setPayDate('')
       if (tab === 'all') loadPayments()
       else if (tab === 'outstanding') loadOutstanding()
     } catch (e) {
@@ -281,7 +291,7 @@ export default function ConsultantPayments() {
                         <div className="flex gap-1">
                           {p.status !== 'paid' && (
                             <button
-                              onClick={() => { setShowPay(p); setPayAmount(''); setPayMethod('cash') }}
+                              onClick={() => openRecordPayment(p)}
                               className="btn-icon text-emerald-500 hover:bg-emerald-50"
                               title="Record Payment"
                             >
@@ -342,7 +352,7 @@ export default function ConsultantPayments() {
                         <p className="text-xs text-slate-400">{item.treatment_type || 'General'} · Due: {fmt(item.balance_due)}</p>
                       </div>
                       <button
-                        onClick={() => { setShowPay(item); setPayAmount(''); setPayMethod('cash') }}
+                        onClick={() => openRecordPayment(item)}
                         className="btn-secondary text-xs bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 px-3 py-1.5 h-auto min-h-0"
                       >
                         <CreditCard size={12} /> Pay
@@ -539,14 +549,25 @@ export default function ConsultantPayments() {
                 autoFocus
               />
             </div>
-            <div>
-              <label className="label">Method</label>
-              <select className="select" value={payMethod} onChange={e => setPayMethod(e.target.value)}>
-                <option value="cash">Cash</option>
-                <option value="upi">UPI</option>
-                <option value="card">Card</option>
-                <option value="other">Other</option>
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">Method</label>
+                <select className="select" value={payMethod} onChange={e => setPayMethod(e.target.value)}>
+                  <option value="cash">Cash</option>
+                  <option value="upi">UPI</option>
+                  <option value="card">Card</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Payment Date</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={payDate}
+                  onChange={e => setPayDate(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         )}

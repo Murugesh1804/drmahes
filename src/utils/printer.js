@@ -543,3 +543,184 @@ html, body {
 </body>
 </html>`
 }
+
+/**
+ * Generates an official Money Receipt voucher for a single payment installment.
+ */
+export function generateMoneyReceiptHTML(payment, bill = {}, settings = {}) {
+  const fmt = (amount) => {
+    const n = Number(amount) || 0
+    return '₹' + (Number.isInteger(n)
+      ? n.toLocaleString('en-IN')
+      : n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+  }
+
+  const pDate = new Date(payment.payment_date || payment.paid_at || Date.now())
+  const dateStr = pDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+  const timeStr = pDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+
+  const clinicName = settings.clinic_name || "Dr. Mahe's Dentistry"
+  const clinicPhone = settings.clinic_phone || '+91 93428 03217'
+  const clinicAddress = settings.clinic_address || '1st Floor, Kundrathur Main Rd, Jaya Nagar, Porur, Chennai - 600116'
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Money Receipt - ${payment.receipt_number || 'MR'}</title>
+<style>
+  @page { size: A5 portrait; margin: 12mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1c1917; background: #fff; line-height: 1.4; font-size: 13px; }
+  .receipt-box { border: 2px solid #1c1917; padding: 20px 24px; max-width: 140mm; margin: 0 auto; border-radius: 8px; }
+  .header { text-align: center; border-bottom: 2px solid #b45309; padding-bottom: 12px; margin-bottom: 14px; }
+  .header h1 { font-size: 18px; font-weight: 800; color: #1c1917; text-transform: uppercase; letter-spacing: 0.05em; }
+  .header p { font-size: 11px; color: #57534e; margin-top: 2px; }
+  .badge-title { display: inline-block; background: #1c1917; color: #f5f5f4; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 14px; border-radius: 4px; margin-top: 6px; }
+  .meta-grid { display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px dashed #d6d3d1; padding-bottom: 12px; }
+  .meta-col { flex: 1; font-size: 12px; }
+  .meta-col.right { text-align: right; }
+  .label { color: #78716c; font-size: 11px; text-transform: uppercase; font-weight: 600; }
+  .val { font-weight: 700; color: #1c1917; }
+  .amount-card { background: #fafaf9; border: 1px solid #e7e5e4; border-radius: 6px; padding: 14px 16px; margin: 16px 0; text-align: center; }
+  .amount-val { font-size: 24px; font-weight: 800; color: #15803d; }
+  .details-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  .details-table td { padding: 6px 0; border-bottom: 1px solid #f5f5f4; }
+  .details-table td.lbl { width: 40%; color: #78716c; font-weight: 600; }
+  .details-table td.v { font-weight: 700; text-align: right; }
+  .footer-sig { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; padding-top: 20px; }
+  .sign-line { border-top: 1px solid #1c1917; width: 140px; text-align: center; font-size: 11px; font-weight: 600; padding-top: 4px; }
+  .notice { font-size: 10px; color: #a8a29e; text-align: center; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="receipt-box">
+  <div class="header">
+    <h1>${clinicName}</h1>
+    <p>${clinicAddress} &middot; Tel: ${clinicPhone}</p>
+    <div class="badge-title">Official Money Receipt</div>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-col">
+      <div><span class="label">Receipt No:</span> <span class="val" style="font-family:monospace;font-size:13px;">${payment.receipt_number || 'REC-N/A'}</span></div>
+      <div style="margin-top:4px;"><span class="label">Invoice Ref:</span> <span class="val">${bill.invoice_number || '—'}</span></div>
+    </div>
+    <div class="meta-col right">
+      <div><span class="label">Date:</span> <span class="val">${dateStr}</span></div>
+      <div style="margin-top:4px;"><span class="label">Time:</span> <span class="val">${timeStr}</span></div>
+    </div>
+  </div>
+
+  <table class="details-table">
+    <tr>
+      <td class="lbl">Patient Name:</td>
+      <td class="v">${bill.patient_name || 'Patient'} ${bill.patient_pid ? `(${bill.patient_pid})` : ''}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Payment Method:</td>
+      <td class="v" style="text-transform:uppercase;">${payment.payment_method || payment.method || 'cash'}</td>
+    </tr>
+    ${payment.reference_id ? `
+    <tr>
+      <td class="lbl">Transaction / UTR Ref:</td>
+      <td class="v" style="font-family:monospace;">${payment.reference_id}</td>
+    </tr>` : ''}
+    ${payment.notes ? `
+    <tr>
+      <td class="lbl">Payment Remarks:</td>
+      <td class="v" style="font-weight:normal;color:#44403c;">${payment.notes}</td>
+    </tr>` : ''}
+  </table>
+
+  <div class="amount-card">
+    <div class="label" style="letter-spacing:0.05em;">Amount Received</div>
+    <div class="amount-val">${fmt(payment.amount)}</div>
+  </div>
+
+  <table class="details-table" style="font-size:12px;">
+    <tr>
+      <td class="lbl">Total Bill Amount:</td>
+      <td class="v">${fmt(bill.total_amount || payment.amount)}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Total Paid to Date:</td>
+      <td class="v" style="color:#15803d;">${fmt(bill.paid_amount || payment.amount)}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Remaining Balance:</td>
+      <td class="v" style="color:${(bill.balance || 0) > 0 ? '#b91c1c' : '#15803d'};">
+        ${(bill.balance || 0) > 0 ? fmt(bill.balance) : '✓ Fully Cleared'}
+      </td>
+    </tr>
+  </table>
+
+  <div class="footer-sig">
+    <div style="font-size:11px;color:#78716c;">Thank you for your visit!</div>
+    <div class="sign-line">Authorized Signatory / Cashier</div>
+  </div>
+
+  <div class="notice">This is an authentic, system-generated payment voucher. Keep for tax/insurance claims.</div>
+</div>
+</body>
+</html>`
+}
+
+/**
+ * Generates an official Credit Note / Refund Voucher.
+ */
+export function generateCreditNoteHTML(payment, bill = {}, settings = {}) {
+  const fmt = (amount) => '₹' + Number(amount || 0).toLocaleString('en-IN')
+  const pDate = new Date(payment.reversed_at || Date.now())
+  const dateStr = pDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Credit Note - ${payment.credit_note_number || 'CN'}</title>
+<style>
+  @page { size: A5 portrait; margin: 12mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1c1917; background: #fff; font-size: 13px; }
+  .cn-box { border: 2px solid #b91c1c; padding: 20px 24px; max-width: 140mm; margin: 0 auto; border-radius: 8px; }
+  .header { text-align: center; border-bottom: 2px solid #b91c1c; padding-bottom: 12px; margin-bottom: 14px; }
+  .badge-title { display: inline-block; background: #b91c1c; color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; padding: 4px 14px; border-radius: 4px; margin-top: 6px; }
+  .meta-grid { display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px dashed #d6d3d1; padding-bottom: 12px; }
+  .table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  .table td { padding: 6px 0; border-bottom: 1px solid #f5f5f4; }
+  .amount-card { background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 12px; margin: 16px 0; text-align: center; }
+  .amount-val { font-size: 22px; font-weight: 800; color: #b91c1c; }
+</style>
+</head>
+<body>
+<div class="cn-box">
+  <div class="header">
+    <h1 style="font-size:18px;">${settings.clinic_name || "Dr. Mahe's Dentistry"}</h1>
+    <div class="badge-title">Credit Note / Refund Voucher</div>
+  </div>
+
+  <div class="meta-grid">
+    <div><strong>Credit Note #:</strong> ${payment.credit_note_number || 'CN-N/A'}<br><strong>Original Bill:</strong> ${bill.invoice_number || '—'}</div>
+    <div style="text-align:right;"><strong>Date:</strong> ${dateStr}</div>
+  </div>
+
+  <table class="table">
+    <tr><td>Patient Name:</td><td style="text-align:right;font-weight:700;">${bill.patient_name || 'Patient'}</td></tr>
+    <tr><td>Refund Mode:</td><td style="text-align:right;text-transform:uppercase;font-weight:700;">${payment.refund_method || 'none'}</td></tr>
+    <tr><td>Reversal Reason:</td><td style="text-align:right;color:#57534e;">${payment.reversal_reason || 'Reversal requested'}</td></tr>
+  </table>
+
+  <div class="amount-card">
+    <div style="font-size:11px;text-transform:uppercase;color:#7f1d1d;font-weight:700;">Credit / Refund Amount</div>
+    <div class="amount-val">${fmt(payment.amount)}</div>
+  </div>
+
+  <div style="margin-top:30px;display:flex;justify-content:space-between;">
+    <div style="font-size:11px;color:#78716c;">Audited & Recorded in Clinic Ledger</div>
+    <div style="border-top:1px solid #1c1917;width:130px;text-align:center;font-size:11px;padding-top:4px;">Supervisor Signature</div>
+  </div>
+</div>
+</body>
+</html>`
+}

@@ -59,12 +59,15 @@ router.post('/:id/email', asyncHandler(async (req, res) => {
   const toEmail = req.body.email
   if (!toEmail) return res.status(400).json({ error: 'Email address required' })
 
-  let treatments = []
-  if (bill.appointment_id) {
+  let treatments = await queries.getTreatmentsByBill(bill._id || bill.id)
+  if (treatments.length === 0 && bill.appointment_id) {
     treatments = await queries.getTreatmentsByAppointment(bill.appointment_id)
   }
 
-  const result = await email.sendInvoiceEmail(toEmail, bill, treatments)
+  const payments = await queries.getPaymentsByBill(bill._id || bill.id)
+  const settings = await queries.getSettings()
+
+  const result = await email.sendInvoiceEmail(toEmail, bill, treatments, payments, settings)
   if (!result.success) return res.status(500).json({ error: result.error })
   res.json({ success: true })
 }))

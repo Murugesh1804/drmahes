@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, ConsultantPayment, TreatmentMaster, MedicineMaster, Enquiry, getDbPath } = require('./db')
+const { Patient, Appointment, Treatment, Bill, BillItem, Payment, Counter, Setting, BlockedSlot, Diagnosis, FollowUp, AuditLog, ConsultantPayment, TreatmentMaster, MedicineMaster, AdvanceLedger, LabWorkOrder, Enquiry, getDbPath } = require('./db')
 
 const CLINIC_TIME_ZONE = process.env.CLINIC_TIME_ZONE || 'Asia/Kolkata'
 const APPOINTMENT_STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
@@ -36,7 +36,7 @@ function toPercent(value) {
 }
 
 function normalizePaymentMethod(method, fallback = 'cash') {
-  return ['cash', 'upi', 'card', 'other'].includes(method) ? method : fallback
+  return ['cash', 'upi', 'card', 'advance', 'other'].includes(method) ? method : fallback
 }
 
 function normalizeText(value) {
@@ -757,6 +757,42 @@ async function getNextInvoiceNumber() {
   return invoiceNumber
 }
 
+async function getNextReceiptNumber() {
+  const year = new Date().getFullYear()
+  const key  = `receipt_${year}`
+  const doc  = await Counter.findOneAndUpdate(
+    { key },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  )
+  const seq = String(doc.seq).padStart(4, '0')
+  return `REC-${year}-${seq}`
+}
+
+async function getNextCreditNoteNumber() {
+  const year = new Date().getFullYear()
+  const key  = `credit_note_${year}`
+  const doc  = await Counter.findOneAndUpdate(
+    { key },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  )
+  const seq = String(doc.seq).padStart(4, '0')
+  return `CN-${year}-${seq}`
+}
+
+async function getNextLabOrderNumber() {
+  const year = new Date().getFullYear()
+  const key  = `lab_order_${year}`
+  const doc  = await Counter.findOneAndUpdate(
+    { key },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  )
+  const seq = String(doc.seq).padStart(4, '0')
+  return `LAB-${year}-${seq}`
+}
+
 async function addAppointment(data) {
   if (!isValidObjectId(data.patient_id)) badRequest('Valid patient is required')
   const patient = await Patient.findById(data.patient_id).select('_id').lean()
@@ -1076,6 +1112,7 @@ async function addTreatment(data) {
     cost: calculatedCost,
     doctor_notes: normalizeText(data.doctor_notes),
     status: data.status || 'completed',
+    implant_details: data.implant_details || {},
     bill_id: null
   })
   await tx.save()
@@ -1096,6 +1133,10 @@ async function updateTreatment(id, data) {
   // FIX #2: Prevent cost modification after billing
   if (tx.bill_id && data.cost !== undefined && toMoney(data.cost) !== tx.cost) {
     badRequest(`Cannot modify cost of billed treatment. Current cost: ₹${tx.cost}`)
+  }
+
+  if (data.implant_details) {
+    tx.implant_details = { ...(tx.implant_details || {}), ...data.implant_details }
   }
 
   // FIX #5: Log treatment update
@@ -1678,13 +1719,62 @@ async function createBill(data) {
 
     // Record initial payment if paid > 0
     if (paid > 0) {
+      let initialPaymentDate = new Date()
+      if (data.payment_date || data.paid_at) {
+        const parsed = new Date(data.payment_date || data.paid_at)
+        if (!isNaN(parsed.getTime())) initialPaymentDate = parsed
+      }
+      const receiptNumber = await getNextReceiptNumber()
       await Payment.create([{
-        bill_id: bill._id,
-        patient_id: data.patient_id,
-        amount: paid,
-        method: paymentMethod,
-        notes: 'Initial payment'
+        bill_id:      bill._id,
+        patient_id:   data.patient_id,
+        amount:       paid,
+        method:       paymentMethod,
+        payment_date: initialPaymentDate,
+        paid_at:      initialPaymentDate,
+        receipt_number: receiptNumber,
+        reference_id: data.reference_id || '',
+        notes:        data.payment_notes || data.notes || 'Initial payment'
       }], { session })
+    }
+
+    // Apply Advance Wallet Balance if requested
+    const advanceToApply = toMoney(data.apply_advance, 0, 'Advance amount')
+    if (advanceToApply > 0) {
+      const patient = await Patient.findById(data.patient_id).session(session)
+      if (patient && (patient.advance_balance || 0) >= advanceToApply) {
+        patient.advance_balance = Math.round(((patient.advance_balance || 0) - advanceToApply) * 100) / 100
+        await patient.save({ session })
+
+        const advanceReceipt = await getNextReceiptNumber()
+        await Payment.create([{
+          bill_id:        bill._id,
+          patient_id:     data.patient_id,
+          amount:         advanceToApply,
+          method:         'advance',
+          payment_date:   new Date(),
+          paid_at:        new Date(),
+          receipt_number: advanceReceipt,
+          notes:          'Allocated from Patient Advance Wallet'
+        }], { session })
+
+        await AdvanceLedger.create([{
+          patient_id:     data.patient_id,
+          receipt_number: advanceReceipt,
+          type:           'allocation',
+          amount:         advanceToApply,
+          payment_method: 'other',
+          bill_id:        bill._id,
+          notes:          `Applied to Bill ${invoiceNumber}`,
+          balance_after:  patient.advance_balance
+        }], { session })
+
+        const newTotalPaid = Math.round(((bill.paid_amount || 0) + advanceToApply) * 100) / 100
+        bill.paid_amount = newTotalPaid
+        bill.balance = Math.max(0, bill.total_amount - newTotalPaid)
+        bill.status = newTotalPaid >= bill.total_amount ? 'paid' : 'partial'
+        await bill.save({ session })
+      }
     }
 
     // Link existing treatments to the bill
@@ -1740,6 +1830,12 @@ async function updateBillPayment(id, data) {
   if (amount > (bill.balance || 0)) badRequest('Payment amount cannot exceed the current balance')
 
   const method = normalizePaymentMethod(data.payment_method, bill.payment_method)
+  let paymentDate = new Date()
+  if (data.payment_date || data.paid_at) {
+    const parsed = new Date(data.payment_date || data.paid_at)
+    if (!isNaN(parsed.getTime())) paymentDate = parsed
+  }
+
   const newPaid    = Math.round(((bill.paid_amount || 0) + amount) * 100) / 100
   const newBalance = Math.max(0, bill.total_amount - newPaid)
   const newStatus  = newPaid >= bill.total_amount ? 'paid' : newPaid > 0 ? 'partial' : 'pending'
@@ -1767,17 +1863,44 @@ async function updateBillPayment(id, data) {
     bill.payment_method = method
     await bill.save({ session })
 
-    // Record in payment history
+    // Record in payment history with sequential Receipt Number
+    const receiptNumber = await getNextReceiptNumber()
     const payment = await Payment.create([{
-      bill_id:    bill._id,
-      patient_id: bill.patient_id,
+      bill_id:      bill._id,
+      patient_id:   bill.patient_id,
       amount,
       method,
-      notes:      data.notes || ''
+      payment_date: paymentDate,
+      paid_at:      paymentDate,
+      receipt_number: receiptNumber,
+      reference_id: data.reference_id || '',
+      notes:        data.notes || ''
     }], { session })
 
+    // If payment method is advance wallet, deduct from patient advance balance
+    if (method === 'advance') {
+      const patient = await Patient.findById(bill.patient_id).session(session)
+      if (!patient || (patient.advance_balance || 0) < amount) {
+        badRequest('Insufficient patient advance balance')
+      }
+      patient.advance_balance = Math.round(((patient.advance_balance || 0) - amount) * 100) / 100
+      await patient.save({ session })
+
+      await AdvanceLedger.create([{
+        patient_id:     bill.patient_id,
+        receipt_number: receiptNumber,
+        type:           'allocation',
+        amount,
+        payment_method: 'other',
+        bill_id:        bill._id,
+        notes:          `Applied to Bill ${bill.invoice_number || bill._id}`,
+        balance_after:  patient.advance_balance
+      }], { session })
+    }
+
+    const dateStr = paymentDate.toISOString().split('T')[0]
     // Log audit
-    await logAudit('payment', 'bill', bill._id, before, after, `Payment of ₹${amount} received via ${method}`, session)
+    await logAudit('payment', 'bill', bill._id, before, after, `Payment of ₹${amount} received via ${method} (Receipt: ${receiptNumber}) on ${dateStr}`, session)
 
     // FIX #6: Use atomic decrement instead of recalculating from all bills
     // Balance DECREASES by the amount paid (negative increment)
@@ -1799,13 +1922,20 @@ async function updateBillPayment(id, data) {
 
 async function getPaymentsByBill(billId) {
   if (!isValidObjectId(billId)) return []
-  const payments = await Payment.find({ bill_id: billId }).sort({ paid_at: 1 }).lean()
-  return payments.map(p => ({ ...p, id: p._id.toString() }))
+  const payments = await Payment.find({ bill_id: billId }).sort({ payment_date: 1, paid_at: 1 }).lean()
+  return payments.map(p => ({
+    ...p,
+    id: p._id.toString(),
+    payment_date: p.payment_date || p.paid_at || p.created_at,
+    payment_method: p.method || p.payment_method || 'cash'
+  }))
 }
 
-// FIX #2.3: Payment reversal system
-async function reversePayment(paymentId, reason = '', session = null) {
+// FIX #2.3: Corporate Payment reversal & Credit Note system
+async function reversePayment(paymentId, data = {}, session = null) {
   if (!isValidObjectId(paymentId)) return null
+  const reason = typeof data === 'string' ? data : (data.reason || '')
+  const refundMethod = typeof data === 'object' ? (data.refund_method || 'none') : 'none'
 
   const isExternalSession = Boolean(session)
   const dbSession = session || await mongoose.startSession()
@@ -1819,18 +1949,42 @@ async function reversePayment(paymentId, reason = '', session = null) {
     }
     if (payment.is_reversed) badRequest('Payment already reversed')
 
-    // Mark payment as reversed
+    const creditNoteNumber = await getNextCreditNoteNumber()
+
+    // Mark payment as reversed with Credit Note and Refund Method
     const reversedPayment = await Payment.findByIdAndUpdate(
       paymentId,
       {
         $set: {
           is_reversed: true,
           reversed_at: new Date(),
-          reversal_reason: reason
+          reversal_reason: reason,
+          credit_note_number: creditNoteNumber,
+          refund_method: refundMethod
         }
       },
       { new: true, session: dbSession }
     )
+
+    // If refundMethod is 'to_advance_wallet', credit patient's advance balance
+    if (refundMethod === 'to_advance_wallet') {
+      const patient = await Patient.findById(payment.patient_id).session(dbSession)
+      if (patient) {
+        patient.advance_balance = Math.round(((patient.advance_balance || 0) + payment.amount) * 100) / 100
+        await patient.save({ session: dbSession })
+
+        await AdvanceLedger.create([{
+          patient_id: payment.patient_id,
+          receipt_number: creditNoteNumber,
+          type: 'deposit',
+          amount: payment.amount,
+          payment_method: 'other',
+          bill_id: payment.bill_id,
+          notes: `Refund from Credit Note ${creditNoteNumber}: ${reason || 'Reversed payment'}`,
+          balance_after: patient.advance_balance
+        }], { session: dbSession })
+      }
+    }
 
     const bill = await Bill.findById(payment.bill_id).session(dbSession)
     const allPayments = await Payment.find({
@@ -1860,19 +2014,26 @@ async function reversePayment(paymentId, reason = '', session = null) {
       { session: dbSession }
     )
 
-    // Log reversal
+    // Log reversal with Credit Note
     await logAudit(
       'payment',
       'payment',
       paymentId,
       { is_reversed: false, amount: payment.amount },
-      { is_reversed: true, amount: payment.amount },
-      `Payment of ₹${payment.amount} reversed. Reason: ${reason}`,
+      { is_reversed: true, amount: payment.amount, credit_note_number: creditNoteNumber, refund_method: refundMethod },
+      `Payment of ₹${payment.amount} reversed via Credit Note ${creditNoteNumber}. Reason: ${reason}`,
       dbSession
     )
 
     if (!isExternalSession) await dbSession.commitTransaction()
     return reversedPayment
+  } catch (err) {
+    if (!isExternalSession) await dbSession.abortTransaction()
+    throw err
+  } finally {
+    if (!isExternalSession) await dbSession.endSession()
+  }
+}
   } catch (err) {
     if (!isExternalSession) await dbSession.abortTransaction()
     throw err
@@ -2107,7 +2268,7 @@ async function getDashboardStats(period = 'today', dateParam = null) {
     todayWaiting,
     todayInProgress,
     todayDone,
-    billsToday,
+    todayPayments,
     pendingBills
   ] = await Promise.all([
     Patient.countDocuments({ is_archived: false }),
@@ -2115,11 +2276,11 @@ async function getDashboardStats(period = 'today', dateParam = null) {
     isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end }, status: 'waiting' }) : Appointment.countDocuments({ scheduled_date: targetDate, status: 'waiting' }),
     isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end }, status: 'in-progress' }) : Appointment.countDocuments({ scheduled_date: targetDate, status: 'in-progress' }),
     isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end }, status: 'done' }) : Appointment.countDocuments({ scheduled_date: targetDate, status: 'done' }),
-    Bill.find({ created_at: { $gte: range.start, $lte: range.end } }).select('paid_amount').lean(),
+    Payment.find({ payment_date: { $gte: range.start, $lte: range.end }, is_reversed: false }).select('amount').lean(),
     Bill.find({ status: { $ne: 'paid' } }).select('balance').lean()
   ])
 
-  const todayRevenue = billsToday.reduce((sum, b) => sum + (b.paid_amount || 0), 0)
+  const todayRevenue = todayPayments.reduce((sum, p) => sum + (p.amount || 0), 0)
   const pendingBalance = pendingBills.reduce((sum, b) => sum + (b.balance || 0), 0)
 
   return {
@@ -2136,11 +2297,12 @@ async function getDashboardStats(period = 'today', dateParam = null) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// REVENUE INSIGHTS
+// REVENUE INSIGHTS (Corporate Cash vs Accrual Recognition)
 // ═══════════════════════════════════════════════════════════
 async function getRevenueInsights(options = {}) {
   let billMatch = {}
   let txMatch = { cost: { $gt: 0 }, status: { $ne: 'cancelled' } }
+  let paymentMatch = { is_reversed: false }
 
   const { startDate, endDate, period } = options || {}
   let start = null
@@ -2166,11 +2328,14 @@ async function getRevenueInsights(options = {}) {
   if (start && end) {
     billMatch = { created_at: { $gte: start, $lte: end } }
     txMatch.created_at = { $gte: start, $lte: end }
+    paymentMatch.payment_date = { $gte: start, $lte: end }
   }
 
   const [
     allBills,
-    monthlyRevenueData,
+    monthlyBilledData,
+    monthlyCollectedData,
+    realizedPayments,
     paymentMethodsData,
     topTreatmentsData
   ] = await Promise.all([
@@ -2180,18 +2345,29 @@ async function getRevenueInsights(options = {}) {
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m", date: "$created_at" } },
-          revenue: { $sum: "$paid_amount" },
           billed: { $sum: "$total_amount" }
         }
       },
       { $sort: { _id: 1 } }
     ]),
-    Bill.aggregate([
-      ...(Object.keys(billMatch).length > 0 ? [{ $match: billMatch }] : []),
+    Payment.aggregate([
+      ...(Object.keys(paymentMatch).length > 0 ? [{ $match: paymentMatch }] : []),
       {
         $group: {
-          _id: "$payment_method",
-          revenue: { $sum: "$paid_amount" }
+          _id: { $dateToString: { format: "%Y-%m", date: "$payment_date" } },
+          collected: { $sum: "$amount" }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]),
+    Payment.find(paymentMatch).select('amount method payment_date').lean(),
+    Payment.aggregate([
+      ...(Object.keys(paymentMatch).length > 0 ? [{ $match: paymentMatch }] : []),
+      {
+        $group: {
+          _id: "$method",
+          revenue: { $sum: "$amount" },
+          count: { $sum: 1 }
         }
       },
       { $sort: { revenue: -1 } }
@@ -2210,24 +2386,34 @@ async function getRevenueInsights(options = {}) {
     ])
   ])
 
-  const totalRevenue = allBills.reduce((sum, b) => sum + (b.paid_amount || 0), 0)
   const totalBilled = allBills.reduce((sum, b) => sum + (b.total_amount || 0), 0)
+  const totalCollected = realizedPayments.reduce((sum, p) => sum + (p.amount || 0), 0)
+  const totalRevenue = totalCollected // Realized Cash Collections
   const pendingBalance = allBills.reduce((sum, b) => sum + (b.balance || 0), 0)
 
-  const monthlyTrends = monthlyRevenueData.map(d => {
-    if (!d._id) return { month: 'Unknown', revenue: d.revenue, billed: d.billed }
-    const [year, month] = d._id.split('-')
+  const allMonths = new Set([
+    ...monthlyBilledData.map(d => d._id),
+    ...monthlyCollectedData.map(d => d._id)
+  ].filter(Boolean))
+
+  const sortedMonths = Array.from(allMonths).sort()
+  const monthlyTrends = sortedMonths.map(ym => {
+    const [year, month] = ym.split('-')
     const date = new Date(year, month - 1, 1)
+    const billedItem = monthlyBilledData.find(d => d._id === ym)
+    const collectedItem = monthlyCollectedData.find(d => d._id === ym)
     return {
       month: date.toLocaleString('default', { month: 'short', year: 'numeric' }),
-      revenue: d.revenue,
-      billed: d.billed
+      billed: billedItem ? billedItem.billed : 0,
+      revenue: collectedItem ? collectedItem.collected : 0,
+      collected: collectedItem ? collectedItem.collected : 0
     }
   })
 
   const paymentMethods = paymentMethodsData.map(d => ({
-    method: d._id || 'unknown',
-    revenue: d.revenue
+    method: d._id || 'other',
+    revenue: d.revenue,
+    count: d.count
   }))
 
   const topTreatments = topTreatmentsData.map(d => ({
@@ -2668,7 +2854,7 @@ async function getConsultantOutstandingDues() {
   return Object.values(grouped)
 }
 
-async function recordConsultantPaymentAmount(id, amount, method = 'cash') {
+async function recordConsultantPaymentAmount(id, amount, method = 'cash', paymentDate = null) {
   if (!isValidObjectId(id)) return null
   const payment = await ConsultantPayment.findById(id)
   if (!payment) return null
@@ -2680,7 +2866,13 @@ async function recordConsultantPaymentAmount(id, amount, method = 'cash') {
   payment.amount_paid = Math.round((payment.amount_paid + paymentAmount) * 100) / 100
   payment.balance_due = Math.max(0, payment.consultant_share - payment.amount_paid)
   payment.status = payment.amount_paid >= payment.consultant_share ? 'paid' : 'partial'
-  payment.payment_date = new Date()
+  
+  let payDate = new Date()
+  if (paymentDate) {
+    const parsed = new Date(paymentDate)
+    if (!isNaN(parsed.getTime())) payDate = parsed
+  }
+  payment.payment_date = payDate
   payment.payment_method = normalizePaymentMethod(method)
 
   await payment.save()
@@ -2842,6 +3034,180 @@ async function searchMedicineMasters(query) {
   return items.map(t => ({ ...t, id: t._id.toString() }))
 }
 
+// ═══════════════════════════════════════════════════════════
+// PATIENT ADVANCE LEDGER (Patient Wallet / Escrow)
+// ═══════════════════════════════════════════════════════════
+async function addPatientAdvanceDeposit(patientId, data) {
+  if (!isValidObjectId(patientId)) badRequest('Valid patient is required')
+  const amount = toMoney(data.amount, 0, 'Advance deposit amount')
+  if (amount <= 0) badRequest('Deposit amount must be greater than zero')
+
+  const patient = await Patient.findById(patientId)
+  if (!patient) badRequest('Patient not found')
+
+  const receiptNumber = await getNextReceiptNumber()
+  const paymentMethod = normalizePaymentMethod(data.payment_method, 'cash')
+  const newBalance = Math.round(((patient.advance_balance || 0) + amount) * 100) / 100
+
+  patient.advance_balance = newBalance
+  await patient.save()
+
+  const entry = new AdvanceLedger({
+    patient_id: patientId,
+    receipt_number: receiptNumber,
+    type: 'deposit',
+    amount,
+    payment_method: paymentMethod,
+    reference_id: data.reference_id || '',
+    notes: data.notes || 'Advance deposit',
+    balance_after: newBalance
+  })
+  await entry.save()
+
+  await logAudit('deposit', 'advance', patientId, {}, { amount, newBalance }, `Advance deposit of ₹${amount} received via ${paymentMethod} (Receipt: ${receiptNumber})`)
+
+  return {
+    success: true,
+    advance_balance: newBalance,
+    entry: entry.toObject()
+  }
+}
+
+async function getPatientAdvanceHistory(patientId) {
+  if (!isValidObjectId(patientId)) return { balance: 0, items: [] }
+  const [patient, items] = await Promise.all([
+    Patient.findById(patientId).select('advance_balance').lean(),
+    AdvanceLedger.find({ patient_id: patientId }).sort({ created_at: -1 }).lean()
+  ])
+  return {
+    balance: patient?.advance_balance || 0,
+    items: items.map(i => ({ ...i, id: i._id.toString() }))
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// DENTAL LAB WORK ORDERS (Prosthetics / Slips)
+// ═══════════════════════════════════════════════════════════
+async function createLabWorkOrder(data) {
+  if (!isValidObjectId(data.patient_id)) badRequest('Valid patient is required')
+  const labName = normalizeText(data.lab_name)
+  if (!labName) badRequest('Lab name is required')
+  const workType = normalizeText(data.work_type)
+  if (!workType) badRequest('Work type (e.g. Zirconia Crown, PFM) is required')
+
+  const workOrderNumber = await getNextLabOrderNumber()
+  const toothNumbers = normalizeToothNumbers(data.tooth_numbers || data.tooth_number)
+
+  const order = new LabWorkOrder({
+    work_order_number: workOrderNumber,
+    patient_id: data.patient_id,
+    treatment_id: isValidObjectId(data.treatment_id) ? data.treatment_id : null,
+    lab_name: labName,
+    work_type: workType,
+    tooth_numbers: toothNumbers,
+    shade: normalizeText(data.shade),
+    impression_type: data.impression_type || 'physical_impression',
+    sent_date: data.sent_date ? new Date(data.sent_date) : new Date(),
+    expected_date: data.expected_date ? new Date(data.expected_date) : null,
+    status: data.status || 'sent',
+    lab_cost: toMoney(data.lab_cost, 0, 'Lab cost'),
+    doctor_notes: normalizeText(data.doctor_notes),
+    is_remake: Boolean(data.is_remake),
+    remake_reason: normalizeText(data.remake_reason)
+  })
+  await order.save()
+
+  await logAudit('create', 'lab_order', order._id, {}, { work_order_number: workOrderNumber, labName }, `Created Lab Order ${workOrderNumber} for ${workType}`)
+
+  const doc = order.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function updateLabWorkOrder(id, data) {
+  if (!isValidObjectId(id)) return null
+  const order = await LabWorkOrder.findById(id)
+  if (!order) return null
+
+  if (data.status !== undefined) {
+    order.status = data.status
+    if (data.status === 'received' && !order.received_date) order.received_date = new Date()
+    if (data.status === 'fitted' && !order.fitted_date) order.fitted_date = new Date()
+  }
+  if (data.lab_name !== undefined) order.lab_name = normalizeText(data.lab_name)
+  if (data.work_type !== undefined) order.work_type = normalizeText(data.work_type)
+  if (data.shade !== undefined) order.shade = normalizeText(data.shade)
+  if (data.impression_type !== undefined) order.impression_type = data.impression_type
+  if (data.sent_date !== undefined) order.sent_date = new Date(data.sent_date)
+  if (data.expected_date !== undefined) order.expected_date = data.expected_date ? new Date(data.expected_date) : null
+  if (data.received_date !== undefined) order.received_date = data.received_date ? new Date(data.received_date) : null
+  if (data.fitted_date !== undefined) order.fitted_date = data.fitted_date ? new Date(data.fitted_date) : null
+  if (data.lab_cost !== undefined) order.lab_cost = toMoney(data.lab_cost, order.lab_cost)
+  if (data.doctor_notes !== undefined) order.doctor_notes = normalizeText(data.doctor_notes)
+  if (data.is_remake !== undefined) order.is_remake = Boolean(data.is_remake)
+  if (data.remake_reason !== undefined) order.remake_reason = normalizeText(data.remake_reason)
+  if (data.tooth_numbers !== undefined) order.tooth_numbers = normalizeToothNumbers(data.tooth_numbers)
+
+  await order.save()
+
+  const doc = order.toObject()
+  doc.id = doc._id.toString()
+  return doc
+}
+
+async function getAllLabWorkOrders({ status, labName, patientId, page = 1, limit = 50 } = {}) {
+  const filter = {}
+  if (status) filter.status = status
+  if (labName) filter.lab_name = { $regex: labName, $options: 'i' }
+  if (patientId && isValidObjectId(patientId)) filter.patient_id = patientId
+
+  const skip = (page - 1) * limit
+  const [items, total] = await Promise.all([
+    LabWorkOrder.find(filter)
+      .populate('patient_id', 'name phone pid')
+      .sort({ sent_date: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    LabWorkOrder.countDocuments(filter)
+  ])
+
+  return {
+    items: items.map(o => ({
+      ...o,
+      id: o._id.toString(),
+      patient_name: o.patient_id?.name || '',
+      patient_phone: o.patient_id?.phone || '',
+      patient_pid: o.patient_id?.pid || '',
+      patient_id: o.patient_id ? o.patient_id._id.toString() : null
+    })),
+    total,
+    page,
+    limit,
+    hasMore: skip + items.length < total
+  }
+}
+
+async function getLabWorkOrderById(id) {
+  if (!isValidObjectId(id)) return null
+  const order = await LabWorkOrder.findById(id).populate('patient_id', 'name phone pid').lean()
+  if (!order) return null
+  return {
+    ...order,
+    id: order._id.toString(),
+    patient_name: order.patient_id?.name || '',
+    patient_phone: order.patient_id?.phone || '',
+    patient_pid: order.patient_id?.pid || '',
+    patient_id: order.patient_id ? order.patient_id._id.toString() : null
+  }
+}
+
+async function deleteLabWorkOrder(id) {
+  if (!isValidObjectId(id)) return { success: false }
+  await LabWorkOrder.findByIdAndDelete(id)
+  return { success: true }
+}
+
 module.exports = {
   init,
   getDbPath,
@@ -2865,5 +3231,8 @@ module.exports = {
   getSettings, setSetting, setSettingsBulk,
   getDashboardStats, getRevenueInsights,
   logAudit,
-  getAllEnquiries, searchEnquiries, addEnquiry, updateEnquiryStatus, deleteEnquiry, convertEnquiryToPatient
+  getAllEnquiries, searchEnquiries, addEnquiry, updateEnquiryStatus, deleteEnquiry, convertEnquiryToPatient,
+  getNextReceiptNumber, getNextCreditNoteNumber, getNextLabOrderNumber,
+  addPatientAdvanceDeposit, getPatientAdvanceHistory,
+  createLabWorkOrder, updateLabWorkOrder, getAllLabWorkOrders, getLabWorkOrderById, deleteLabWorkOrder
 }

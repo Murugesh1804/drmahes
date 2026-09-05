@@ -45,7 +45,8 @@ router.put('/:id/pay', asyncHandler(async (req, res) => {
   const result = await queries.recordConsultantPaymentAmount(
     req.params.id,
     req.body.amount,
-    req.body.payment_method
+    req.body.payment_method,
+    req.body.payment_date
   )
   if (!result) return res.status(404).json({ error: 'Payment not found' })
   res.json(result)

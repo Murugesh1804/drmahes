@@ -55,6 +55,7 @@ const patientSchema = new mongoose.Schema({
   consentFormPath: { type: String, default: '' },
   consentSignedAt: { type: Date, default: null },
   total_outstanding_balance: { type: Number, default: 0 },
+  advance_balance: { type: Number, default: 0, min: 0 },
   // PID Generation (corrections.md §3.2)
   pid: { type: String, unique: true, sparse: true },
   registration_source: {
@@ -165,7 +166,18 @@ const treatmentSchema = new mongoose.Schema({
     changed_at: { type: Date, default: Date.now },
     changed_by: { type: String, default: 'system' },
     reason: { type: String, default: '' }
-  }]
+  }],
+  // Corporate Implant / Medical Device Passport Tracking
+  implant_details: {
+    is_implant: { type: Boolean, default: false },
+    implant_brand: { type: String, default: '' },
+    implant_model: { type: String, default: '' },
+    lot_number: { type: String, default: '' },
+    serial_number: { type: String, default: '' },
+    expiry_date: { type: String, default: '' },
+    torque_ncm: { type: Number, default: null },
+    biomaterials_used: { type: String, default: '' }
+  }
 }, {
   ...schemaOptions,
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
@@ -246,7 +258,12 @@ const paymentSchema = new mongoose.Schema({
   bill_id:    { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', required: true, index: true },
   patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
   amount:     { type: Number, required: true },
-  method:     { type: String, enum: ['cash', 'upi', 'card', 'other'], default: 'cash' },
+  method:     { type: String, enum: ['cash', 'upi', 'card', 'advance', 'other'], default: 'cash' },
+  payment_date: { type: Date, default: Date.now, index: true },
+  receipt_number: { type: String, sparse: true, index: true },
+  reference_id: { type: String, default: '' },
+  credit_note_number: { type: String, default: null, sparse: true, index: true },
+  refund_method: { type: String, enum: ['cash', 'upi', 'bank_transfer', 'to_advance_wallet', 'none'], default: 'none' },
   notes:      { type: String, default: '' },
   // FIX #2.3: Payment reversal tracking
   is_reversed: { type: Boolean, default: false },
@@ -460,6 +477,57 @@ const medicineMasterSchema = new mongoose.Schema({
 })
 medicineMasterSchema.index({ type: 1, is_active: 1 })
 
+// ── ADVANCE LEDGER SCHEMA (Patient Wallet / Escrow) ────────
+const advanceLedgerSchema = new mongoose.Schema({
+  patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
+  receipt_number: { type: String, sparse: true, index: true },
+  type: { type: String, enum: ['deposit', 'allocation', 'refund'], required: true },
+  amount: { type: Number, required: true },
+  payment_method: { type: String, enum: ['cash', 'upi', 'card', 'bank_transfer', 'other'], default: 'cash' },
+  bill_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', default: null },
+  reference_id: { type: String, default: '' },
+  notes: { type: String, default: '' },
+  balance_after: { type: Number, default: 0 }
+}, {
+  ...schemaOptions,
+  timestamps: { createdAt: 'created_at', updatedAt: false }
+})
+advanceLedgerSchema.index({ patient_id: 1, created_at: -1 })
+
+// ── DENTAL LAB WORK ORDER SCHEMA (Prosthetics / Slips) ──────
+const labWorkOrderSchema = new mongoose.Schema({
+  work_order_number: { type: String, unique: true, sparse: true, index: true },
+  patient_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true, index: true },
+  treatment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Treatment', default: null },
+  lab_name: { type: String, required: true, trim: true, index: true },
+  work_type: { type: String, required: true, trim: true },
+  tooth_numbers: [{ type: String }],
+  shade: { type: String, default: '' },
+  impression_type: {
+    type: String,
+    enum: ['digital_scan', 'physical_impression', 'cast_model'],
+    default: 'physical_impression'
+  },
+  sent_date: { type: Date, default: Date.now, index: true },
+  expected_date: { type: Date, default: null, index: true },
+  received_date: { type: Date, default: null },
+  fitted_date: { type: Date, default: null },
+  status: {
+    type: String,
+    enum: ['sent', 'in_progress', 'received', 'fitted', 'remake_needed', 'cancelled'],
+    default: 'sent',
+    index: true
+  },
+  lab_cost: { type: Number, default: 0, min: 0 },
+  doctor_notes: { type: String, default: '' },
+  is_remake: { type: Boolean, default: false },
+  remake_reason: { type: String, default: '' }
+}, {
+  ...schemaOptions,
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+})
+labWorkOrderSchema.index({ status: 1, expected_date: 1 })
+
 const Patient = mongoose.model('Patient', patientSchema)
 const Appointment = mongoose.model('Appointment', appointmentSchema)
 const Treatment = mongoose.model('Treatment', treatmentSchema)
@@ -475,6 +543,8 @@ const AuditLog = mongoose.model('AuditLog', auditLogSchema)
 const ConsultantPayment = mongoose.model('ConsultantPayment', consultantPaymentSchema)
 const TreatmentMaster = mongoose.model('TreatmentMaster', treatmentMasterSchema)
 const MedicineMaster = mongoose.model('MedicineMaster', medicineMasterSchema)
+const AdvanceLedger = mongoose.model('AdvanceLedger', advanceLedgerSchema)
+const LabWorkOrder = mongoose.model('LabWorkOrder', labWorkOrderSchema)
 
 let connected = false
 
@@ -586,5 +656,7 @@ module.exports = {
   ConsultantPayment,
   TreatmentMaster,
   MedicineMaster,
+  AdvanceLedger,
+  LabWorkOrder,
   Enquiry
 }
