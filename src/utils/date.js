@@ -19,7 +19,11 @@ export function clinicDateString(date = new Date()) {
  * Format date string for display (e.g., "Mon, 15 Jan 2024")
  */
 export function fmtDate(dateStr) {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-IN', {
+  if (!dateStr) return '—'
+  const s = String(dateStr).split('T')[0]
+  const d = new Date(s + 'T00:00:00')
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString('en-IN', {
     weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
   })
 }

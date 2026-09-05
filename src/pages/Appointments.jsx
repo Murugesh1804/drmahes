@@ -16,6 +16,12 @@ import { clinicDateString, fmtDate } from '../utils/date'
 const STATUSES = ['waiting', 'in-progress', 'done', 'cancelled']
 const STATUS_LABELS = { waiting: 'Waiting', 'in-progress': 'In Progress', done: 'Done', cancelled: 'Cancelled' }
 const STATUS_COLORS = { waiting: 'badge-waiting', 'in-progress': 'badge-progress', done: 'badge-done', cancelled: 'badge-cancelled' }
+const STATUS_BG = {
+  waiting: '',
+  'in-progress': 'border-l-4 border-l-blue-500 bg-blue-50/20',
+  done: 'opacity-75 bg-slate-50/50',
+  cancelled: 'opacity-60 bg-slate-100/50',
+}
 
 
 // All standard appointment slots (shown in the Slot Manager)
@@ -371,7 +377,7 @@ export default function Appointments() {
       ) : (
         <div className="space-y-2">
           {appointments.map((a) => (
-            <div key={a.id} className={`card ${STATUS_BG[a.status]} flex flex-col sm:flex-row sm:items-center justify-between gap-4`}>
+            <div key={a.id} className={`card ${STATUS_BG[a.status] || ''} flex flex-col sm:flex-row sm:items-center justify-between gap-4`}>
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 {/* Queue number */}
                 <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center font-bold text-lg text-slate-700 flex-shrink-0">

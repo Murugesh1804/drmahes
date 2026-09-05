@@ -3,6 +3,7 @@ import { useEffect, useState, lazy, Suspense } from 'react'
 import { AppProvider, useApp } from './context/AppContext'
 import Sidebar from './components/Sidebar'
 import Header from './components/Header'
+import ErrorBoundary from './components/ErrorBoundary'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Patients = lazy(() => import('./pages/Patients'))
@@ -76,22 +77,24 @@ function AppLayout() {
       <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ background: '#f7f5f0' }}>
-          <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading...</div>}>
-            <Routes>
-              <Route path="/"              element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard"     element={<Dashboard />} />
-              <Route path="/revenue"       element={<Revenue />} />
-              <Route path="/patients"      element={<Patients />} />
-              <Route path="/enquiries"     element={<Enquiries />} />
-              <Route path="/patients/:id"  element={<PatientDetail />} />
-              <Route path="/appointments"  element={<Appointments />} />
-              <Route path="/treatments"    element={<Treatments />} />
-              <Route path="/billing"       element={<Billing />} />
-              <Route path="/consultants"   element={<ConsultantPayments />} />
-              <Route path="/treatments-master" element={<TreatmentMaster />} />
-              <Route path="/settings"      element={<Settings />} />
-            </Routes>
-          </Suspense>
+          <ErrorBoundary>
+            <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading...</div>}>
+              <Routes>
+                <Route path="/"              element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard"     element={<Dashboard />} />
+                <Route path="/revenue"       element={<Revenue />} />
+                <Route path="/patients"      element={<Patients />} />
+                <Route path="/enquiries"     element={<Enquiries />} />
+                <Route path="/patients/:id"  element={<PatientDetail />} />
+                <Route path="/appointments"  element={<Appointments />} />
+                <Route path="/treatments"    element={<Treatments />} />
+                <Route path="/billing"       element={<Billing />} />
+                <Route path="/consultants"   element={<ConsultantPayments />} />
+                <Route path="/treatments-master" element={<TreatmentMaster />} />
+                <Route path="/settings"      element={<Settings />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
     </div>

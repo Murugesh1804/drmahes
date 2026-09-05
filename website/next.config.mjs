@@ -4,6 +4,16 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/appointment',
+        destination: '/contact#booking',
+        permanent: false,
+      },
+      {
+        source: '/appointments',
+        destination: '/contact#booking',
+        permanent: false,
+      },
+      {
         source: '/:path*',
         has: [
           {
