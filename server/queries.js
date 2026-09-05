@@ -2269,7 +2269,14 @@ async function getDashboardStats(period = 'today', dateParam = null) {
     isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end }, status: 'waiting' }) : Appointment.countDocuments({ scheduled_date: targetDate, status: 'waiting' }),
     isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end }, status: 'in-progress' }) : Appointment.countDocuments({ scheduled_date: targetDate, status: 'in-progress' }),
     isRange ? Appointment.countDocuments({ created_at: { $gte: range.start, $lte: range.end }, status: 'done' }) : Appointment.countDocuments({ scheduled_date: targetDate, status: 'done' }),
-    Payment.find({ payment_date: { $gte: range.start, $lte: range.end }, is_reversed: false }).select('amount').lean(),
+    Payment.find({
+      is_reversed: false,
+      $or: [
+        { payment_date: { $gte: range.start, $lte: range.end } },
+        { payment_date: { $exists: false }, paid_at: { $gte: range.start, $lte: range.end } },
+        { payment_date: null, paid_at: { $gte: range.start, $lte: range.end } }
+      ]
+    }).select('amount').lean(),
     Bill.find({ status: { $ne: 'paid' } }).select('balance').lean()
   ])
 
@@ -2321,7 +2328,11 @@ async function getRevenueInsights(options = {}) {
   if (start && end) {
     billMatch = { created_at: { $gte: start, $lte: end } }
     txMatch.created_at = { $gte: start, $lte: end }
-    paymentMatch.payment_date = { $gte: start, $lte: end }
+    paymentMatch.$or = [
+      { payment_date: { $gte: start, $lte: end } },
+      { payment_date: { $exists: false }, paid_at: { $gte: start, $lte: end } },
+      { payment_date: null, paid_at: { $gte: start, $lte: end } }
+    ]
   }
 
   const [
@@ -2346,14 +2357,21 @@ async function getRevenueInsights(options = {}) {
     Payment.aggregate([
       ...(Object.keys(paymentMatch).length > 0 ? [{ $match: paymentMatch }] : []),
       {
+        $addFields: {
+          effective_payment_date: {
+            $ifNull: ["$payment_date", "$paid_at", "$created_at"]
+          }
+        }
+      },
+      {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m", date: "$payment_date" } },
+          _id: { $dateToString: { format: "%Y-%m", date: "$effective_payment_date" } },
           collected: { $sum: "$amount" }
         }
       },
       { $sort: { _id: 1 } }
     ]),
-    Payment.find(paymentMatch).select('amount method payment_date').lean(),
+    Payment.find(paymentMatch).select('amount method payment_date paid_at').lean(),
     Payment.aggregate([
       ...(Object.keys(paymentMatch).length > 0 ? [{ $match: paymentMatch }] : []),
       {
@@ -2439,6 +2457,7 @@ async function getRevenueInsights(options = {}) {
 
   return {
     totalRevenue,
+    totalCollected,
     totalBilled,
     pendingBalance,
     monthlyTrends,

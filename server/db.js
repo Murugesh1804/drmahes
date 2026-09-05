@@ -573,6 +573,16 @@ async function initDatabase() {
     }
 
     await seedSettings()
+
+    // Corporate Payment Migration: Ensure all payment records have payment_date populated
+    try {
+      await Payment.updateMany(
+        { $or: [{ payment_date: { $exists: false } }, { payment_date: null }] },
+        [{ $set: { payment_date: { $ifNull: ["$paid_at", "$created_at", "$$NOW"] } } }]
+      )
+    } catch (e) {
+      console.warn('[db] payment_date backfill warning:', e.message)
+    }
   } catch (err) {
     console.error('[db] Failed to connect to MongoDB:', err.message)
     // Don't crash — let server run, routes will return 500 until DB connects

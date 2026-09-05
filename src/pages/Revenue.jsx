@@ -15,6 +15,8 @@ const METHOD_COLORS = {
   online:       { bar: '#8b5cf6', bg: 'bg-violet-100',  text: 'text-violet-700',  dot: '#8b5cf6' },
   cheque:       { bar: '#f59e0b', bg: 'bg-amber-100',   text: 'text-amber-700',   dot: '#f59e0b' },
   insurance:    { bar: '#3b82f6', bg: 'bg-blue-100',    text: 'text-blue-700',    dot: '#3b82f6' },
+  advance:      { bar: '#f59e0b', bg: 'bg-amber-100',   text: 'text-amber-700',   dot: '#f59e0b' },
+  other:        { bar: '#64748b', bg: 'bg-slate-100',   text: 'text-slate-700',   dot: '#64748b' },
   unknown:      { bar: '#94a3b8', bg: 'bg-slate-100',   text: 'text-slate-600',   dot: '#94a3b8' },
 }
 function methodColor(m) {
